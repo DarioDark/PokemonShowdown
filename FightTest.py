@@ -35,9 +35,6 @@ class Fight:
         print("Waiting for the second player...")
         self.players.append(self.client.get_last_info())
         self.client.send_info(self.player1)
-        while not self.client.is_there_info():
-            pass
-        self.client.reset_last_info()
 
         os.system('cls')
         print("Both players are ready !")
@@ -48,6 +45,7 @@ class Fight:
         """Select the team lead of both players.
         """
         self.player1.current_pokemon = self.player1.select_lead()
+        self.client.reset_last_info()
         self.client.send_lead(self.player1.current_pokemon)
         print("Waiting for the second player to select their lead...")
         self.player2.current_pokemon = self.client.get_enemy_info()

@@ -7,7 +7,7 @@ from PlayerTest import *
 
 
 class Client:
-    def __init__(self, player: Player) -> None:
+    def __init__(self, player: Player):
         # Player settings
         self.player = player
         self.enemy_player = None
