@@ -19,13 +19,24 @@ class Fight:
     def __repr__(self) -> str:
         return f"Turn {self.turn} | {self.players}"
 
+    @property
+    def player1(self) -> Player:
+        return self.players[0]
+
+    @property
+    def player2(self) -> Player:
+        if len(self.players) > 1:
+            return self.players[1]
+
     def start(self) -> None:
         """Start the fight by sending the player to the server and waiting for the second player to connect.
         """
-        self.client.send_player()
+        self.client.send_info(self.player1)
         print("Waiting for the second player...")
         self.players.append(self.client.get_last_info())
-        self.client.send_player()
+        self.client.send_info(self.player1)
+        while not self.client.is_there_info():
+            pass
         self.client.reset_last_info()
 
         os.system('cls')
@@ -42,15 +53,6 @@ class Fight:
         self.player2.current_pokemon = self.client.get_enemy_info()
         print(f"{self.player1.current_pokemon.name}, go !")
         print(f"{self.player2.name} sent {self.player2.current_pokemon.name} in battle !")
-
-    @property
-    def player1(self) -> Player:
-        return self.players[0]
-
-    @property
-    def player2(self) -> Player:
-        if len(self.players) > 1:
-            return self.players[1]
 
     def get_players_actions(self) -> tuple:
         """Get the actions of both players.
