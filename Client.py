@@ -1,7 +1,7 @@
 import socket
 import threading
 import pickle
-import Types
+import time
 
 from PlayerTest import *
 
@@ -19,9 +19,11 @@ class Client:
         host, port = input("Enter the server IP address :\n>>"), 12345
         self.host, self.port = (host, port)
 
+
         # Socket / Thread settings
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.host, self.port))
+        self.set_name(self.player.name)
         print("Connected to the server !")
 
         thread = threading.Thread(target=self.handle)
@@ -34,6 +36,7 @@ class Client:
         while True:
             data = self.client.recv(4096)
             if data:
+                print("data")
                 obj = pickle.loads(data)
                 if isinstance(obj, Player):
                     self.enemy_player = obj
@@ -45,11 +48,19 @@ class Client:
         return True if len(self.enemy_moves) > 0 else False
 
     def send_info(self, info) -> None:
+        print("sending")
         self.client.send(pickle.dumps(info))
-    
+
+    def get_enemy_player(self):
+        while self.enemy_player is None:
+            pass
+        return self.enemy_player
+
     def get_last_info(self):
         while len(self.enemy_moves) == 0:
-            pass
+            print("waiting")
+            time.sleep(1)
+        print("returning")
         return self.enemy_moves.pop()
 
     def reset_last_info(self) -> None:

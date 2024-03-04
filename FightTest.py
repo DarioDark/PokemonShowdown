@@ -2,7 +2,7 @@ import time
 import os
 
 from Client import Client
-from PlayerTest import Player
+from PlayerTest import *
 from PokemonTest import Pokemon
 from Status import SubStatus
 
@@ -32,9 +32,11 @@ class Fight:
         """Start the fight by sending the player to the server and waiting for the second player to connect.
         """
         self.client.send_info(self.player1)
-        print("Waiting for the second player...")
-        self.players.append(self.client.get_last_info())
+        self.client.enemy_player = self.client.get_enemy_player()
         self.client.send_info(self.player1)
+        print("Waiting for the second player...")
+        self.players.append(self.client.enemy_player)
+        print("prout ?")
 
         os.system('cls')
         print("Both players are ready !")
@@ -44,11 +46,18 @@ class Fight:
     def select_player_lead(self) -> None:
         """Select the team lead of both players.
         """
-        self.player1.current_pokemon = self.player1.select_lead()
         self.client.reset_last_info()
-        self.client.send_lead(self.player1.current_pokemon)
+        self.player1.current_pokemon = self.player1.select_lead()
+        self.client.send_info(self.player1.current_pokemon)
         print("Waiting for the second player to select their lead...")
-        self.player2.current_pokemon = self.client.get_enemy_info()
+        while True:
+            self.client.send_info(self.player1.current_pokemon)
+            time.sleep(1)
+            self.player2.current_pokemon = self.client.get_last_info()
+            time.sleep(1)
+            if self.player2.current_pokemon is not None:
+                break
+
         print(f"{self.player1.current_pokemon.name}, go !")
         print(f"{self.player2.name} sent {self.player2.current_pokemon.name} in battle !")
 
@@ -122,11 +131,11 @@ class Fight:
             player2.current_pokemon.heal(hp_drained)
 
     def player_use_action(self, player: Player, target: Player, action: tuple) -> None:
-        if player == self.player1: # If the player is the client
-            if action[0] == 1: # Switch
+        if player == self.player1:  # If the player is the client
+            if action[0] == 1:  # Switch
                 pokemon: Pokemon = action[1]
                 player.switch_pokemon(pokemon)
-            elif action[0] == 2: # Move
+            elif action[0] == 2:  # Move
                 if len(action) == 2:
                     print(f"{player.current_pokemon.name} missed!")
                 else:
@@ -142,14 +151,14 @@ class Fight:
                             target.current_pokemon.receive_secondary_effect(action[1])
                     else:
                         result.append(False)
-                    self.client.send_damage(result) # result = [damage: int, secondary_effect_applied: bool]
+                    self.client.send_damage(result)  # result = [damage: int, secondary_effect_applied: bool]
 
-        else: # If the player is the imported player
-            if action[0] == 1: # Switch
+        else:  # If the player is the imported player
+            if action[0] == 1:  # Switch
                 pokemon: Pokemon = action[1]
                 player.switch_pokemon(pokemon)
 
-            elif action[0] == 2: # Move
+            elif action[0] == 2:  # Move
                 if len(action) == 2:
                     print(f"{player.current_pokemon.name} missed!")
                 else:

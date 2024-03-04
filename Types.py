@@ -1,6 +1,7 @@
 from enum import Enum
 from termcolor import colored
 
+
 class TypeClass:
     def __init__(self, name: str, color: str) -> None:
         self.name = name
