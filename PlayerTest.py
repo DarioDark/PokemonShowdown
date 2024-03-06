@@ -94,19 +94,15 @@ class Player:
             except ValueError:
                 print("Invalid choice")
                 
-    def use_move(self, move: Capacity, target: 'Player', move_success: bool) -> tuple:
-        if move_success:
-            if isinstance(move, StatusCapacity):
-                if move.target == "player":
-                    return self.current_pokemon.attack_target(move, target)
-                elif move.target == "self":
-                    return self.current_pokemon.attack_target(move, self)
-            return self.current_pokemon.attack_target(move, target.current_pokemon) 
-        else:
-            print(f"{self.current_pokemon.name} missed!")
-            return None
-                
-    def choose_action(self, target: 'Player') -> tuple:
+    def use_move(self, move: Capacity, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> None:
+        if isinstance(move, StatusCapacity):
+            if move.target == "player":
+                self.current_pokemon.attack_target(move, is_secondary_effect_applied, target)
+            elif move.target == "self":
+                self.current_pokemon.attack_target(move, is_secondary_effect_applied, self)
+        self.current_pokemon.attack_target(move, is_secondary_effect_applied, target, damage)
+
+    def choose_action(self, target: 'Player') -> tuple[int, 'Capacity / Pokemon']:
         system("cls")
         print(self)
         print(target)
@@ -122,8 +118,18 @@ class Player:
                     pokemon: Pokemon = self.select_switch()
                     return 1, pokemon
                 elif choice == 2:
-                    result = [2]  # result = [action, move, move_success: bool, secondary_effect: bool, damage: int]
                     move: Capacity = self.select_move()
+                    return 2, move
+                else:
+                    print("Invalid choice")
+            except ValueError:
+                print("Invalid choice")
+
+    def has_lost(self) -> bool:
+        return all(pokemon.current_hp <= 0 for pokemon in self.team)
+
+
+"""                    move: Capacity = self.select_move()
                     if randint(1, 100) <= move.accuracy:
                         result.append(move)
                         result.append(True)
@@ -136,20 +142,7 @@ class Player:
                             result.append(damage)
                             return tuple(result)
                         else:
-                            return tuple(result)
-                    else:  # result = [action, move]
-                        result.append(move)
-                        return tuple(result)
-                    
-                else:
-                    print("Invalid choice")
-            except ValueError:
-                print("Invalid choice")
-
-    def has_lost(self) -> bool:
-        return all(pokemon.current_hp <= 0 for pokemon in self.team)
-
-
+                            return tuple(result)"""
 
 
 

@@ -178,13 +178,14 @@ class Pokemon:
         self.current_hp += max(amount, 0)
         print(f"{self.name} was healed by {self.convert_hp_to_percentage(amount)} HP!")
             
-    def attack_target(self, attack: OffensiveCapacity, target) -> None: # The target can be a the opposing pokemon, the opposing player or the player itself
-        if attack.current_pp > 0:
-            attack.current_pp -= 1
-            print(f"{self.name} used {attack.name}!")
-            if isinstance(attack, OffensiveCapacity):
-                target.receive_damage(attack, self)
-            attack.apply_secondary_effect(target)
+    def attack_target(self, move: Capacity, is_secondary_effect_applied: bool, target, damage=-1) -> None:  # The target can be a the opposing pokemon, the opposing player or the player itself
+        if move.current_pp > 0:
+            move.current_pp -= 1
+            print(f"{self.name} used {move.name}!")
+            if isinstance(move, OffensiveCapacity):
+                target.receive_damage(move, damage)
+            if is_secondary_effect_applied:
+                move.apply_secondary_effect(target)
         else:
             print(f"{self.name} has no PP left!")
 
@@ -194,45 +195,22 @@ class Pokemon:
         print(f"{self.name} lost {round(self.convert_hp_to_percentage(damage), 1)}% HP!")
         self.is_dead(True)
         
-    def receive_secondary_effect(self, attack: Capacity) -> None:
-        if attack.secondary_effect:
-            attack.secondary_effect.apply(self)
-        
-    def calculate_damage(self, attack: OffensiveCapacity, attacker: 'Pokemon') -> int:
-        # Physical or Special
-        if attack.category == CapacityCategory.PHYSICAL:
-            attack_stat = attacker.attack
-            defense_stat = self.defense
-        else:
-            attack_stat = attacker.special_attack
-            defense_stat = self.special_defense
-        multiplier = self.get_multiplier(attacker, attack.type)
-        damage = (floor(floor(attacker.lvl * 2 / 5 + 2) * attack.power * attack_stat / defense_stat) / 50) + 2 # Calculate the raw damage
-        damage *= multiplier # Apply the modifiers
-        damage = floor(damage * randint(85, 100) / 100) # Apply the random factor
-        return max(int(damage), 1)
+    def receive_secondary_effect(self, move: Capacity) -> None:
+        if move.secondary_effect:
+            move.secondary_effect.apply(self)
 
-    def get_multiplier(self, attacker: 'Pokemon', attack_type: Type) -> float:
-        # STAB
-        multiplier = self.get_stab_multiplier(attacker, attack_type)
-        # Critical hit
-        multiplier *= self.get_critical_multiplier()
-        # Type effectiveness
-        multiplier *= self.get_types_multiplier(attack_type)
-        return multiplier
-    
     def get_stab_multiplier(self, attacker: 'Pokemon', attack_type: Type) -> float:
         if attack_type in attacker.types:
-            return 1.5
-        return 1
-    
+            return True
+        return False
+
     def get_critical_multiplier(self) -> float:
         critical_hit_chance = 4.17
         if randint(1, 100) <= critical_hit_chance:
             print("Critical hit!")
-            return 2
-        return 1
-    
+            return True
+        return False
+
     def get_types_multiplier(self, attack_type: Type) -> float:
         multiplier = 1
 
@@ -251,6 +229,42 @@ class Pokemon:
             multiplier *= 0
 
         return multiplier
+
+    def get_multipliers(self, attack_type: Type, attacker: 'Pokemon'):
+        # STAB
+        stab_multiplier: bool = self.get_stab_multiplier(attacker, attack_type)
+        # Critical hit
+        crit_multiplier: bool = self.get_critical_multiplier()
+        # Type effectiveness
+        type_multiplier: int = self.get_types_multiplier(attack_type)
+
+        return stab_multiplier, crit_multiplier, type_multiplier
+
+    def compute_multipliers(self, multipliers: tuple[bool, bool, int]) -> float:
+        multiplier = 1
+        # STAB
+        if multipliers[0]:
+            multiplier *= 1.5
+        # Critical hit
+        if multipliers[1]:
+            multiplier *= 1.5
+        # Type effectiveness
+        multiplier *= multipliers[2]
+        return multiplier
+
+    def calculate_damage(self, attack: OffensiveCapacity, attacker: 'Pokemon', multipliers) -> int:
+        # Physical or Special
+        if attack.category == CapacityCategory.PHYSICAL:
+            attack_stat = attacker.attack
+            defense_stat = self.defense
+        else:
+            attack_stat = attacker.special_attack
+            defense_stat = self.special_defense
+        multiplier = self.compute_multipliers(multipliers)
+        damage = (floor(floor(attacker.lvl * 2 / 5 + 2) * attack.power * attack_stat / defense_stat) / 50) + 2 # Calculate the raw damage
+        damage *= multiplier # Apply the modifiers
+        damage = floor(damage * randint(85, 100) / 100)  # Apply the random factor
+        return max(int(damage), 1)
     
     def is_dead(self, print_message: bool = False) -> bool:
         if self.current_hp <= 0:

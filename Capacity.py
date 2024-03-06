@@ -33,6 +33,7 @@ class Capacity:
         if self.secondary_effect:
             if randint(1, 100) <= self.secondary_effect.probability:
                 return True
+        return False
     
     def apply_secondary_effect(self, target) -> None: # The target can be a the opposing pokemon, the opposing player or the player itself
         if self.secondary_effect:

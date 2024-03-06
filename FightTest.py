@@ -36,7 +36,6 @@ class Fight:
         self.client.send_info(self.player1)
         print("Waiting for the second player...")
         self.players.append(self.client.enemy_player)
-        print("prout ?")
 
         os.system('cls')
         print("Both players are ready !")
@@ -67,9 +66,9 @@ class Fight:
         :return: A tuple containing the first player action and the second player action.
         :rtype: tuple
         """
-        player1_action = self.player1.choose_action(self.player2)
-        self.client.send_action(player1_action)
-        player2_action = self.client.get_enemy_info()
+        player1_action = self.player1.choose_action(self.player2)  # 1 or 2, Pokemon or Move selected
+        self.client.send_info(player1_action)
+        player2_action = self.client.get_last_info()
         return player1_action, player2_action
 
     def get_player_order(self) -> tuple:
@@ -78,16 +77,20 @@ class Fight:
         :return: A tuple containing the first player, the second player, the first player action and the second player action.
         :rtype: tuple
         """
+        # We get both actions: tuple[int, object: Pokemon / Capacity]
         player1_action, player2_action = self.get_players_actions()
+        player1_choice = player1_action[0]
+        player2_choice = player2_action[0]
+
         # Determine the order of the players
-        if player1_action[0] == 1 and player2_action[0] == 2:
+        if player1_choice == 1 and player2_choice == 2:
             first_player = self.player1
             second_player = self.player2
-        elif player1_action[0] == 2 and player2_action[0] == 1:
+        elif player1_choice == 2 and player2_choice == 1:
             first_player = self.player2
             second_player = self.player1
         else:
-            # Vérifier qui est le plus rapide
+            # Checks who has the fastest pokemon
             if self.player1.current_pokemon.speed > self.player2.current_pokemon.speed:
                 first_player = self.player1
                 second_player = self.player2
@@ -95,16 +98,18 @@ class Fight:
                 first_player = self.player2
                 second_player = self.player1
             else:
-                # Si les deux pokemons ont la même vitesse, choisir aléatoirement
+                # If both pokemon are equally as fast
                 first_player = self.players[randint(0, 1)]
                 second_player = self.players[1 - self.players.index(first_player)]
 
+        # Assignation of actions to player
         if self.player1 == first_player:
             first_player_action = player1_action
             second_player_action = player2_action
         else:
             first_player_action = player2_action
             second_player_action = player1_action
+
         return first_player, second_player, first_player_action, second_player_action
 
     def apply_end_turn_primary_status(self):
@@ -117,9 +122,9 @@ class Fight:
         """Apply the end turn secondary status to both players.
         """
         for player in self.players:
-            self.define_end_turn_secondary_status(player, self.players[1 - self.players.index(player)])
+            self.apply_end_turn_secondary_status_effects(player, self.players[1 - self.players.index(player)])
 
-    def define_end_turn_secondary_status(self, player1: Player, player2: Player) -> None:
+    def apply_end_turn_secondary_status_effects(self, player1: Player, player2: Player) -> None:
         """Apply the end turn secondary status to the player.
 
         :param player1: The client-side player.
@@ -131,45 +136,88 @@ class Fight:
             player2.current_pokemon.heal(hp_drained)
 
     def player_use_action(self, player: Player, target: Player, action: tuple) -> None:
-        if player == self.player1:  # If the player is the client
-            if action[0] == 1:  # Switch
-                pokemon: Pokemon = action[1]
-                player.switch_pokemon(pokemon)
-            elif action[0] == 2:  # Move
-                if len(action) == 2:
-                    print(f"{player.current_pokemon.name} missed!")
-                else:
-                    print(f"{player.current_pokemon.name} used {action[1].name}!")
-                    result = []
-                    damage: int = action[4]
-                    target.current_pokemon.receive_damage(damage)
-                    result.append(damage)
-                    if action[3] == True:
-                        secondary_effect_applied: bool = pokemon.is_secondary_effect_applied()
-                        result.append(secondary_effect_applied)
-                        if secondary_effect_applied:
-                            target.current_pokemon.receive_secondary_effect(action[1])
-                    else:
-                        result.append(False)
-                    self.client.send_damage(result)  # result = [damage: int, secondary_effect_applied: bool]
+        """Takes a player, a target, and tuple that contains a choice and the associated object.
 
-        else:  # If the player is the imported player
-            if action[0] == 1:  # Switch
+        :param player: A Player object, the one that does the action.
+        :param target: A Player object, the target of the action.
+        :param action: A tuple with 1 or 2 as it's first value and a Pokemon or a Capacity object as the second value.
+        """
+        # If the player is the client
+        if player == self.player1:
+
+            # If the player selected a switch
+            if action[0] == 1:
                 pokemon: Pokemon = action[1]
                 player.switch_pokemon(pokemon)
 
-            elif action[0] == 2:  # Move
-                if len(action) == 2:
+            # If the player selected a move
+            elif action[0] == 2:
+                move: Capacity = action[1]
+                print(f"{player.current_pokemon.name} used {move.name}!")
+
+                # If the pokemon misses
+                if randint(0, 100) > move.accuracy:
+                    result: tuple[bool] = False,
+                    self.client.send_info(result)
+                    return
+
+                # Getting all the pieces of information of the move to send them and synchronize both clients
+                multipliers = target.current_pokemon.get_multipliers(move.type, player.current_pokemon)
+                if isinstance(move, OffensiveCapacity):
+                    damage: int = target.current_pokemon.calculate_damage(move, player.current_pokemon, multipliers)
+                else:
+                    damage: int = -1
+                secondary_effect_applied: bool = move.is_secondary_effect_applied()
+
+                # Sending the results to the server
+                result: tuple[tuple, bool, int] = (multipliers, secondary_effect_applied, damage)
+                self.client.send_info(result)
+
+                # Applying the local results to the imported target
+                player.use_move(move, secondary_effect_applied, target, damage)
+
+        # If the player is the imported player
+        else:
+            # If the player selected a switch
+            if action[0] == 1:
+                pokemon: Pokemon = action[1]
+                player.switch_pokemon(pokemon)
+
+            # If the player selected a move
+            elif action[0] == 2:
+                move = action[1]
+                result: tuple[tuple[bool, bool, int], bool, int] = self.client.get_last_info()
+
+                # If the move missed
+                if len(result) == 1:
                     print(f"{player.current_pokemon.name} missed!")
+
+                # If the move didn't miss
                 else:
                     print(f"{player.current_pokemon.name} used {action[1].name}!")
-                    result = self.client.get_enemy_info()
-                    damage: int = result[0]
-                    target.current_pokemon.receive_damage(damage)
-                    if result[1] == True:
-                        target.current_pokemon.receive_secondary_effect(result[0])
+                    multipliers: tuple[bool, bool, int] = result[0]
+
+                    # Critical hit
+                    if multipliers[1]:
+                        print("Critical Hit!")
+
+                    # Type effectiveness multiplier
+                    type_multiplier = multipliers[2]
+                    if type_multiplier == 0:
+                        print("This has no effect")
+                    elif type_multiplier < 1:
+                        print("This is not very effective...")
+                    elif type_multiplier > 1:
+                        print("This is very effective!")
+
+                    # Applying the imported results to the local target
+                    damage = result[2]
+                    secondary_effect_applied: bool = result[1]
+                    player.use_move(move, secondary_effect_applied, target, damage)
 
     def play_turn(self):
+        """Handles the whole process of each player using their selected action and checking if one of the pokemon dies.
+        """
         first_player, second_player, first_player_action, second_player_action = self.get_player_order()
 
         # Effectuer les mouvements dans l'ordre
@@ -201,6 +249,10 @@ class Fight:
         self.turn += 1
 
     def check_looser(self) -> Player:
+        """Checks if one of the players has his whole team fainted.
+
+        :return:
+        """
         if self.player1.has_lost():
             return self.player1
         if self.player2.has_lost():
