@@ -10,8 +10,8 @@ class Player:
         self.current_pokemon: Pokemon = None
         self.environment: EnvironmentClass = EnvironmentClass()
         
-    def __repr__(self) -> str:
-        return f"{self.name} has {colored(self.current_pokemon.name, attrs=['underline'])} in battle"
+    #def __repr__(self) -> str:
+    #    return f"{self.name} has {colored(self.current_pokemon.name, attrs=['underline'])} in battle"
         
     def __eq__(self, other: 'Player') -> bool:
         return self.name == other.name

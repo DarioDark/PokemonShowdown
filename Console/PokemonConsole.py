@@ -32,9 +32,9 @@ class Pokemon:
         self.speed: int = speed
         # Types
         self.types: list[Type] = types
-        self.immunities: list[TypeClass] = self.get_types_immunities()
-        self.weaknesses: list[TypeClass] = self.calculate_weaknesses()
-        self.resistances: list[TypeClass] = self.calculate_resistances()
+        self.immunities: list[Type] = self.get_types_immunities()
+        self.weaknesses: list[Type] = self.calculate_weaknesses()
+        self.resistances: list[Type] = self.calculate_resistances()
         # Status
         self.status: PrimeStatus = PrimeStatus.NORMAL
         self.sub_status: list[SubStatus] = []
@@ -147,7 +147,7 @@ class Pokemon:
                     weaknesses.remove(type)
         return weaknesses
 
-    def calculate_resistances(self) -> 'list[TypeClass]':
+    def calculate_resistances(self) -> 'list[Type]':
         weaknesses = self.get_types_weaknesses()
         resistances = self.get_types_resistances()
         for type in weaknesses:
@@ -165,10 +165,10 @@ class Pokemon:
             weaknesses.extend(type.value.weaknesses)
         return weaknesses
     
-    def get_types_resistances(self) -> 'list[TypeClass]':
+    def get_types_resistances(self) -> 'list[Type]':
         resistances = []
-        for pokemontype in self.types:
-            resistances.extend(pokemontype.value.resistances)
+        for pokemon_type in self.types:
+            resistances.extend(pokemon_type.value.resistances)
         return resistances
     
     def get_types_immunities(self) -> 'list[TypeClass]':
@@ -195,8 +195,9 @@ class Pokemon:
             capacity.current_pp -= 1
             if isinstance(capacity, OffensiveCapacity):
                 target.receive_damage(damage)
-            if is_secondary_effect_applied:
-                capacity.apply_secondary_effect(target)
+            if not target.is_dead():
+                if is_secondary_effect_applied:
+                    capacity.apply_secondary_effect(target)
         else:
             print(f"{self.name} has no PP left!")
 
@@ -226,15 +227,18 @@ class Pokemon:
 
     def get_types_multiplier(self, attack_type: Type) -> float:
         multiplier = 1
-
+        print("attack type", attack_type, attack_type.value)
+        print("weaknesses", self.weaknesses)
+        print("resistances", self.resistances)
+        print("immunities", self.immunities)
         if attack_type in self.weaknesses:
             print("This is very effective!")
-            count = self.weaknesses.count(attack_type.value)
+            count = self.weaknesses.count(attack_type)
             for _ in range(count):
                 multiplier *= 2
         if attack_type in self.resistances:
             print("This is not very effective...")
-            count = self.resistances.count(attack_type.value)
+            count = self.resistances.count(attack_type)
             for _ in range(count):
                 multiplier *= 0.5
         if attack_type in self.immunities:
@@ -246,10 +250,13 @@ class Pokemon:
     def get_multipliers(self, attack_type: Type, attacker: 'Pokemon'):
         # STAB
         stab_multiplier: bool = self.get_stab_multiplier(attacker, attack_type)
+        print("STAB", stab_multiplier)
         # Critical hit
         crit_multiplier: bool = self.get_critical_multiplier()
+        print("CRIT", crit_multiplier)
         # Type effectiveness
         type_multiplier: float = self.get_types_multiplier(attack_type)
+        print("TYPE", type_multiplier)
 
         return stab_multiplier, crit_multiplier, type_multiplier
 

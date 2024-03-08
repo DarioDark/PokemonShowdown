@@ -1,7 +1,7 @@
 import time
 
 from ClientConsole import Client
-from PlayerTestConsole import *
+from PlayerConsole import *
 from StatusConsole import SubStatus
 
 
@@ -47,7 +47,6 @@ class Fight:
         pokemon_index = self.client.get_last_info()
         self.player2.current_pokemon = self.player2.team[pokemon_index]
 
-        print("players ------ :", self.players, self.player1.name, self.player2.name)
         print(f"{self.player1.current_pokemon.name}, go !")
         print(f"{self.player2.name} sent {self.player2.current_pokemon.name} in battle !")
 
@@ -72,7 +71,6 @@ class Fight:
         player1_action, player2_action = self.get_players_actions()
         player1_choice = player1_action[0]
         player2_choice = player2_action[0]
-        print("Actions", player1_action, player2_action)
 
         # Determine the order of the players
         if player1_choice == 1 and player2_choice == 2:
@@ -157,6 +155,7 @@ class Fight:
                     return
 
                 # Getting all the pieces of information of the move to send them and synchronize both clients
+                print("move type", move.type)
                 multipliers = target.current_pokemon.get_multipliers(move.type, player.current_pokemon)
                 if isinstance(move, OffensiveCapacity):
                     damage: int = target.current_pokemon.calculate_damage(move, player.current_pokemon, multipliers)

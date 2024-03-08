@@ -3,7 +3,7 @@ import threading
 import pickle
 import time
 
-from PlayerTestConsole import *
+from PlayerConsole import *
 
 
 class Client:
@@ -36,21 +36,16 @@ class Client:
         while True:
             data = self.client.recv(4096)
             if data:
-                print("data")
                 obj = pickle.loads(data)
-                print("obj", obj)
                 if isinstance(obj, Player):
                     if not self.enemy_player:
                         self.enemy_player = obj
-                    print("player added", obj)
                 else:
                     while len(self.enemy_moves) >= 1:
                         pass
                     self.enemy_moves.append(obj)
-                    print("added")
 
     def send_info(self, info) -> None:
-        print("sending")
         self.client.send(pickle.dumps(info))
 
     def get_enemy_player(self):
@@ -60,10 +55,7 @@ class Client:
 
     def get_last_info(self):
         while len(self.enemy_moves) == 0:
-            print("waiting")
             time.sleep(1)
-        print("returning")
-        print("enemey moves", self.enemy_moves)
         return self.enemy_moves.pop(0)
 
     def reset_last_info(self):
