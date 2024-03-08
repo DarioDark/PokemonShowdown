@@ -1,6 +1,6 @@
-from ConsoleTypes import Type
+from TypesConsole import Type
 from termcolor import colored
-from ConsoleCapacitySideEffects import SecondaryEffectClass
+from CapacitySideEffectsConsole import SecondaryEffectClass
 from enum import Enum
 from random import randint
 

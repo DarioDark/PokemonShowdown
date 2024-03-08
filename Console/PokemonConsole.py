@@ -1,8 +1,8 @@
-from ConsoleTypes import Type, TypeClass
-from ConsoleOffensiveCapacity import *
-from ConsoleStatusCapacity import *
-from ConsoleStatus import PrimeStatus, SubStatus
-from ConsoleEnvironment import EnvironmentElements
+from TypesConsole import Type, TypeClass
+from OffensiveCapacityConsole import *
+from StatusCapacityConsole import *
+from StatusConsole import PrimeStatus, SubStatus
+from EnvironmentConsole import EnvironmentElements
 from termcolor import colored
 from os import system
 from random import randint

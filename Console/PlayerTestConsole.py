@@ -1,6 +1,6 @@
-from ConsolePokemon import *
-from ConsoleOffensiveCapacity import *
-from ConsoleEnvironment import EnvironmentClass
+from PokemonConsole import *
+from OffensiveCapacityConsole import *
+from EnvironmentConsole import EnvironmentClass
 
 
 class Player:

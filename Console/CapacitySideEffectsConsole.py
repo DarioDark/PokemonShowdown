@@ -1,8 +1,8 @@
 from enum import Enum
 from random import randint
-from ConsoleStatus import PrimeStatus, SubStatus
-from ConsoleEnvironment import EnvironmentElements
-from ConsoleTypes import Type
+from StatusConsole import PrimeStatus, SubStatus
+from EnvironmentConsole import EnvironmentElements
+from TypesConsole import Type
 
 
 class SecondaryEffectClass:

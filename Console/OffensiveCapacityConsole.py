@@ -1,5 +1,5 @@
-from ConsoleCapacity import *
-from ConsoleCapacitySideEffects import SecondaryEffects
+from CapacityConsole import *
+from CapacitySideEffectsConsole import SecondaryEffects
 
 
 class OffensiveCapacity(Capacity):

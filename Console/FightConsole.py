@@ -1,8 +1,8 @@
 import time
 
-from ConsoleClient import Client
-from ConsolePlayerTest import *
-from ConsoleStatus import SubStatus
+from ClientConsole import Client
+from PlayerTestConsole import *
+from StatusConsole import SubStatus
 
 
 class Fight:

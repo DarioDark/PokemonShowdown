@@ -3,7 +3,7 @@ import threading
 import pickle
 import time
 
-from ConsolePlayerTest import *
+from PlayerTestConsole import *
 
 
 class Client:
