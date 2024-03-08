@@ -6,9 +6,9 @@ class PrimeStatus(Enum):
     POISON = "Poison"
     SEVERE_POISON = "Severe Poison"
     PARALYSIS = "Paralysis"
-    # SLEEP = "Sleep"
+    SLEEP = "Sleep"
     FREEZE = "Freeze"
     
 class SubStatus(Enum):
     CONFUSION = "Confusion"
-    LEECH_SEED = "Leech Seed"   
+    LEECH_SEED = "Leech Seed"

@@ -13,27 +13,15 @@ class TypeClass:
       
     def __repr__(self) -> str:
         return colored(self.name, self.color)  
-    
-    def test(self):
-        diction = {
-            'name': self.name,
-            'color': self.color,
-            'default_color': self.default_color,
-            'weaknesses': [type.name for type in self.weaknesses],
-            'resistances': [type.name for type in self.resistances],
-            'immunities': [type.name for type in self.immunities],
-        }
-        print("caca: ", [Type[type_name.upper()].value for type_name in diction['weaknesses']])
-        print("type: ", Type[self.name.upper()].value.weaknesses)
-       
+
     def __getstate__(self):
         return {
             'name': self.name,
             'color': self.color,
             'default_color': self.default_color,
-            'weaknesses': [type.name for type in self.weaknesses],
-            'resistances': [type.name for type in self.resistances],
-            'immunities': [type.name for type in self.immunities],
+            'weaknesses': [pokemon_type.name for pokemon_type in self.weaknesses],
+            'resistances': [pokemon_type.name for pokemon_type in self.resistances],
+            'immunities': [pokemon_type.name for pokemon_type in self.immunities],
         }
 
     def __setstate__(self, state):

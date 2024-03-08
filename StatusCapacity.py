@@ -23,8 +23,8 @@ class StatusCapacity(Capacity):
             'type': self.type.name,
             'category': self.category.name,
             'accuracy': self.accuracy,
-            'current_pp': self.max_pp,
-            'max_pp': self.max_pp, # 'pp' is a tuple, so we need to use 'max_pp' to get the value of 'pp
+            'current_pp': self.current_pp,
+            'max_pp': self.max_pp,
             'secondary_effect': self.secondary_effect.name.upper()
         }
         

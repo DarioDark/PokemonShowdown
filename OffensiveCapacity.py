@@ -3,10 +3,11 @@ from enum import Enum
 from CapacitySideEffects import SecondaryEffects
 
 class OffensiveCapacity(Capacity):
-    def __init__(self, name: str, type: Type, category: CapacityCategory, power: int, accuracy: int, pp: int, secondary_effect: SecondaryEffectClass) -> None:
-        super().__init__(name, type, accuracy, pp, secondary_effect)
+    def __init__(self, name: str, pokemon_type: Type, category: CapacityCategory, power: int, accuracy: int, pp: int, secondary_effect: SecondaryEffectClass) -> None:
+        super().__init__(name, pokemon_type, accuracy, pp, secondary_effect)
         self.category = category
         self.power = power
+        self.target = 'pokemon'
         
     def __repr__(self) -> str:
         if self.category == CapacityCategory.PHYSICAL:
@@ -38,10 +39,8 @@ class OffensiveCapacity(Capacity):
         self.max_pp = state['max_pp']
         self.secondary_effect = SecondaryEffects[state['secondary_effect']].value
 
-                
 
-
-
+# Move declarations
 Flamethrower = OffensiveCapacity("Flamethrower", Type.FIRE, CapacityCategory.SPECIAL, 90, 100, 15, SecondaryEffects.COMMON_BURN.value)
 Thunderbolt = OffensiveCapacity("Thunderbolt", Type.ELECTRIC, CapacityCategory.SPECIAL, 90, 100, 15, SecondaryEffects.RARE_PARALYSIS.value)
 Thunder = OffensiveCapacity("Thunder", Type.ELECTRIC, CapacityCategory.SPECIAL, 110, 70, 10, SecondaryEffects.COMMON_PARALYSIS.value)

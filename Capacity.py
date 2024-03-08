@@ -10,7 +10,7 @@ class Capacity:
         self.type: Type = type
         self.accuracy: int = accuracy
         self.current_pp: int = pp
-        self.max_pp:int = pp
+        self.max_pp: int = pp
         self.secondary_effect: SecondaryEffectClass = secondary_effect               
 
     def get_current_pp_percentage(self) -> float:
@@ -22,7 +22,7 @@ class Capacity:
         pp_percentage = self.get_current_pp_percentage()
         for key in sorted(pp_colors.keys(), reverse=True):
             if pp_percentage >= key:
-                color = pp_colors[key]
+                color: str = pp_colors[key]
                 break
         return f"{colored(self.current_pp, color)}/{self.max_pp}"
     

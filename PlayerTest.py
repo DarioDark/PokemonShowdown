@@ -1,7 +1,7 @@
-from PokemonTest import *
-from OffensiveCapacityCopy import *
-from random import randint
-from Environment import EnvironmentClass, EnvironmentElements
+from Pokemon import *
+from OffensiveCapacity import *
+from Environment import EnvironmentClass
+
 
 class Player:
     def __init__(self, team: 'list[Pokemon]', name: str) -> None:
@@ -10,8 +10,8 @@ class Player:
         self.current_pokemon: Pokemon = None
         self.environment: EnvironmentClass = EnvironmentClass()
         
-    # def __repr__(self) -> str:
-    #     return f"{self.name} has {colored(self.current_pokemon.name, attrs=['underline'])} in battle"    
+    def __repr__(self) -> str:
+        return f"{self.name} has {colored(self.current_pokemon.name, attrs=['underline'])} in battle"
         
     def __eq__(self, other: 'Player') -> bool:
         return self.name == other.name
@@ -30,15 +30,15 @@ class Player:
         self.current_pokemon = state['current_pokemon']
         self.environment = state['environment'] 
     
-    def select_lead(self) -> Pokemon:
+    def select_lead(self) -> int:
         print(f"{self.name}, select your lead:")
         self.print_team()
         while True:
             try:
-                lead = int(input(">> ")) - 1
-                if 0 <= lead < len(self.team):
+                lead_index = int(input(">> ")) - 1
+                if 0 <= lead_index < len(self.team):
                     # print(f"{self.team[lead].name} is going first !")
-                    return self.team[lead]
+                    return lead_index
                 else:
                     print("Invalid choice")
             except ValueError:
@@ -52,12 +52,12 @@ class Player:
         for pokemon in self.team:
             print(f"    {pokemon} {pokemon.print_moves()}")
        
-    def select_switch(self) -> Pokemon:
+    def select_switch(self) -> int:
         print(f"{self.name}, select your next pokemon:")
         self.print_team()
         while True:
             try:
-                switch = int(input(">> ")) - 1
+                switch: int = int(input(">> ")) - 1
                 if 0 <= switch < len(self.team):
                     if self.team[switch].current_hp > 0:
                         if self.team[switch] != self.current_pokemon:
@@ -71,14 +71,18 @@ class Player:
             except ValueError:
                 print("Invalid choice")
             
-    def switch_pokemon(self, switch: Pokemon) -> None:
+    def switch_pokemon(self, switch: int) -> bool:
         print(f"{self.current_pokemon.name}, come back!")
+        pokemon: Pokemon = self.team[switch]
         self.current_pokemon.switch_out()
-        self.current_pokemon = self.team[switch]
-        print(f"{self.team[switch].name}, go!")
+        self.current_pokemon = pokemon
+        print(f"{pokemon.name}, go!")
         self.current_pokemon.switch_in(self.environment)
-         
-    def select_move(self) -> None:
+        if self.current_pokemon.is_dead():
+            return False
+        return True
+
+    def select_move(self) -> int:
         print(f"{self.current_pokemon.name}, select your move:")
         self.current_pokemon.print_attacks()
         while True:
@@ -86,7 +90,7 @@ class Player:
                 move = int(input(">> ")) - 1
                 if 0 <= move < len(self.current_pokemon.moves):
                     if self.current_pokemon.moves[move].current_pp > 0:
-                        return self.current_pokemon.moves[move]
+                        return move
                     else:
                         print("No PP left for this move!")
                 else:
@@ -94,16 +98,17 @@ class Player:
             except ValueError:
                 print("Invalid choice")
                 
-    def use_move(self, move: Capacity, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> None:
-        if isinstance(move, StatusCapacity):
-            if move.target == "player":
+    def use_move(self, move: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> None:
+        capacity = self.current_pokemon.moves[move]
+        if isinstance(capacity, StatusCapacity):
+            if capacity.target == "player":
                 self.current_pokemon.attack_target(move, is_secondary_effect_applied, target)
-            elif move.target == "self":
+            elif capacity.target == "self":
                 self.current_pokemon.attack_target(move, is_secondary_effect_applied, self)
-        self.current_pokemon.attack_target(move, is_secondary_effect_applied, target, damage)
+        self.current_pokemon.attack_target(move, is_secondary_effect_applied, target.current_pokemon, damage)
 
-    def choose_action(self, target: 'Player') -> tuple[int, 'Capacity / Pokemon']:
-        system("cls")
+    def choose_action(self, target: 'Player') -> tuple[int, 'Capacity / int']:
+        # system("cls")
         print(self)
         print(target)
         while True:
@@ -115,11 +120,11 @@ class Player:
                 self.current_pokemon.print_attacks_without_indices()
                 choice = int(input(">> "))
                 if choice == 1:
-                    pokemon: Pokemon = self.select_switch()
-                    return 1, pokemon
+                    pokemon_index: int = self.select_switch()
+                    return 1, pokemon_index
                 elif choice == 2:
-                    move: Capacity = self.select_move()
-                    return 2, move
+                    move_index: int = self.select_move()
+                    return 2, move_index
                 else:
                     print("Invalid choice")
             except ValueError:
@@ -127,31 +132,3 @@ class Player:
 
     def has_lost(self) -> bool:
         return all(pokemon.current_hp <= 0 for pokemon in self.team)
-
-
-"""                    move: Capacity = self.select_move()
-                    if randint(1, 100) <= move.accuracy:
-                        result.append(move)
-                        result.append(True)
-                        if move.is_secondary_effect_applied():
-                            result.append(True)
-                        else:
-                            result.append(False)
-                        if isinstance(move, OffensiveCapacity):
-                            damage: int = self.current_pokemon.calculate_damage(move, target.current_pokemon)
-                            result.append(damage)
-                            return tuple(result)
-                        else:
-                            return tuple(result)"""
-
-
-
-def main():
-    system("cls")  
-    Player1 = Player([Charizard, ], "Red")
-    Player2 = Player([Charizard], "Blue")
-    system("cls")
-    Player1.choose_action(Player2)
-    
-if __name__ == "__main__":
-    main()

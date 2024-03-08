@@ -1,6 +1,6 @@
 from Types import Type, TypeClass
-from OffensiveCapacityCopy import *
-from StatusCapacityCopy import *
+from OffensiveCapacity import *
+from StatusCapacity import *
 from Status import PrimeStatus, SubStatus
 from Environment import EnvironmentElements
 from termcolor import colored
@@ -37,7 +37,7 @@ class Pokemon:
         self.resistances: list[TypeClass] = self.calculate_resistances()
         # Status
         self.status: PrimeStatus = PrimeStatus.NORMAL
-        self.sub_status: SubStatus = []
+        self.sub_status: list[SubStatus] = []
         
         self.moves: list = moves
     
@@ -77,19 +77,30 @@ class Pokemon:
         self.resistances = [Type[type_name.upper()].value for type_name in state['resistances']]
         self.status = state['status']
         self.sub_status = [SubStatus[status_name.upper()] for status_name in state['sub_status']]
-        self.moves = [OffensiveCapacity(attack['name'], attack['type'], attack['category'], attack['power'], attack['accuracy'], attack['pp'], attack['secondary_effect']) if isinstance(attack, OffensiveCapacity) 
-                      else StatusCapacity(attack['name'], attack['type'], attack['accuracy'], attack['max_pp'], attack['secondary_effect']) for attack in state['moves']]
-
+        self.moves = []
+        for attack_state in state['moves']:
+            if attack_state['category'] == 'PHYSICAL' or attack_state['category'] == 'SPECIAL':
+                attack = OffensiveCapacity(attack_state['name'], Type[attack_state['type']],
+                                           CapacityCategory[attack_state['category']], attack_state['power'],
+                                           attack_state['accuracy'], attack_state['current_pp'],
+                                           SecondaryEffects[attack_state['secondary_effect']].value)
+                attack.__setstate__(attack_state)
+            else:
+                attack = StatusCapacity(attack_state['name'], Type[attack_state['type']],
+                                        attack_state['accuracy'], attack_state['current_pp'],
+                                        SecondaryEffects[attack_state['secondary_effect']].value)
+                attack.__setstate__(attack_state)
+            self.moves.append(attack)
 
     def __repr__(self) -> str:
         # Return the pokemon's name, its current HP and its types greyed out if it's fainted
         if self.current_hp <= 0:
-            for pokemontype in self.types:
-                    pokemontype.value.color = "dark_grey"
+            for pokemon_type in self.types:
+                pokemon_type.value.color = "dark_grey"
             types_str = colored(" / ", 'dark_grey').join([str(type.value) for type in self.types]) # Affiche les deux types séparés par une barre oblique
             full_str = colored(f"{self.name} : {types_str} ~ ", 'dark_grey') + colored(f"{self.current_hp}", 'red') + colored(f"/{self.max_hp}", 'dark_grey') + colored("HP", 'dark_grey')
-            for pokemontype in self.types:
-                    pokemontype.value.color = pokemontype.value.default_color
+            for pokemon_type in self.types:
+                pokemon_type.value.color = pokemon_type.value.default_color
             return full_str
         health_colors = {100: "green", 75: "light_green",  50: "yellow", 25: "light_red", 0: "red"}
         
@@ -178,33 +189,35 @@ class Pokemon:
         self.current_hp += max(amount, 0)
         print(f"{self.name} was healed by {self.convert_hp_to_percentage(amount)} HP!")
             
-    def attack_target(self, move: Capacity, is_secondary_effect_applied: bool, target, damage=-1) -> None:  # The target can be a the opposing pokemon, the opposing player or the player itself
-        if move.current_pp > 0:
-            move.current_pp -= 1
-            print(f"{self.name} used {move.name}!")
-            if isinstance(move, OffensiveCapacity):
-                target.receive_damage(move, damage)
+    def attack_target(self, move: int, is_secondary_effect_applied: bool, target: 'Pokemon or Player', damage=-1) -> None:  # The target can be a the opposing pokemon, the opposing player or the player itself
+        capacity = self.moves[move]
+        if capacity.current_pp > 0:
+            capacity.current_pp -= 1
+            if isinstance(capacity, OffensiveCapacity):
+                target.receive_damage(damage)
             if is_secondary_effect_applied:
-                move.apply_secondary_effect(target)
+                capacity.apply_secondary_effect(target)
         else:
             print(f"{self.name} has no PP left!")
 
     def receive_damage(self, damage: int) -> None:
+        print("previous hp", self.current_hp)
         self.current_hp -= damage
+        print("after hp", self.current_hp)
         self.current_hp = max(self.current_hp, 0)
-        print(f"{self.name} lost {round(self.convert_hp_to_percentage(damage), 1)}% HP!")
+        print(f"{self.name} lost {min(round(self.convert_hp_to_percentage(damage), 1), 100)}% HP!")
         self.is_dead(True)
         
     def receive_secondary_effect(self, move: Capacity) -> None:
         if move.secondary_effect:
             move.secondary_effect.apply(self)
 
-    def get_stab_multiplier(self, attacker: 'Pokemon', attack_type: Type) -> float:
+    def get_stab_multiplier(self, attacker: 'Pokemon', attack_type: Type) -> bool:
         if attack_type in attacker.types:
             return True
         return False
 
-    def get_critical_multiplier(self) -> float:
+    def get_critical_multiplier(self) -> bool:
         critical_hit_chance = 4.17
         if randint(1, 100) <= critical_hit_chance:
             print("Critical hit!")
@@ -214,17 +227,17 @@ class Pokemon:
     def get_types_multiplier(self, attack_type: Type) -> float:
         multiplier = 1
 
-        if attack_type.value in self.weaknesses:
+        if attack_type in self.weaknesses:
             print("This is very effective!")
             count = self.weaknesses.count(attack_type.value)
             for _ in range(count):
                 multiplier *= 2
-        if attack_type.value in self.resistances:
+        if attack_type in self.resistances:
             print("This is not very effective...")
             count = self.resistances.count(attack_type.value)
             for _ in range(count):
                 multiplier *= 0.5
-        if attack_type.value in self.immunities:
+        if attack_type in self.immunities:
             print("This has no effect...")
             multiplier *= 0
 
@@ -236,7 +249,7 @@ class Pokemon:
         # Critical hit
         crit_multiplier: bool = self.get_critical_multiplier()
         # Type effectiveness
-        type_multiplier: int = self.get_types_multiplier(attack_type)
+        type_multiplier: float = self.get_types_multiplier(attack_type)
 
         return stab_multiplier, crit_multiplier, type_multiplier
 
