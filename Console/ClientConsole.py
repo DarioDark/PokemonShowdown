@@ -3,7 +3,7 @@ import threading
 import pickle
 import time
 
-from PlayerConsole import *
+from PlayerConsole import Player
 
 
 class Client:
@@ -22,9 +22,9 @@ class Client:
     def start(self):
         self.client.connect((self.host, self.port))
         self.send_info(self.player.name)
+        time.sleep(0.5)
         self.send_info(self.player)
         print("Connected to the server !")
-
 
         thread = threading.Thread(target=self.handle)
         thread.start()
@@ -59,7 +59,8 @@ class Client:
         return self.enemy_moves.pop(0)
 
     def reset_last_info(self):
-        if len(self.enemy_moves) > 1:
+        while len(self.enemy_moves) == 0:
+            time.sleep(0.5)
             self.enemy_moves.pop(0)
 
     def stop(self) -> None:

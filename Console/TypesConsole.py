@@ -3,7 +3,7 @@ from termcolor import colored
 
 
 class TypeClass:
-    def __init__(self, name: str, color: str) -> None:
+    def __init__(self, name: str, color: str):
         self.name: str = name
         self.color: str = color
         self.default_color: str = color
@@ -83,6 +83,7 @@ class Type(Enum):
     GHOST = Ghost
     ICE = Ice
     NONE = NoneType
+
 
 # Fire
 Type.FIRE.value.weaknesses = [Type.WATER, Type.ROCK, Type.GROUND]

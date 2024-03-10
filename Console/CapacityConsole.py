@@ -1,8 +1,10 @@
-from TypesConsole import Type
-from termcolor import colored
-from CapacitySideEffectsConsole import SecondaryEffectClass
 from enum import Enum
 from random import randint
+from termcolor import colored
+
+from TypesConsole import Type
+from CapacitySideEffectsConsole import SecondaryEffectClass
+
 
 class Capacity:
     def __init__(self, name: str, type: Type, accuracy: int, pp: int, secondary_effect: SecondaryEffectClass) -> None:

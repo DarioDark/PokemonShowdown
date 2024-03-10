@@ -3,7 +3,7 @@ from CapacitySideEffectsConsole import SecondaryEffects
 
 
 class OffensiveCapacity(Capacity):
-    def __init__(self, name: str, pokemon_type: Type, category: CapacityCategory, power: int, accuracy: int, pp: int, secondary_effect: SecondaryEffectClass) -> None:
+    def __init__(self, name: str = None, pokemon_type: Type = None, category: CapacityCategory = None, power: int = None, accuracy: int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None) -> None:
         super().__init__(name, pokemon_type, accuracy, pp, secondary_effect)
         self.category = category
         self.power = power

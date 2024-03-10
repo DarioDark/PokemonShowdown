@@ -1,6 +1,4 @@
 from PokemonConsole import *
-from OffensiveCapacityConsole import *
-from EnvironmentConsole import EnvironmentClass
 
 
 class Player:
@@ -9,10 +7,7 @@ class Player:
         self.name: str = name
         self.current_pokemon: Pokemon = None
         self.environment: EnvironmentClass = EnvironmentClass()
-        
-    #def __repr__(self) -> str:
-    #    return f"{self.name} has {colored(self.current_pokemon.name, attrs=['underline'])} in battle"
-        
+
     def __eq__(self, other: 'Player') -> bool:
         return self.name == other.name
     
@@ -71,9 +66,9 @@ class Player:
             except ValueError:
                 print("Invalid choice")
             
-    def switch_pokemon(self, switch: int) -> bool:
+    def switch_pokemon(self, pokemon_index: int) -> bool:
         print(f"{self.current_pokemon.name}, come back!")
-        pokemon: Pokemon = self.team[switch]
+        pokemon: Pokemon = self.team[pokemon_index]
         self.current_pokemon.switch_out()
         self.current_pokemon = pokemon
         print(f"{pokemon.name}, go!")

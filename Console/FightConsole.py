@@ -89,7 +89,10 @@ class Fight:
                 second_player = self.player1
             else:
                 # If both pokemons are equally fast
-                first_player_index = randint(0, 1)
+                self.client.send_info("Speed tie")
+                first_player_index = self.client.get_last_info()
+                if first_player_index == -1:
+                    first_player_index = 1
                 first_player = self.players[first_player_index]
                 second_player = self.players[1 - first_player_index]
 
@@ -135,7 +138,6 @@ class Fight:
         """
         # If the player is the client
         if player == self.player1:
-            print("oui")
             # If the player selected a switch
             if action[0] == 1:
                 pokemon: int = action[1]
@@ -155,8 +157,7 @@ class Fight:
                     return
 
                 # Getting all the pieces of information of the move to send them and synchronize both clients
-                print("move type", move.type)
-                multipliers = target.current_pokemon.get_multipliers(move.type, player.current_pokemon)
+                multipliers: tuple[bool, bool, float] = target.current_pokemon.get_multipliers(move, player.current_pokemon)
                 if isinstance(move, OffensiveCapacity):
                     damage: int = target.current_pokemon.calculate_damage(move, player.current_pokemon, multipliers)
                 else:
@@ -164,7 +165,7 @@ class Fight:
                 secondary_effect_applied: bool = move.is_secondary_effect_applied()
 
                 # Sending the results to the server
-                result: tuple[tuple, bool, int] = (multipliers, secondary_effect_applied, damage)
+                result: tuple[tuple[bool, bool, float], bool, int] = (multipliers, secondary_effect_applied, damage)
                 self.client.send_info(result)
 
                 # Applying the local results to the imported target
@@ -172,7 +173,6 @@ class Fight:
 
         # If the player is the imported player
         elif player == self.player2:
-            print("non")
             # If the player selected a switch
             if action[0] == 1:
                 pokemon: int = action[1]
@@ -210,18 +210,21 @@ class Fight:
                     secondary_effect_applied: bool = result[1]
                     damage = result[2]
                     player.use_move(move_index, secondary_effect_applied, target, damage)
-        else:
-            print("--------------------------------------------------------------------------------")
 
-    def player_switch_in(self, player: Player, pokemon: int) -> int:
-        switch: int = pokemon
+    def player_switch_in(self, player: Player, pokemon_index: int) -> int:
+        """Tries to switch in a pokemon for the player until it succeeds.
+
+        :param player: A player object, the one that switches his pokemon.
+        :param pokemon_index: An integer, the index of the pokemon to switch in.
+        :return:
+        """
+        switch: int = pokemon_index
         while True:
             if player.switch_pokemon(switch):
                 return switch
             self.end_game()
             if player.current_pokemon.is_dead():
                 switch = player.select_switch()
-
 
     def play_turn(self):
         """Handles the whole process of each player using their selected action and checking if one of the pokemon dies.
@@ -266,7 +269,7 @@ class Fight:
     def check_looser(self) -> Player:
         """Checks if one of the players has his whole team fainted.
 
-        :return:
+        :return: The player that has lost the game if there is one, else None.
         """
         if self.player1.has_lost():
             return self.player1
@@ -274,6 +277,10 @@ class Fight:
             return self.player2
 
     def end_game(self) -> bool:
+        """Checks if the game has ended.
+
+        :return: True if the game has ended, else False.
+        """
         looser = self.check_looser()
         if looser:
             print(f"{looser.name} has lost !")
@@ -281,6 +288,8 @@ class Fight:
         return False
 
     def run(self) -> None:
+        """Runs the game until it ends.
+        """
         while True:
             self.play_turn()
             if self.end_game():
@@ -288,13 +297,10 @@ class Fight:
             input("Press enter to continue...")
 
 
-from random import randint
-
-
 def main():
     rand = randint(0, 1000)
-    P = Player([Blastoise, Venusaur, Charizard], f"Player {rand}")
-    Fight(P)
+    p = Player(team=[Charizard, Blastoise, Venusaur], name=f"Player {rand}")
+    Fight(p)
     print("Game over !")
 
 

@@ -3,7 +3,7 @@ from CapacitySideEffectsConsole import SecondaryEffects
 
 
 class StatusCapacity(Capacity):
-    def __init__(self, name: str, type: Type, accuracy:int, pp: int, secondary_effect: SecondaryEffectClass, target: str = "pokemon") -> None:
+    def __init__(self, name: str = None, type: Type = None, accuracy:int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None, target: str = "pokemon"):
         super().__init__(name, type, accuracy, pp, secondary_effect)
         self.category = CapacityCategory.STATUS
         self.target = target # The target of the move, can be "pokemon", "player" or "self"
@@ -18,7 +18,7 @@ class StatusCapacity(Capacity):
         return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.get_colored_pp_number() + " ~ "
                 f"{colored(self.category.value, 'cyan')} / {self.accuracy}% accuracy / {self.secondary_effect}")
     
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         return {
             'name': self.name,
             'type': self.type.name,
@@ -29,7 +29,7 @@ class StatusCapacity(Capacity):
             'secondary_effect': self.secondary_effect.name.upper()
         }
         
-    def __setstate__(self, state):
+    def __setstate__(self, state) -> None:
         self.name = state['name']
         self.type = Type[state['type']]
         self.category = CapacityCategory[state['category']]

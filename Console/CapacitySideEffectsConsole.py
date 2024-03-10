@@ -6,7 +6,7 @@ from TypesConsole import Type
 
 
 class SecondaryEffectClass:
-    def __init__(self, name: str, probability: int, description: str, effect_function: 'function', turn_total: int = -1,
+    def __init__(self, name: str, probability: int, description: str, effect_function, turn_total: int = -1,
                  probability_vanishing: int = 0, ) -> None:
         self.name: str = name
         self.probability: int = max(probability, 0)  # percentage
