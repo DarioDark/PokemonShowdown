@@ -6,9 +6,13 @@ class StatusCapacity(Capacity):
     def __init__(self, name: str = None, type: Type = None, accuracy:int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None, target: str = "pokemon"):
         super().__init__(name, type, accuracy, pp, secondary_effect)
         self.category = CapacityCategory.STATUS
-        self.target = target # The target of the move, can be "pokemon", "player" or "self"
+        self.target = target  # The target of the move, can be "pokemon", "player" or "self"
         
     def __repr__(self) -> str:
+        """Return a string representation of the capacity.
+
+        :return: The string representation of the capacity
+        """
         pp_colors = {100: "green", 60: "light_green",  45: "yellow", 20: "light_red", 0: "red"}
         pp_percentage = self.get_current_pp_percentage()
         for key in sorted(pp_colors.keys(), reverse=True):

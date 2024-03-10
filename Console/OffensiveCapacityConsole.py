@@ -46,14 +46,10 @@ Thunderbolt = OffensiveCapacity("Thunderbolt", Type.ELECTRIC, CapacityCategory.S
 Thunder = OffensiveCapacity("Thunder", Type.ELECTRIC, CapacityCategory.SPECIAL, 110, 70, 10, SecondaryEffects.COMMON_PARALYSIS.value)
 Surf = OffensiveCapacity("Surf", Type.WATER, CapacityCategory.SPECIAL, 90, 100, 15, SecondaryEffects.NONE.value)
 HydroPump = OffensiveCapacity("Hydro Pump", Type.WATER, CapacityCategory.SPECIAL, 110, 80, 5, SecondaryEffects.NONE.value) 
-IceBeam = OffensiveCapacity("Ice Beam", Type.ICE, CapacityCategory.SPECIAL, 90, 100, 10, SecondaryEffects.RARE_FREEZE.value) 
-
+IceBeam = OffensiveCapacity("Ice Beam", Type.ICE, CapacityCategory.SPECIAL, 90, 100, 10, SecondaryEffects.RARE_FREEZE.value)
 Earthquake = OffensiveCapacity("Earthquake", Type.GROUND, CapacityCategory.PHYSICAL, 100, 100, 10, SecondaryEffects.NONE.value)
 RockSlide = OffensiveCapacity("Rock Slide", Type.ROCK, CapacityCategory.PHYSICAL, 75, 90, 10, SecondaryEffects.NONE.value)
-
 Psychic = OffensiveCapacity("Psychic", Type.PSYCHIC, CapacityCategory.SPECIAL, 90, 100, 15, SecondaryEffects.CONFUSION.value)
-
-SkullBash = OffensiveCapacity("Skull Bash", Type.NORMAL, CapacityCategory.PHYSICAL, 130, 100, 5, SecondaryEffects.NONE.value) 
-
+SkullBash = OffensiveCapacity("Skull Bash", Type.NORMAL, CapacityCategory.PHYSICAL, 130, 100, 5, SecondaryEffects.NONE.value)
 AquaTail = OffensiveCapacity("Aqua Tail", Type.WATER, CapacityCategory.PHYSICAL, 90, 90, 10, SecondaryEffects.NONE.value)
 QuickAttack = OffensiveCapacity("Quick Attack", Type.NORMAL, CapacityCategory.PHYSICAL, 40, 100, 30, SecondaryEffects.NONE.value)

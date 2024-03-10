@@ -1,8 +1,6 @@
 from math import floor
-
 from OffensiveCapacityConsole import *
 from StatusCapacityConsole import *
-
 from StatusConsole import PrimeStatus, SubStatus
 from EnvironmentConsole import EnvironmentElements, EnvironmentClass
 
@@ -10,26 +8,27 @@ from EnvironmentConsole import EnvironmentElements, EnvironmentClass
 class Pokemon:
     def __init__(self, name: str, 
                  lvl: int,
-                 hp: int,
-                 attack: int,
-                 special_attack: int,
-                 defense: int,
-                 special_defense: int,
-                 speed: int,
+                 hp_stat: int,
+                 attack_stat: int,
+                 special_attack_stat: int,
+                 defense_stat: int,
+                 special_defense_stat: int,
+                 speed_stat: int,
                  types: 'list[Type]', 
                  moves: 'list') -> None:
         self.name = name
         self.lvl = lvl
 
         # Stats
-        self.current_hp: int = hp
-        self.max_hp: int = hp
-        self.attack_stat: int = attack
-        self.special_attack_stat: int = special_attack
-        self.defense_stat: int = defense
-        self.special_defense_stat: int = special_defense
-        self.speed_stat: int = speed
+        self.current_hp: int = hp_stat
+        self.max_hp: int = hp_stat
+        self.attack_stat: int = attack_stat
+        self.special_attack_stat: int = special_attack_stat
+        self.defense_stat: int = defense_stat
+        self.special_defense_stat: int = special_defense_stat
+        self.speed_stat: int = speed_stat
 
+        # Stats Boosts
         self.attack_boosts: int = 0
         self.defense_boosts: int = 0
         self.special_attack_boosts: int = 0
@@ -41,6 +40,7 @@ class Pokemon:
         self.immunities: list[Type] = self.get_types_immunities()
         self.weaknesses: list[Type] = self.calculate_weaknesses()
         self.resistances: list[Type] = self.calculate_resistances()
+
         # Status
         self.status: PrimeStatus = PrimeStatus.NORMAL
         self.sub_status: list[SubStatus] = []
@@ -67,7 +67,7 @@ class Pokemon:
             'types': [pokemon_type.name for pokemon_type in self.types],
             'immunities': [pokemon_type.name for pokemon_type in self.immunities],
             'weaknesses': [pokemon_type.name for pokemon_type in self.weaknesses],
-            'resistances': [type.name for type in self.resistances],
+            'resistances': [pokemon_type.name for pokemon_type in self.resistances],
             'status': self.status,
             'sub_status': [status.name for status in self.sub_status],
             'moves': [attack.__getstate__() for attack in self.moves],
@@ -107,24 +107,30 @@ class Pokemon:
             self.moves.append(attack)
 
     def __repr__(self) -> str:
-        # Return the pokemon's name, its current HP and its types greyed out if it's fainted
+        """Returns a string representation of the pokemon, with its name, types, HP and current status, greyed out if the pokemon is fainted.
+
+        :return: A string representation of the pokemon
+        """
+        # If the pokemon is fainted, grey out the text
         if self.current_hp <= 0:
             for pokemon_type in self.types:
                 pokemon_type.value.color = "dark_grey"
-            types_str = colored(" / ", 'dark_grey').join([str(type.value) for type in self.types]) # Affiche les deux types séparés par une barre oblique
+            types_str = colored(" / ", 'dark_grey').join([str(type.value) for type in self.types])
             full_str = colored(f"{self.name} : {types_str} ~ ", 'dark_grey') + colored(f"{self.current_hp}", 'red') + colored(f"/{self.max_hp}", 'dark_grey') + colored("HP", 'dark_grey')
             for pokemon_type in self.types:
                 pokemon_type.value.color = pokemon_type.value.default_color
+
             return full_str
+
+        # If the pokemon is not fainted, color the text
         health_colors = {100: "green", 75: "light_green",  50: "yellow", 25: "light_red", 0: "red"}
-        
         health_percentage = self.get_current_hp_percentage()
         for key in sorted(health_colors.keys(), reverse=True):
             if health_percentage >= key:
                 color = health_colors[key]
                 break
-            
-        types_str = " / ".join([str(type.value) for type in self.types])
+        types_str = " / ".join([str(pokemon_type.value) for pokemon_type in self.types])
+
         return f"{self.name} : {types_str} ~ {colored(self.current_hp, color)}/{self.max_hp} HP"
     
     # def __repr__(self) -> str:
@@ -144,19 +150,55 @@ class Pokemon:
 
     @property
     def attack(self) -> int:
-        return self.attack_stat + (self.attack_boosts * self.attack_stat // 2)
+        """Returns the attack of the pokemon, taking into account the attack boosts."""
+        if self.attack_boosts > 0:
+            return self.attack_stat + (self.attack_boosts * self.attack_stat // 2)
+        return round(self.attack_stat * self.malus_to_percentage(self.attack_boosts))
 
     @property
     def special_attack(self) -> int:
-        return self.special_attack_stat + (self.special_attack_boosts * self.special_attack_stat // 2)
+        """Returns the special attack of the pokemon, taking into account the special attack boosts."""
+        if self.special_attack_boosts > 0:
+            return self.special_attack_stat + (self.special_attack_boosts * self.special_attack_stat // 2)
+        return round(self.special_attack_stat * self.malus_to_percentage(self.special_attack_boosts))
 
     @property
     def defense(self) -> int:
-        return self.defense_stat + (self.defense_boosts * self.defense_stat // 2)
+        """Returns the defense of the pokemon, taking into account the defense boosts."""
+        if self.defense_boosts > 0:
+            return self.defense_stat + (self.defense_boosts * self.defense_stat // 2)
+        return round(self.defense_stat * self.malus_to_percentage(self.defense_boosts))
 
     @property
     def special_defense(self) -> int:
-        return self.special_defense_stat + (self.special_defense_boosts * self.special_defense_stat // 2)
+        """Returns the special defense of the pokemon, taking into account the special defense boosts."""
+        if self.special_defense_boosts > 0:
+            return self.special_defense_stat + (self.special_defense_boosts * self.special_defense_stat // 2)
+        return round(self.special_defense_stat * self.malus_to_percentage(self.special_defense_boosts))
+
+    @property
+    def speed(self) -> int:
+        """Returns the speed of the pokemon, taking into account the speed boosts."""
+        if self.speed_boosts > 0:
+            return self.speed_stat + (self.speed_boosts * self.speed_stat // 2)
+        return round(self.speed_stat * self.malus_to_percentage(self.speed_boosts))
+
+    @staticmethod
+    def malus_to_percentage(malus_level: int) -> float:
+        """Converts a malus level to a percentage of the stat.
+
+        :param malus_level: The amount of malus to convert
+        :return: The percentage of the stat
+        """
+        level_to_percentage = {
+            1: 67,
+            2: 50,
+            3: 40,
+            4: 33,
+            5: 29,
+            6: 25
+        }
+        return level_to_percentage[malus_level]
 
     def convert_hp_to_percentage(self, hp: int) -> float:
         """Converts the HP to a percentage of the max HP.
@@ -237,20 +279,17 @@ class Pokemon:
         return immunities
     
     def print_attacks(self) -> None:
-        """Prints the attacks of the pokemon with their indices.
-        """
+        """Prints the attacks of the pokemon with their indices."""
         for i, attack in enumerate(self.moves):
             print(f"{i + 1}. {attack}")
             
     def print_attacks_without_indices(self) -> None:
-        """Prints the attacks of the pokemon without their indices.
-        """
+        """Prints the attacks of the pokemon without their indices."""
         for attack in self.moves:
             print(f"    {attack}")
             
     def heal(self, amount: int) -> None:
-        """Heals the pokemon by a certain amount.
-        """
+        """Heals the pokemon by a certain amount."""
         self.current_hp += max(amount, 0)
         print(f"{self.name} was healed by {round(self.convert_hp_to_percentage(amount), 1)} HP!")
             
@@ -293,7 +332,8 @@ class Pokemon:
         if move.secondary_effect:
             move.secondary_effect.apply(self)
 
-    def get_stab_multiplier(self, attacker: 'Pokemon', attack_type: Type) -> bool:
+    @staticmethod
+    def get_stab_multiplier(attacker: 'Pokemon', attack_type: Type) -> bool:
         """Returns whether the move has STAB or not.
 
         :param attacker: The pokemon that uses the move
@@ -304,7 +344,8 @@ class Pokemon:
             return True
         return False
 
-    def get_critical_multiplier(self, move: Capacity) -> bool:
+    @staticmethod
+    def get_critical_multiplier(move: Capacity) -> bool:
         """Returns whether the move has a critical hit or not.
 
         :param move: The move used
@@ -324,10 +365,6 @@ class Pokemon:
         :return: The type effectiveness multiplier of the move
         """
         multiplier = 1
-        print("attack type", attack_type, attack_type.value)
-        print("weaknesses", self.weaknesses)
-        print("resistances", self.resistances)
-        print("immunities", self.immunities)
         if attack_type in self.immunities:
             print("This has no effect...")
             return 0.0
@@ -360,7 +397,8 @@ class Pokemon:
 
         return stab_multiplier, crit_multiplier, type_multiplier
 
-    def compute_multipliers(self, multipliers: tuple[bool, bool, int]) -> float:
+    @staticmethod
+    def compute_multipliers(multipliers: tuple[bool, bool, int]) -> float:
         """Computes the multiplier of the move.
 
         :param multipliers: The multipliers of the move
@@ -377,23 +415,31 @@ class Pokemon:
         multiplier *= multipliers[2]
         return multiplier
 
-    def calculate_damage(self, attack: OffensiveCapacity, attacker: 'Pokemon', multipliers) -> int:
-        """Calculates the damage of the move.
+    def calculate_damage(self, attack: OffensiveCapacity, attacker: 'Pokemon', environment: EnvironmentClass, multipliers) -> int:
+        """Calculates the damage value of the move.
 
         :param attack: The move used
         :param attacker: The pokemon that uses the move
+        :param environment: The environment of the battle
         :param multipliers: The multipliers of the move
-        :return: The damage of the move
+        :return: The damage value of the move
         """
+        # If the pokemon is immune to the move
         if multipliers[2] == 0.0:
             return 0
+
         # Physical or Special
         if attack.category == CapacityCategory.PHYSICAL:
-            attack_stat = attacker.attack
-            defense_stat = self.defense
+            attack_stat: int = attacker.attack
+            defense_stat: int = self.defense
+            if EnvironmentElements.REFLECT in environment.elements or EnvironmentElements.AURORA_VEIL in environment.elements:
+                defense_stat *= 2
         else:
-            attack_stat = attacker.special_attack
-            defense_stat = self.special_defense
+            attack_stat: int = attacker.special_attack
+            defense_stat: int = self.special_defense
+            if EnvironmentElements.LIGHT_SCREEN in environment.elements or EnvironmentElements.AURORA_VEIL in environment.elements:
+                defense_stat *= 2
+
         multiplier = self.compute_multipliers(multipliers)
         damage = (floor(floor(attacker.lvl * 2 / 5 + 2) * attack.power * attack_stat / defense_stat) / 50) + 2 # Calculate the raw damage
         damage *= multiplier  # Apply the modifiers
@@ -423,7 +469,8 @@ class Pokemon:
         return attacks_str
     
     # Status
-    def apply_end_turn_primary_status(self) -> None: # At the end of the turn, apply the status
+    def apply_end_turn_primary_status(self) -> None:
+        """Applies the end of turn effects of the primary status of the pokemon."""
         if self.status == PrimeStatus.BURN:
             self.current_hp = max(self.current_hp - floor(self.max_hp / 16), 0)
             print(f"{self.name} is hurt by its burn!")
@@ -437,6 +484,11 @@ class Pokemon:
             self.nbr_turn_severe_poison += 1
 
     def apply_leech_seed(self, target: 'Pokemon') -> int:
+        """Applies the leech seed effect on the target.
+
+        :param target: The target of the leech seed
+        :return: The amount of HP drained
+        """
         if SubStatus.LEECH_SEED in self.sub_status:
             hp_drained = floor(self.max_hp / 8)
             self.current_hp = min(self.current_hp + hp_drained, self.max_hp)
@@ -444,10 +496,12 @@ class Pokemon:
             return hp_drained
         
     def switch_out(self):
+        """Resets the status of the pokemon when it switches out."""
         self.nbr_turn_severe_poison = 0
         self.sub_status = []
         
     def switch_in(self, environment: 'EnvironmentClass') -> None:
+        """Applies the effects of the environment when the pokemon switches in."""
         # Spikes
         self.switch_in_spikes(environment)
         # Stealth Rock
@@ -456,6 +510,7 @@ class Pokemon:
         self.switch_in_toxic_spikes(environment)
 
     def switch_in_stealth_rock(self, environment: 'EnvironmentClass'):
+        """Applies the effects of stealth rock when the pokemon switches in."""
         if EnvironmentElements.STEALTH_ROCK in environment.elements:
             stealth_rock_damage = 12.5  # Percentage of max HP
             for pokemon_type in self.types:
@@ -471,6 +526,7 @@ class Pokemon:
             self.is_dead(True)
 
     def switch_in_spikes(self, environment: 'EnvironmentClass'):
+        """Applies the effects of spikes when the pokemon switches in."""
         if Type.FLYING in self.types:
             return
         elif EnvironmentElements.SPIKES in environment.elements:
@@ -487,6 +543,7 @@ class Pokemon:
             self.is_dead(True)
             
     def switch_in_toxic_spikes(self, environment: 'EnvironmentClass') -> None:
+        """Applies the effects of toxic spikes when the pokemon switches in."""
         if Type.FLYING in self.types:
             return
         elif EnvironmentElements.TOXIC_SPIKES in environment.elements:
@@ -507,7 +564,7 @@ class Pokemon:
             
 # Create some pokemons
 Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed])
-Blastoise = Pokemon("Tortank", 100, 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail])
+Blastoise = Pokemon("Blastoise", 100, 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail])
 Venusaur = Pokemon("Venusaur", 100, 80, 82, 83, 100, 100, 80, [Type.PLANT, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash])
 Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, Thunder, Surf, SkullBash])
 Landorus_Therian = Pokemon("Landorus-Therian", 100, 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash])

@@ -1,8 +1,8 @@
-from PokemonConsole import *
+a = 3
 
+b = a
+print(b)
 
-print(Charizard)
-print(Charizard.types)
-print(Charizard.immunities)
-
-print(Type.WATER in Charizard.types[0].value.weaknesses)
+b = 4
+print(a)
+print(b)

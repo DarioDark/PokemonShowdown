@@ -81,6 +81,13 @@ class Fight:
             second_player = self.player1
         else:
             # Checks who has the fastest pokemon
+            player1_speed = self.player1.current_pokemon.speed
+            player2_speed = self.player2.current_pokemon.speed
+            if EnvironmentElements.TAILWIND in self.player1.environment.elements:
+                player1_speed *= 2
+            if EnvironmentElements.TAILWIND in self.player2.environment.elements:
+                player2_speed *= 2
+
             if self.player1.current_pokemon.speed > self.player2.current_pokemon.speed:
                 first_player = self.player1
                 second_player = self.player2
@@ -159,7 +166,7 @@ class Fight:
                 # Getting all the pieces of information of the move to send them and synchronize both clients
                 multipliers: tuple[bool, bool, float] = target.current_pokemon.get_multipliers(move, player.current_pokemon)
                 if isinstance(move, OffensiveCapacity):
-                    damage: int = target.current_pokemon.calculate_damage(move, player.current_pokemon, multipliers)
+                    damage: int = target.current_pokemon.calculate_damage(move, player.current_pokemon, player.environment, multipliers)
                 else:
                     damage: int = -1
                 secondary_effect_applied: bool = move.is_secondary_effect_applied()
@@ -227,8 +234,7 @@ class Fight:
                 switch = player.select_switch()
 
     def play_turn(self):
-        """Handles the whole process of each player using their selected action and checking if one of the pokemon dies.
-        """
+        """Handles the whole process of each player using their selected action and checking if one of the pokemon dies."""
         first_player, second_player, first_player_action, second_player_action = self.get_player_order()
         self.player_use_action(first_player, second_player, first_player_action)
 
