@@ -150,7 +150,12 @@ class Fight:
                 print(f"{player.current_pokemon.name} used {move.name}!")
 
                 # If the pokemon misses
-                if randint(0, 100) > move.accuracy:
+                move_accuracy: int = move.accuracy
+                if player.current_pokemon.ability == Ability.NO_GUARD:
+                    move_accuracy = 100
+                elif player.current_pokemon.ability == Ability.VICTORY_STAR:
+                    move_accuracy *= 1.1
+                if randint(0, 100) > move_accuracy:
                     result: tuple[bool] = False,
                     print(f"{player.current_pokemon.name} missed!")
                     self.client.send_info(result)
@@ -159,7 +164,7 @@ class Fight:
                 # Getting all the pieces of information of the move to send them and synchronize both clients
                 multipliers: tuple[bool, bool, float] = target.current_pokemon.get_multipliers(move, player.current_pokemon)
                 if isinstance(move, OffensiveCapacity):
-                    damage: int = target.current_pokemon.calculate_damage(move, player.current_pokemon, player.environment, multipliers)
+                    damage: int = target.current_pokemon.calculate_damage(move, player.current_pokemon, multipliers)
                 else:
                     damage: int = -1
                 secondary_effect_applied: bool = move.is_secondary_effect_applied()
@@ -228,7 +233,7 @@ class Fight:
                 return switch
             self.end_game()
             if player.current_pokemon.is_dead():
-                switch = player.select_switch()
+                switch = player.select_switch(target.current_pokemon)
 
     def play_turn(self):
         """Handles the whole process of each player using their selected action and checking if one of the pokemon dies."""
@@ -238,7 +243,7 @@ class Fight:
         if self.end_game():
             return
         elif self.player1.current_pokemon.is_dead():
-            switch: int = self.player1.select_switch()
+            switch: int = self.player1.select_switch(self.player2.current_pokemon)
             final_switch = self.player_switch_in(self.player1, switch)
             self.client.send_info(final_switch)
         elif self.player2.current_pokemon.is_dead():
@@ -251,7 +256,7 @@ class Fight:
         if self.end_game():
             return
         elif self.player1.current_pokemon.is_dead():
-            switch: int = self.player1.select_switch()
+            switch: int = self.player1.select_switch(self.player2.current_pokemon)
             final_switch = self.player_switch_in(self.player1, switch)
             self.client.send_info(final_switch)
         elif self.player2.current_pokemon.is_dead():

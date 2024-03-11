@@ -68,3 +68,7 @@ class EnvironmentElements(Enum):
     RAIN = "Rain"
     SAND = "Sand"
     SNOW = "Snow"
+    GRASSY_TERRAIN = "Grassy Terrain"
+    MISTY_TERRAIN = "Misty Terrain"
+    ELECTRIC_TERRAIN = "Electric Terrain"
+    PSYCHIC_TERRAIN = "Psychic Terrain"

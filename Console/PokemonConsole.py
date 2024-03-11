@@ -159,7 +159,7 @@ class Pokemon:
     def attack(self) -> int:
         """Returns the attack of the pokemon, taking into account the attack boosts."""
         attack_stat = self.attack_stat
-        if self.ability == Ability.HUGE_POWER:
+        if self.ability == Ability.HUGE_POWER or self.ability == Ability.PURE_POWER:
             attack_stat *= 2
         if self.attack_boosts > 0:
             return attack_stat + (self.attack_boosts * self.attack_stat // 2)
@@ -202,6 +202,10 @@ class Pokemon:
         if self.environment:
             if EnvironmentElements.TAILWIND in self.environment.elements:
                 return self.speed_stat * 2
+            if EnvironmentElements.SAND in self.environment.elements and self.ability == Ability.SAND_RUSH:
+                return self.speed_stat * 2
+            if EnvironmentElements.RAIN in self.environment.elements and self.ability == Ability.SWIFT_SWIM:
+                return self.speed_stat * 2
         if self.speed_boosts > 0:
             return self.speed_stat + (self.speed_boosts * self.speed_stat // 2)
         return round(self.speed_stat * self.malus_to_percentage(self.speed_boosts))
@@ -222,6 +226,71 @@ class Pokemon:
             6: 25
         }
         return level_to_percentage[malus_level]
+
+    def boost_attack(self, boost: int) -> None:
+        """Boosts the attack of the pokemon by a certain amount.
+
+        :param boost: The amount of the boost
+        """
+        if self.attack_boosts < 6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts -= boost
+            else:
+                self.attack_boosts += boost
+        else:
+            print(f"{self.name}'s attack can't go any higher!")
+
+    def boost_defense(self, boost: int) -> None:
+        """Boosts the defense of the pokemon by a certain amount.
+
+        :param boost: The amount of the boost
+        """
+        if self.defense_boosts < 6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts -= boost
+            else:
+                self.defense_boosts += boost
+        else:
+            print(f"{self.name}'s defense can't go any higher!")
+
+    def boost_special_attack(self, boost: int) -> None:
+        """Boosts the special attack of the pokemon by a certain amount.
+
+        :param boost: The amount of the boost
+        """
+        if self.special_attack_boosts < 6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts -= boost
+            else:
+                self.special_attack_boosts += boost
+        else:
+            print(f"{self.name}'s special attack can't go any higher!")
+
+    def boost_special_defense(self, boost: int) -> None:
+        """Boosts the special defense of the pokemon by a certain amount.
+
+        :param boost: The amount of the boost
+        """
+        if self.special_defense_boosts < 6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts -= boost
+            else:
+                self.special_defense_boosts += boost
+        else:
+            print(f"{self.name}'s special defense can't go any higher!")
+
+    def boost_speed(self, boost: int) -> None:
+        """Boosts the speed of the pokemon by a certain amount.
+
+        :param boost: The amount of the boost
+        """
+        if self.speed_boosts < 6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts -= boost
+            else:
+                self.speed_boosts += boost
+        else:
+            print(f"{self.name}'s speed can't go any higher!")
 
     def convert_hp_to_percentage(self, hp: int) -> float:
         """Converts the HP to a percentage of the max HP.
@@ -297,8 +366,8 @@ class Pokemon:
         :return: The immunities of the pokemon
         """
         immunities = []
-        for pokemon_type in self.types:
-            immunities.extend(pokemon_type.value.immunities)
+        if self.ability == Ability.LEVITATE:
+            immunities.append(Type.GROUND)
         return immunities
     
     def print_attacks(self) -> None:
@@ -340,8 +409,14 @@ class Pokemon:
 
         :param damage: The amount of damage to receive
         """
+        # If the Pokemon is immune thanks to its type
         if damage == 0:
             return
+        # If the Pokemon is immune thanks to its ability (volt absorb, water absorb, etc...)
+        elif damage < 0:
+            self.heal(-damage)
+            return
+
         self.current_hp -= damage
         self.current_hp = max(self.current_hp, 0)
         print(f"{self.name} lost {min(round(self.convert_hp_to_percentage(damage), 1), 100)}% HP!")
@@ -381,12 +456,19 @@ class Pokemon:
                 return True
         return False
 
-    def get_types_multiplier(self, attack_type: Type) -> float:
+    def get_types_multiplier(self, attack_type: Type, attacker: 'Pokemon') -> float:
         """Returns the type effectiveness multiplier of the move.
 
         :param attack_type: The type of the move
+        :param attacker: The pokemon that uses the move
         :return: The type effectiveness multiplier of the move
         """
+        temp_immunities = self.immunities.copy()
+        if self.ability == Ability.LEVITATE:
+            temp_immunities.append(Type.GROUND)
+        if attacker.ability == Ability.SCRAPPY:
+            temp_immunities.remove(Type.GHOST)
+
         multiplier = 1
         if attack_type in self.immunities:
             print("This has no effect...")
@@ -416,7 +498,7 @@ class Pokemon:
         # Critical hit
         crit_multiplier: bool = self.get_critical_multiplier(move)
         # Type effectiveness
-        type_multiplier: float = self.get_types_multiplier(move_type)
+        type_multiplier: float = self.get_types_multiplier(move_type, attacker)
 
         return stab_multiplier, crit_multiplier, type_multiplier
 
@@ -443,10 +525,19 @@ class Pokemon:
 
         :param attack: The move used
         :param attacker: The pokemon that uses the move
-        :param environment: The environment of the battle
         :param multipliers: The multipliers of the move
         :return: The damage value of the move
         """
+        # Insert volt absorb and water absorb here TODO
+        if self.ability == Ability.FLASH_FIRE and attack.type == Type.FIRE:
+            return 0
+        elif self.ability == Ability.JUSTIFIED and attack.type == Type.DARK:
+            self.boost_attack(1)
+        elif self.ability == Ability.WATER_ABSORB and attack.type == Type.WATER:
+            return -(self.max_hp // 4)
+        elif self.ability == Ability.VOLT_ABSORB and attack.type == Type.ELECTRIC:
+            return -(self.max_hp // 4)
+
         # If the pokemon is immune to the move
         if multipliers[2] == 0.0:
             return 0
@@ -459,18 +550,20 @@ class Pokemon:
             attack_stat: int = attacker.special_attack
             defense_stat: int = self.special_defense
 
+        move_power = attack.power
+        if attacker.ability == Ability.TECHNICIAN and move_power <= 60:
+            move_power *= 1.5
 
         multiplier = self.compute_multipliers(multipliers)
-        damage = (floor(floor(attacker.lvl * 2 / 5 + 2) * attack.power * attack_stat / defense_stat) / 50) + 2 # Calculate the raw damage
+        damage = (floor(floor(attacker.lvl * 2 / 5 + 2) * move_power * attack_stat / defense_stat) / 50) + 2  # Calculate the raw damage
         damage *= multiplier  # Apply the modifiers
         damage = floor(damage * randint(85, 100) / 100)  # Apply the random factor
 
-        # Weather
+        # Weather multipliers
         if EnvironmentElements.SUN in self.environment.elements and attack.type == Type.FIRE:
             damage *= 1.5
         elif EnvironmentElements.SUN in self.environment.elements and attack.type == Type.WATER:
             damage *= 0.5
-
         elif EnvironmentElements.RAIN in self.environment.elements and attack.type == Type.WATER:
             damage *= 1.5
         elif EnvironmentElements.RAIN in self.environment.elements and attack.type == Type.FIRE:
@@ -503,17 +596,25 @@ class Pokemon:
     # Status
     def apply_end_turn_primary_status(self) -> None:
         """Applies the end of turn effects of the primary status of the pokemon."""
+        if self.ability == Ability.MAGIC_GUARD:
+            return
         if self.status == PrimeStatus.BURN:
             self.current_hp = max(self.current_hp - floor(self.max_hp / 16), 0)
             print(f"{self.name} is hurt by its burn!")
         elif self.status == PrimeStatus.POISON:
-            self.current_hp = max(self.current_hp - floor(self.max_hp / 8), 0)
-            print(f"{self.name} is hurt by poison!")
+            if self.ability == Ability.POISON_HEAL:
+                self.heal(floor(self.max_hp / 8))
+            else:
+                self.current_hp = max(self.current_hp - floor(self.max_hp / 8), 0)
+                print(f"{self.name} is hurt by poison!")
         elif self.status == PrimeStatus.SEVERE_POISON:
-            poison_damage = floor(self.max_hp / 16) * self.nbr_turn_severe_poison
-            self.current_hp = max(self.current_hp - poison_damage, 0)
-            print(f"{self.name} is hurt by poison!")
-            self.nbr_turn_severe_poison += 1
+            if self.ability == Ability.POISON_HEAL:
+                self.heal(floor(self.max_hp / 8))
+            else:
+                poison_damage = floor(self.max_hp / 16) * self.nbr_turn_severe_poison
+                self.current_hp = max(self.current_hp - poison_damage, 0)
+                print(f"{self.name} is hurt by poison!")
+                self.nbr_turn_severe_poison += 1
 
     def apply_leech_seed(self, target: 'Pokemon') -> int:
         """Applies the leech seed effect on the target.
@@ -522,7 +623,10 @@ class Pokemon:
         :return: The amount of HP drained
         """
         if SubStatus.LEECH_SEED in self.sub_status:
-            hp_drained = floor(self.max_hp / 8)
+            if self.ability == Ability.MAGIC_GUARD:
+                hp_drained = 0
+            else:
+                hp_drained = floor(self.max_hp / 8)
             self.current_hp = min(self.current_hp + hp_drained, self.max_hp)
             print(f"{target.name} is draining the energy of {self.name}!")
             return hp_drained
@@ -531,6 +635,11 @@ class Pokemon:
         """Resets the status of the pokemon when it switches out."""
         self.nbr_turn_severe_poison = 0
         self.sub_status = []
+        if self.ability == Ability.NATURAL_CURE:
+            self.status = PrimeStatus.NORMAL
+            print(f"{self.name} healed its status!")
+        elif self.ability == Ability.REGENERATOR:
+            self.heal(floor(self.max_hp / 3))
         
     def switch_in(self, enemy_environment) -> None:
         """Applies the effects of the environment when the pokemon switches in."""
@@ -554,8 +663,25 @@ class Pokemon:
             self.environment.add_element(EnvironmentElements.SNOW, 5)
             enemy_environment.add_element(EnvironmentElements.SNOW, 5)
 
+        # Terrains
+        # Insert terrain objects here TODO
+        elif self.ability == Ability.GRASSY_SURGE:
+            self.environment.add_element(EnvironmentElements.GRASSY_TERRAIN, 5)
+            enemy_environment.add_element(EnvironmentElements.GRASSY_TERRAIN, 5)
+        elif self.ability == Ability.MISTY_SURGE:
+            self.environment.add_element(EnvironmentElements.MISTY_TERRAIN, 5)
+            enemy_environment.add_element(EnvironmentElements.MISTY_TERRAIN, 5)
+        elif self.ability == Ability.ELECTRIC_SURGE:
+            self.environment.add_element(EnvironmentElements.ELECTRIC_TERRAIN, 5)
+            enemy_environment.add_element(EnvironmentElements.ELECTRIC_TERRAIN, 5)
+        elif self.ability == Ability.PSYCHIC_SURGE:
+            self.environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, 5)
+            enemy_environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, 5)
+
     def switch_in_stealth_rock(self):
         """Applies the effects of stealth rock when the pokemon switches in."""
+        if self.ability == Ability.MAGIC_GUARD:
+            return
         if EnvironmentElements.STEALTH_ROCK in self.environment.elements:
             stealth_rock_damage = 12.5  # Percentage of max HP
             for pokemon_type in self.types:
@@ -571,7 +697,7 @@ class Pokemon:
 
     def switch_in_spikes(self):
         """Applies the effects of spikes when the pokemon switches in."""
-        if Type.FLYING in self.types:
+        if Type.FLYING in self.types or self.ability == Ability.LEVITATE or self.ability == Ability.MAGIC_GUARD:
             return
         elif EnvironmentElements.SPIKES in self.environment.elements:
             spikes_count = self.environment.elements.count(EnvironmentElements.SPIKES)
@@ -588,7 +714,7 @@ class Pokemon:
             
     def switch_in_toxic_spikes(self) -> None:
         """Applies the effects of toxic spikes when the pokemon switches in."""
-        if Type.FLYING in self.types:
+        if Type.FLYING in self.types or self.ability == Ability.LEVITATE or self.ability == Ability.MAGIC_GUARD:
             return
         elif EnvironmentElements.TOXIC_SPIKES in self.environment.elements:
             if Type.POISON in self.types:
@@ -605,7 +731,15 @@ class Pokemon:
                     print(f"{self.name} is badly poisoned by toxic spikes!")
 
     def apply_end_turn_ability(self) -> None:
-        if self.ability == Ability.ICE_BODY and
+        if self.ability == Ability.ICE_BODY and EnvironmentElements.SNOW in self.environment.elements:
+            self.heal(floor(self.max_hp / 16))
+            print(f"{self.name} is healed by Ice Body!")
+        elif self.ability == Ability.RAIN_DISH and EnvironmentElements.RAIN in self.environment.elements:
+            self.heal(floor(self.max_hp / 16))
+            print(f"{self.name} is healed by Rain Dish!")
+        elif self.ability == Ability.Hydration and EnvironmentElements.RAIN in self.environment.elements:
+            self.status = PrimeStatus.NORMAL
+            print(f"{self.name} healed its status!")
 
     def apply_end_turn_weather(self) -> None:
         """Applies the end of turn effects of the weather."""

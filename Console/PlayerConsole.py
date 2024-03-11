@@ -4,11 +4,11 @@ from PokemonConsole import *
 class Player:
     def __init__(self, team: 'list[Pokemon]', name: str) -> None:
         self.team: list[Pokemon] = team
-        for pokemon in self.team:
-            pokemon.environment = self.environment
         self.name: str = name
         self.current_pokemon: Pokemon = None
         self.environment: EnvironmentClass = EnvironmentClass()
+        for pokemon in self.team:
+            pokemon.environment = self.environment
 
     def __eq__(self, other: 'Player') -> bool:
         return self.name == other.name
@@ -49,7 +49,7 @@ class Player:
         for pokemon in self.team:
             print(f"    {pokemon} {pokemon.print_moves()}")
        
-    def select_switch(self) -> int:
+    def select_switch(self, enemy_current_pokemon: Pokemon = None) -> int:
         print(f"{self.name}, select your next pokemon:")
         self.print_team()
         while True:
@@ -57,6 +57,10 @@ class Player:
                 switch: int = int(input(">> ")) - 1
                 if 0 <= switch < len(self.team):
                     if self.team[switch].current_hp > 0:
+                        if enemy_current_pokemon:
+                            if enemy_current_pokemon.ability == Ability.MAGNET_PULL and self.team[switch].type == Type.STEEL:
+                                print("You can't switch this pokemon!")
+                                continue
                         if self.team[switch] != self.current_pokemon:
                             return switch
                         else:
@@ -117,7 +121,7 @@ class Player:
                 self.current_pokemon.print_attacks_without_indices()
                 choice = int(input(">> "))
                 if choice == 1:
-                    pokemon_index: int = self.select_switch()
+                    pokemon_index: int = self.select_switch(target.current_pokemon)
                     return 1, pokemon_index
                 elif choice == 2:
                     move_index: int = self.select_move()
