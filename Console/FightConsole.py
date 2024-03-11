@@ -141,7 +141,7 @@ class Fight:
             # If the player selected a switch
             if action[0] == 1:
                 pokemon: int = action[1]
-                player.switch_pokemon(pokemon)
+                player.switch_pokemon(pokemon, self.player2)
 
             # If the player selected a move
             elif action[0] == 2:
@@ -150,12 +150,7 @@ class Fight:
                 print(f"{player.current_pokemon.name} used {move.name}!")
 
                 # If the pokemon misses
-                move_accuracy: int = move.accuracy
-                if player.current_pokemon.ability == Ability.NO_GUARD:
-                    move_accuracy = 100
-                elif player.current_pokemon.ability == Ability.VICTORY_STAR:
-                    move_accuracy *= 1.1
-                if randint(0, 100) > move_accuracy:
+                if randint(0, 100) > move.accuracy:
                     result: tuple[bool] = False,
                     print(f"{player.current_pokemon.name} missed!")
                     self.client.send_info(result)
@@ -181,7 +176,7 @@ class Fight:
             # If the player selected a switch
             if action[0] == 1:
                 pokemon: int = action[1]
-                player.switch_pokemon(pokemon)
+                player.switch_pokemon(pokemon, self.player1)
 
             # If the player selected a move
             elif action[0] == 2:
@@ -229,7 +224,7 @@ class Fight:
         else:
             target = self.player1
         while True:
-            if player.switch_pokemon(switch, target.environment):
+            if player.switch_pokemon(switch, target):
                 return switch
             self.end_game()
             if player.current_pokemon.is_dead():

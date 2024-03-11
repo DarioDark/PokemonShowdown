@@ -7,10 +7,11 @@ from CapacitySideEffectsConsole import SecondaryEffectClass
 
 
 class Capacity:
-    def __init__(self, name: str, type: Type, accuracy: int, pp: int, secondary_effect: SecondaryEffectClass) -> None:
+    def __init__(self, name: str, type: Type, accuracy: float, pp: int, secondary_effect: SecondaryEffectClass) -> None:
         self.name: str = name
         self.type: Type = type
-        self.accuracy: int = accuracy
+        self.base_accuracy: float = accuracy
+        self.accuracy: float = accuracy
         self.current_pp: int = pp
         self.max_pp: int = pp
         self.secondary_effect: SecondaryEffectClass = secondary_effect               

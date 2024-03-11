@@ -37,7 +37,8 @@ class Pokemon:
         self.special_defense_boosts: int = 0
         self.speed_boosts: int = 0
 
-        # Types
+        # Types and ability
+        self.ability: Ability = ability
         self.types: list[Type] = types
         self.immunities: list[Type] = self.get_types_immunities()
         self.weaknesses: list[Type] = self.calculate_weaknesses()
@@ -47,11 +48,16 @@ class Pokemon:
         self.status: PrimeStatus = PrimeStatus.NORMAL
         self.sub_status: list[SubStatus] = []
         self.nbr_turn_severe_poison: int = 0
-        
-        self.moves: list = moves
+
+        self.moves: list[Capacity] = moves
+        if self.ability == Ability.NO_GUARD:
+            for move in self.moves:
+                move.accuracy = 100
+        elif self.ability == Ability.VICTORY_STAR:
+            for move in self.moves:
+                move.accuracy = move.base_accuracy * 1.1
         self.environment: EnvironmentClass = None
-        self.ability: Ability = ability
-    
+
     def __getstate__(self):
         return {
             'name': self.name,
@@ -163,14 +169,16 @@ class Pokemon:
             attack_stat *= 2
         if self.attack_boosts > 0:
             return attack_stat + (self.attack_boosts * self.attack_stat // 2)
-        return round(attack_stat * self.malus_to_percentage(self.attack_boosts))
+        elif self.attack_boosts < 0:
+            return round(attack_stat * self.malus_to_percentage(self.attack_boosts))
 
     @property
     def special_attack(self) -> int:
         """Returns the special attack of the pokemon, taking into account the special attack boosts."""
         if self.special_attack_boosts > 0:
             return self.special_attack_stat + (self.special_attack_boosts * self.special_attack_stat // 2)
-        return round(self.special_attack_stat * self.malus_to_percentage(self.special_attack_boosts))
+        elif self.special_attack_boosts < 0:
+            return round(self.special_attack_stat * self.malus_to_percentage(self.special_attack_boosts))
 
     @property
     def defense(self) -> int:
@@ -181,7 +189,8 @@ class Pokemon:
                 defense_stat *= 2
         if self.defense_boosts > 0:
             return defense_stat + (self.defense_boosts * self.defense_stat // 2)
-        return round(defense_stat * self.malus_to_percentage(self.defense_boosts))
+        elif self.defense_boosts < 0:
+            return round(defense_stat * self.malus_to_percentage(self.defense_boosts))
 
     @property
     def special_defense(self) -> int:
@@ -194,7 +203,8 @@ class Pokemon:
                 special_defense_stat *= 1.5
         if self.special_defense_boosts > 0:
             return special_defense_stat + (self.special_defense_boosts * self.special_defense_stat // 2)
-        return round(special_defense_stat * self.malus_to_percentage(self.special_defense_boosts))
+        elif self.special_defense_boosts < 0:
+            round(special_defense_stat * self.malus_to_percentage(self.special_defense_boosts))
 
     @property
     def speed(self) -> int:
@@ -208,7 +218,8 @@ class Pokemon:
                 return self.speed_stat * 2
         if self.speed_boosts > 0:
             return self.speed_stat + (self.speed_boosts * self.speed_stat // 2)
-        return round(self.speed_stat * self.malus_to_percentage(self.speed_boosts))
+        elif self.speed_boosts < 0:
+            return round(self.speed_stat * self.malus_to_percentage(self.speed_boosts))
 
     @staticmethod
     def malus_to_percentage(malus_level: int) -> float:
@@ -218,12 +229,12 @@ class Pokemon:
         :return: The percentage of the stat
         """
         level_to_percentage = {
-            1: 67,
-            2: 50,
-            3: 40,
-            4: 33,
-            5: 29,
-            6: 25
+            -1: 67,
+            -2: 50,
+            -3: 40,
+            -4: 33,
+            -5: 29,
+            -6: 25
         }
         return level_to_percentage[malus_level]
 
@@ -355,9 +366,12 @@ class Pokemon:
 
         :return: The resistances of the pokemon
         """
-        resistances = []
+        resistances: list[Type] = []
         for pokemon_type in self.types:
             resistances.extend(pokemon_type.value.resistances)
+        if self.ability == Ability.THICK_FAT:
+            resistances.append(Type.FIRE)
+            resistances.append(Type.ICE)
         return resistances
     
     def get_types_immunities(self) -> 'list[Type]':
@@ -528,7 +542,7 @@ class Pokemon:
         :param multipliers: The multipliers of the move
         :return: The damage value of the move
         """
-        # Insert volt absorb and water absorb here TODO
+        # TODO
         if self.ability == Ability.FLASH_FIRE and attack.type == Type.FIRE:
             return 0
         elif self.ability == Ability.JUSTIFIED and attack.type == Type.DARK:
@@ -537,6 +551,9 @@ class Pokemon:
             return -(self.max_hp // 4)
         elif self.ability == Ability.VOLT_ABSORB and attack.type == Type.ELECTRIC:
             return -(self.max_hp // 4)
+        elif self.ability == Ability.SAP_SIPPER:
+            self.boost_attack(1)
+            return 0
 
         # If the pokemon is immune to the move
         if multipliers[2] == 0.0:
@@ -641,12 +658,18 @@ class Pokemon:
         elif self.ability == Ability.REGENERATOR:
             self.heal(floor(self.max_hp / 3))
         
-    def switch_in(self, enemy_environment) -> None:
+    def switch_in(self, enemy_player: 'Player') -> None:
         """Applies the effects of the environment when the pokemon switches in."""
         # Entry hazards
         self.switch_in_spikes()
         self.switch_in_stealth_rock()
         self.switch_in_toxic_spikes()
+
+        enemy_pokemon = enemy_player.current_pokemon
+        if self.ability == Ability.TRACE:
+            self.ability = enemy_pokemon.ability
+
+        enemy_environment = enemy_player.environement
 
         # Weather
         # Insert weather objects here TODO
@@ -756,7 +779,12 @@ class Pokemon:
         self.apply_end_turn_primary_status()
 
         self.environment.pass_turn()
-            
+
+    # def mega_evolve(self):
+        # if self.object == Object.VENUSAURITE:
+        # mega_venusaur_stats: tuple[int, int, int, int, int, Ability] = ()  Entrer les stats ici et faire pareil pour tous les pokemons
+        # self.attack, self.special_attack, self.defense, self.special_defense, self.ability = mega_venusaur_stat
+
             
 # Create some pokemons
 Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed], Ability.NONE)

@@ -23,6 +23,7 @@ class OffensiveCapacity(Capacity):
             'type': self.type.name,
             'category': self.category.name,
             'power': self.power,
+            'base_accuracy': self.base_accuracy,
             'accuracy': self.accuracy,
             'current_pp': self.current_pp,
             'max_pp': self.max_pp,
@@ -34,6 +35,7 @@ class OffensiveCapacity(Capacity):
         self.type = Type[state['type']]
         self.category = CapacityCategory[state['category']]
         self.power = int(state['power'])
+        self.base_accuracy = state['base_accuracy']
         self.accuracy = state['accuracy']
         self.current_pp = state['current_pp']
         self.max_pp = state['max_pp']

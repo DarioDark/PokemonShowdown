@@ -30,11 +30,15 @@ class Ability(Enum):
     ELECTRIC_SURGE = "Electric Surge"
     NO_GUARD = "No Guard"
     VICTORY_STAR = "Victory Star"
+    THICK_FAT = "Thick Fat"
+    SAP_SIPPER = "Sap Sipper"
+    TRACE = "Trace"
 
     FLASH_FIRE = "Flash Fire"
     SAND_FORCE = "Sand Force"
     STATIC = "Static"
     FLAME_BODY = "Flame Body"
     STURDY = "Sturdy"
+
     NONE = "None"
     # ...

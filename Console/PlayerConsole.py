@@ -72,13 +72,13 @@ class Player:
             except ValueError:
                 print("Invalid choice")
             
-    def switch_pokemon(self, pokemon_index: int, enemy_environment) -> bool:
+    def switch_pokemon(self, pokemon_index: int, enemy_player) -> bool:
         print(f"{self.current_pokemon.name}, come back!")
         pokemon: Pokemon = self.team[pokemon_index]
         self.current_pokemon.switch_out()
         self.current_pokemon = pokemon
         print(f"{pokemon.name}, go!")
-        self.current_pokemon.switch_in(enemy_environment)
+        self.current_pokemon.switch_in(enemy_player)
         if self.current_pokemon.is_dead():
             return False
         return True
