@@ -4,6 +4,8 @@ from PokemonConsole import *
 class Player:
     def __init__(self, team: 'list[Pokemon]', name: str) -> None:
         self.team: list[Pokemon] = team
+        for pokemon in self.team:
+            pokemon.environment = self.environment
         self.name: str = name
         self.current_pokemon: Pokemon = None
         self.environment: EnvironmentClass = EnvironmentClass()
@@ -66,13 +68,13 @@ class Player:
             except ValueError:
                 print("Invalid choice")
             
-    def switch_pokemon(self, pokemon_index: int) -> bool:
+    def switch_pokemon(self, pokemon_index: int, enemy_environment) -> bool:
         print(f"{self.current_pokemon.name}, come back!")
         pokemon: Pokemon = self.team[pokemon_index]
         self.current_pokemon.switch_out()
         self.current_pokemon = pokemon
         print(f"{pokemon.name}, go!")
-        self.current_pokemon.switch_in(self.environment)
+        self.current_pokemon.switch_in(enemy_environment)
         if self.current_pokemon.is_dead():
             return False
         return True

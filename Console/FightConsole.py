@@ -81,13 +81,6 @@ class Fight:
             second_player = self.player1
         else:
             # Checks who has the fastest pokemon
-            player1_speed = self.player1.current_pokemon.speed
-            player2_speed = self.player2.current_pokemon.speed
-            if EnvironmentElements.TAILWIND in self.player1.environment.elements:
-                player1_speed *= 2
-            if EnvironmentElements.TAILWIND in self.player2.environment.elements:
-                player2_speed *= 2
-
             if self.player1.current_pokemon.speed > self.player2.current_pokemon.speed:
                 first_player = self.player1
                 second_player = self.player2
@@ -226,8 +219,12 @@ class Fight:
         :return:
         """
         switch: int = pokemon_index
+        if player == self.player1:
+            target = self.player2
+        else:
+            target = self.player1
         while True:
-            if player.switch_pokemon(switch):
+            if player.switch_pokemon(switch, target.environment):
                 return switch
             self.end_game()
             if player.current_pokemon.is_dead():

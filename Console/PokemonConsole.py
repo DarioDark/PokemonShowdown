@@ -3,6 +3,7 @@ from OffensiveCapacityConsole import *
 from StatusCapacityConsole import *
 from StatusConsole import PrimeStatus, SubStatus
 from EnvironmentConsole import EnvironmentElements, EnvironmentClass
+from AbilityConsole import Ability
 
 
 class Pokemon:
@@ -15,7 +16,8 @@ class Pokemon:
                  special_defense_stat: int,
                  speed_stat: int,
                  types: 'list[Type]', 
-                 moves: 'list') -> None:
+                 moves: 'list',
+                 ability) -> None:
         self.name = name
         self.lvl = lvl
 
@@ -47,6 +49,8 @@ class Pokemon:
         self.nbr_turn_severe_poison: int = 0
         
         self.moves: list = moves
+        self.environment: EnvironmentClass = None
+        self.ability: Ability = ability
     
     def __getstate__(self):
         return {
@@ -70,8 +74,10 @@ class Pokemon:
             'resistances': [pokemon_type.name for pokemon_type in self.resistances],
             'status': self.status,
             'sub_status': [status.name for status in self.sub_status],
+            'nbr_turn_severe_poison': self.nbr_turn_severe_poison,
             'moves': [attack.__getstate__() for attack in self.moves],
-            'nbr_turn_severe_poison': self.nbr_turn_severe_poison
+            'environment': self.environment
+
         }
         
     def __setstate__(self, state):
@@ -105,6 +111,7 @@ class Pokemon:
                 attack = StatusCapacity()
                 attack.__setstate__(attack_state)
             self.moves.append(attack)
+        self.environment = state['environment']
 
     def __repr__(self) -> str:
         """Returns a string representation of the pokemon, with its name, types, HP and current status, greyed out if the pokemon is fainted.
@@ -151,9 +158,12 @@ class Pokemon:
     @property
     def attack(self) -> int:
         """Returns the attack of the pokemon, taking into account the attack boosts."""
+        attack_stat = self.attack_stat
+        if self.ability == Ability.HUGE_POWER:
+            attack_stat *= 2
         if self.attack_boosts > 0:
-            return self.attack_stat + (self.attack_boosts * self.attack_stat // 2)
-        return round(self.attack_stat * self.malus_to_percentage(self.attack_boosts))
+            return attack_stat + (self.attack_boosts * self.attack_stat // 2)
+        return round(attack_stat * self.malus_to_percentage(self.attack_boosts))
 
     @property
     def special_attack(self) -> int:
@@ -165,20 +175,33 @@ class Pokemon:
     @property
     def defense(self) -> int:
         """Returns the defense of the pokemon, taking into account the defense boosts."""
+        defense_stat = self.defense_stat
+        if self.environment:
+            if EnvironmentElements.REFLECT in self.environment.elements or EnvironmentElements.AURORA_VEIL in self.environment.elements:
+                defense_stat *= 2
         if self.defense_boosts > 0:
-            return self.defense_stat + (self.defense_boosts * self.defense_stat // 2)
-        return round(self.defense_stat * self.malus_to_percentage(self.defense_boosts))
+            return defense_stat + (self.defense_boosts * self.defense_stat // 2)
+        return round(defense_stat * self.malus_to_percentage(self.defense_boosts))
 
     @property
     def special_defense(self) -> int:
         """Returns the special defense of the pokemon, taking into account the special defense boosts."""
+        special_defense_stat = self.special_defense_stat
+        if self.environment:
+            if EnvironmentElements.LIGHT_SCREEN in self.environment.elements or EnvironmentElements.AURORA_VEIL in self.environment.elements:
+                special_defense_stat *= 2
+            if EnvironmentElements.SAND in self.environment.elements and Type.ROCK in self.types:
+                special_defense_stat *= 1.5
         if self.special_defense_boosts > 0:
-            return self.special_defense_stat + (self.special_defense_boosts * self.special_defense_stat // 2)
-        return round(self.special_defense_stat * self.malus_to_percentage(self.special_defense_boosts))
+            return special_defense_stat + (self.special_defense_boosts * self.special_defense_stat // 2)
+        return round(special_defense_stat * self.malus_to_percentage(self.special_defense_boosts))
 
     @property
     def speed(self) -> int:
         """Returns the speed of the pokemon, taking into account the speed boosts."""
+        if self.environment:
+            if EnvironmentElements.TAILWIND in self.environment.elements:
+                return self.speed_stat * 2
         if self.speed_boosts > 0:
             return self.speed_stat + (self.speed_boosts * self.speed_stat // 2)
         return round(self.speed_stat * self.malus_to_percentage(self.speed_boosts))
@@ -415,7 +438,7 @@ class Pokemon:
         multiplier *= multipliers[2]
         return multiplier
 
-    def calculate_damage(self, attack: OffensiveCapacity, attacker: 'Pokemon', environment: EnvironmentClass, multipliers) -> int:
+    def calculate_damage(self, attack: OffensiveCapacity, attacker: 'Pokemon', multipliers) -> int:
         """Calculates the damage value of the move.
 
         :param attack: The move used
@@ -432,18 +455,27 @@ class Pokemon:
         if attack.category == CapacityCategory.PHYSICAL:
             attack_stat: int = attacker.attack
             defense_stat: int = self.defense
-            if EnvironmentElements.REFLECT in environment.elements or EnvironmentElements.AURORA_VEIL in environment.elements:
-                defense_stat *= 2
         else:
             attack_stat: int = attacker.special_attack
             defense_stat: int = self.special_defense
-            if EnvironmentElements.LIGHT_SCREEN in environment.elements or EnvironmentElements.AURORA_VEIL in environment.elements:
-                defense_stat *= 2
+
 
         multiplier = self.compute_multipliers(multipliers)
         damage = (floor(floor(attacker.lvl * 2 / 5 + 2) * attack.power * attack_stat / defense_stat) / 50) + 2 # Calculate the raw damage
         damage *= multiplier  # Apply the modifiers
         damage = floor(damage * randint(85, 100) / 100)  # Apply the random factor
+
+        # Weather
+        if EnvironmentElements.SUN in self.environment.elements and attack.type == Type.FIRE:
+            damage *= 1.5
+        elif EnvironmentElements.SUN in self.environment.elements and attack.type == Type.WATER:
+            damage *= 0.5
+
+        elif EnvironmentElements.RAIN in self.environment.elements and attack.type == Type.WATER:
+            damage *= 1.5
+        elif EnvironmentElements.RAIN in self.environment.elements and attack.type == Type.FIRE:
+            damage *= 0.5
+
         return max(int(damage), 1)
     
     def is_dead(self, print_message: bool = False) -> bool:
@@ -500,18 +532,31 @@ class Pokemon:
         self.nbr_turn_severe_poison = 0
         self.sub_status = []
         
-    def switch_in(self, environment: 'EnvironmentClass') -> None:
+    def switch_in(self, enemy_environment) -> None:
         """Applies the effects of the environment when the pokemon switches in."""
-        # Spikes
-        self.switch_in_spikes(environment)
-        # Stealth Rock
-        self.switch_in_stealth_rock(environment)
-        # Toxic Spikes
-        self.switch_in_toxic_spikes(environment)
+        # Entry hazards
+        self.switch_in_spikes()
+        self.switch_in_stealth_rock()
+        self.switch_in_toxic_spikes()
 
-    def switch_in_stealth_rock(self, environment: 'EnvironmentClass'):
+        # Weather
+        # Insert weather objects here TODO
+        if self.ability == Ability.DROUGHT:
+            self.environment.add_element(EnvironmentElements.SUN, 5)
+            enemy_environment.add_element(EnvironmentElements.SUN, 5)
+        elif self.ability == Ability.DRIZZLE:
+            self.environment.add_element(EnvironmentElements.RAIN, 5)
+            enemy_environment.add_element(EnvironmentElements.RAIN, 5)
+        elif self.ability == Ability.SAND_STREAM:
+            self.environment.add_element(EnvironmentElements.SAND, 5)
+            enemy_environment.add_element(EnvironmentElements.SAND, 5)
+        elif self.ability == Ability.SNOW_WARNING:
+            self.environment.add_element(EnvironmentElements.SNOW, 5)
+            enemy_environment.add_element(EnvironmentElements.SNOW, 5)
+
+    def switch_in_stealth_rock(self):
         """Applies the effects of stealth rock when the pokemon switches in."""
-        if EnvironmentElements.STEALTH_ROCK in environment.elements:
+        if EnvironmentElements.STEALTH_ROCK in self.environment.elements:
             stealth_rock_damage = 12.5  # Percentage of max HP
             for pokemon_type in self.types:
                 if Type.ROCK in pokemon_type.value.weaknesses:
@@ -522,15 +567,14 @@ class Pokemon:
             self.current_hp = max(self.current_hp - stealth_rock_damage, 0)
             print(self.current_hp, self.max_hp)
             print(f"{self.name} is hurt by stealth rock!")
-            # print(f"{self.name} lost {self.convert_hp_to_percentage(stealth_rock_damage)}% HP!")
             self.is_dead(True)
 
-    def switch_in_spikes(self, environment: 'EnvironmentClass'):
+    def switch_in_spikes(self):
         """Applies the effects of spikes when the pokemon switches in."""
         if Type.FLYING in self.types:
             return
-        elif EnvironmentElements.SPIKES in environment.elements:
-            spikes_count = environment.elements.count(EnvironmentElements.SPIKES)
+        elif EnvironmentElements.SPIKES in self.environment.elements:
+            spikes_count = self.environment.elements.count(EnvironmentElements.SPIKES)
             spikes_damage = 0
             if spikes_count == 1:
                 spikes_damage = floor(self.max_hp / 8)
@@ -542,31 +586,49 @@ class Pokemon:
             print(f"{self.name} is hurt by spikes!")
             self.is_dead(True)
             
-    def switch_in_toxic_spikes(self, environment: 'EnvironmentClass') -> None:
+    def switch_in_toxic_spikes(self) -> None:
         """Applies the effects of toxic spikes when the pokemon switches in."""
         if Type.FLYING in self.types:
             return
-        elif EnvironmentElements.TOXIC_SPIKES in environment.elements:
+        elif EnvironmentElements.TOXIC_SPIKES in self.environment.elements:
             if Type.POISON in self.types:
-                environment.remove_toxic_spikes()
+                self.environment.remove_toxic_spikes()
                 print(f"{self.name} absorbed the toxic spikes!")
-                print(environment.elements)
-            elif environment.elements.count(EnvironmentElements.TOXIC_SPIKES) == 1:
+                print(self.environment.elements)
+            elif self.environment.elements.count(EnvironmentElements.TOXIC_SPIKES) == 1:
                 if PrimeStatus == PrimeStatus.NORMAL:
                     self.status = PrimeStatus.POISON
                     print(f"{self.name} is poisoned by toxic spikes!")
-            elif environment.elements.count(EnvironmentElements.TOXIC_SPIKES) == 2:
+            elif self.environment.elements.count(EnvironmentElements.TOXIC_SPIKES) == 2:
                 if PrimeStatus == PrimeStatus.NORMAL:
                     self.status = PrimeStatus.SEVERE_POISON
                     print(f"{self.name} is badly poisoned by toxic spikes!")
-            self.is_dead(True)
+
+    def apply_end_turn_ability(self) -> None:
+        if self.ability == Ability.ICE_BODY and
+
+    def apply_end_turn_weather(self) -> None:
+        """Applies the end of turn effects of the weather."""
+        if self.environment:
+            if EnvironmentElements.SAND in self.environment.elements and Type.ROCK not in self.types and Type.STEEL not in self.types and Type.GROUND not in self.types and self.ability != Ability.SAND_FORCE:
+                self.current_hp = max(self.current_hp - floor(self.max_hp / 16), 0)
+                print(f"{self.name} is hurt by the sandstorm!")
+            elif EnvironmentElements.HAIL in self.environment.elements and self.ability != Ability.ICE_BODY:
+                self.current_hp = max(self.current_hp - floor(self.max_hp / 16), 0)
+                print(f"{self.name} is hurt by the hail!")
+
+    def end_turn(self) -> None:
+        """Applies the end of turn effects of the pokemon."""
+        self.apply_end_turn_primary_status()
+
+        self.environment.pass_turn()
             
             
 # Create some pokemons
-Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed])
-Blastoise = Pokemon("Blastoise", 100, 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail])
-Venusaur = Pokemon("Venusaur", 100, 80, 82, 83, 100, 100, 80, [Type.PLANT, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash])
-Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, Thunder, Surf, SkullBash])
-Landorus_Therian = Pokemon("Landorus-Therian", 100, 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash])
-Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, Thunder, Surf, LeechSeed])
-Greninja = Pokemon("Greninja", 100, 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash])
+Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed], Ability.NONE)
+Blastoise = Pokemon("Blastoise", 100, 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail],Ability.NONE)
+Venusaur = Pokemon("Venusaur", 100, 80, 82, 83, 100, 100, 80, [Type.PLANT, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
+Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
+Landorus_Therian = Pokemon("Landorus-Therian", 100, 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
+Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, Thunder, Surf, LeechSeed], Ability.NONE)
+Greninja = Pokemon("Greninja", 100, 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)

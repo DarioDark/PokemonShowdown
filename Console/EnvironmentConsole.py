@@ -29,6 +29,15 @@ class EnvironmentClass:
         :param turns: The number of turns the element will last.
         """
         self.elements.append(element)
+
+        # Weathers
+        elements_to_remove = [EnvironmentElements.SUN, EnvironmentElements.RAIN, EnvironmentElements.SAND, EnvironmentElements.SNOW]
+        if element in elements_to_remove:
+            for elem in elements_to_remove:
+                if elem in self.elements and elem != element:
+                    self.elements.remove(elem)
+                    del self.temporary_elements_turns[elem]
+
         if turns != -1:
             self.temporary_elements_turns[element] = 5
 
@@ -55,3 +64,7 @@ class EnvironmentElements(Enum):
     AURORA_VEIL = "Aurora Veil"
     TAILWIND = "Tailwind"
     # TRICK_ROOM = "Trick Room"
+    SUN = "Sun"
+    RAIN = "Rain"
+    SAND = "Sand"
+    SNOW = "Snow"

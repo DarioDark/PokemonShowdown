@@ -1,8 +1,14 @@
-a = 3
+
+class obj:
+    def __init__(self):
+        self.x = 1
+        self.y = 2
+
+
+a = obj()
 
 b = a
-print(b)
 
-b = 4
-print(a)
-print(b)
+b.x = 3
+
+print(a.x)  # 3
