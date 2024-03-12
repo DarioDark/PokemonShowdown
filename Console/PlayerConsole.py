@@ -1,3 +1,4 @@
+from os import system
 from PokemonConsole import *
 
 
@@ -27,8 +28,11 @@ class Player:
         self.current_pokemon = state['current_pokemon']
         self.environment = state['environment'] 
     
-    def select_lead(self) -> int:
-        print(f"{self.name}, select your lead:")
+    def select_lead(self, enemy_team: list[Pokemon]) -> int:
+        enemy_team_string = '- ' + '\n- '.join(str(pokemon) for pokemon in enemy_team)
+        print(f"Enemy team :\n{enemy_team_string}\n")
+
+        print(f"{colored(self.name, attrs=['bold'])}, select your lead:")
         self.print_team()
         while True:
             try:
@@ -57,10 +61,6 @@ class Player:
                 switch: int = int(input(">> ")) - 1
                 if 0 <= switch < len(self.team):
                     if self.team[switch].current_hp > 0:
-                        if enemy_current_pokemon:
-                            if enemy_current_pokemon.ability == Ability.MAGNET_PULL and self.team[switch].type == Type.STEEL:
-                                print("You can't switch this pokemon!")
-                                continue
                         if self.team[switch] != self.current_pokemon:
                             return switch
                         else:
@@ -102,16 +102,15 @@ class Player:
     def use_move(self, move: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> None:
         capacity = self.current_pokemon.moves[move]
         if isinstance(capacity, StatusCapacity):
-            if capacity.target == "player":
-                self.current_pokemon.attack_target(move, is_secondary_effect_applied, target)
-            elif capacity.target == "self":
-                self.current_pokemon.attack_target(move, is_secondary_effect_applied, self)
+            if capacity.target == "enemy_player":
+                self.current_pokemon.attack_target(move, is_secondary_effect_applied, target, damage)
+            elif capacity.target == "self_player":
+                self.current_pokemon.attack_target(move, is_secondary_effect_applied, self, damage)
         self.current_pokemon.attack_target(move, is_secondary_effect_applied, target.current_pokemon, damage)
 
     def choose_action(self, target: 'Player') -> tuple[int, 'Capacity / int']:
-        # system("cls")
-        print(self)
-        print(target)
+        system("cls")
+        print(f"Your pokemon : {self.current_pokemon}\nOpposing pokemon : {target.current_pokemon}\n")
         while True:
             try:
                 print(f"{colored(self.name, attrs=['bold'])}, what will you do ?")
@@ -121,6 +120,10 @@ class Player:
                 self.current_pokemon.print_attacks_without_indices()
                 choice = int(input(">> "))
                 if choice == 1:
+                    if target.current_pokemon:
+                        if target.current_pokemon.ability == Ability.MAGNET_PULL and Type.STEEL in self.current_pokemon.types:
+                            print("You are trapped by a magnetic field. You can't switch out this pokemon!")
+                            continue
                     pokemon_index: int = self.select_switch(target.current_pokemon)
                     return 1, pokemon_index
                 elif choice == 2:

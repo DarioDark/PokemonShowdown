@@ -61,7 +61,7 @@ class Client:
     def reset_last_info(self):
         while len(self.enemy_moves) == 0:
             time.sleep(0.5)
-            self.enemy_moves.pop(0)
+        self.enemy_moves.pop(0)
 
     def stop(self) -> None:
         self.client.close()

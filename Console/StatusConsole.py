@@ -15,3 +15,4 @@ class SubStatus(Enum):
     CONFUSION = "Confusion"
     LEECH_SEED = "Leech Seed"
     FLINCH = "Flinch"
+    FLASH_FIRE = "Flash Fire"

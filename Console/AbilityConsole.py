@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Ability(Enum):
     HUGE_POWER = "Huge Power"
     PURE_POWER = "Pure Power"
@@ -33,11 +34,16 @@ class Ability(Enum):
     THICK_FAT = "Thick Fat"
     SAP_SIPPER = "Sap Sipper"
     TRACE = "Trace"
-
-    FLASH_FIRE = "Flash Fire"
     SAND_FORCE = "Sand Force"
+    TOUGH_CLAWS = "Tough Claws"
+    ROUGH_SKIN = "Rough Skin"
+    IRON_BARBS = "Iron Barbs"
+    STORM_DRAIN = "Storm Drain"
+    FLASH_FIRE = "Flash Fire"
+
     STATIC = "Static"
     FLAME_BODY = "Flame Body"
+
     STURDY = "Sturdy"
 
     NONE = "None"

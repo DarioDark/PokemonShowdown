@@ -34,12 +34,13 @@ class Fight:
         self.players.append(self.client.get_enemy_player())
         print("Both players are ready !")
         time.sleep(2)
+        system("cls")
         self.select_player_lead()
 
     def select_player_lead(self) -> None:
         """Select the team lead of both players.
         """
-        pokemon_index: int = self.player1.select_lead()
+        pokemon_index: int = self.player1.select_lead(self.player2.team)
         self.player1.current_pokemon = self.player1.team[pokemon_index]
         self.client.send_info(pokemon_index)
 
@@ -157,10 +158,11 @@ class Fight:
                     return
 
                 # Getting all the pieces of information of the move to send them and synchronize both clients
-                multipliers: tuple[bool, bool, float] = target.current_pokemon.get_multipliers(move, player.current_pokemon)
                 if isinstance(move, OffensiveCapacity):
+                    multipliers: tuple[bool, bool, float] = target.current_pokemon.get_multipliers(move, player.current_pokemon)
                     damage: int = target.current_pokemon.calculate_damage(move, player.current_pokemon, multipliers)
                 else:
+                    multipliers = (False, False, 1)
                     damage: int = -1
                 secondary_effect_applied: bool = move.is_secondary_effect_applied()
 
@@ -182,7 +184,6 @@ class Fight:
             elif action[0] == 2:
                 move_index: int = action[1]
                 result: tuple[tuple[bool, bool, int], bool, int] = self.client.get_last_info()
-
                 # If the move missed
                 if len(result) == 1:
                     print(f"{player.current_pokemon.name} missed!")
@@ -191,20 +192,22 @@ class Fight:
                 else:
                     move: Capacity = player.current_pokemon.moves[move_index]
                     print(f"{player.current_pokemon.name} used {move.name}!")
-                    multipliers: tuple[bool, bool, int] = result[0]
 
-                    # Critical hit
-                    if multipliers[1]:
-                        print("Critical Hit!")
+                    if isinstance(move, OffensiveCapacity):
+                        multipliers: tuple[bool, bool, int] = result[0]
 
-                    # Type effectiveness multiplier
-                    type_multiplier = multipliers[2]
-                    if type_multiplier == 0:
-                        print("This has no effect")
-                    elif type_multiplier < 1:
-                        print("This is not very effective...")
-                    elif type_multiplier > 1:
-                        print("This is very effective!")
+                        # Critical hit
+                        if multipliers[1]:
+                            print("Critical Hit!")
+
+                        # Type effectiveness multiplier
+                        type_multiplier = multipliers[2]
+                        if type_multiplier == 0:
+                            print("This has no effect")
+                        elif type_multiplier < 1:
+                            print("This is not very effective...")
+                        elif type_multiplier > 1:
+                            print("This is very effective!")
 
                     # Applying the imported results to the local target
                     secondary_effect_applied: bool = result[1]
@@ -242,7 +245,7 @@ class Fight:
             final_switch = self.player_switch_in(self.player1, switch)
             self.client.send_info(final_switch)
         elif self.player2.current_pokemon.is_dead():
-            self.client.reset_last_info()
+            print("Waiting for the second player to select their next pokemon...")
             switch: int = self.client.get_last_info()
             self.player_switch_in(self.player2, switch)
         else:
@@ -255,7 +258,7 @@ class Fight:
             final_switch = self.player_switch_in(self.player1, switch)
             self.client.send_info(final_switch)
         elif self.player2.current_pokemon.is_dead():
-            self.client.reset_last_info()
+            print("Waiting for the second player to select their next pokemon...")
             switch: int = self.client.get_last_info()
             self.player_switch_in(self.player2, switch)
 
@@ -302,7 +305,7 @@ class Fight:
 
 def main():
     rand = randint(0, 1000)
-    p = Player(team=[Charizard, Blastoise, Venusaur], name=f"Player {rand}")
+    p = Player(team=[Charizard, Blastoise, Venusaur, Ferrothorn, Magnezone], name=f"Player {rand}")
     Fight(p)
     print("Game over !")
 

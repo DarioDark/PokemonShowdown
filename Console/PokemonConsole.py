@@ -74,6 +74,7 @@ class Pokemon:
             'special_attack_boosts': self.special_attack_boosts,
             'special_defense_boosts': self.special_defense_boosts,
             'speed_boosts': self.speed_boosts,
+            'ability': self.ability.name if self.ability else 'None',
             'types': [pokemon_type.name for pokemon_type in self.types],
             'immunities': [pokemon_type.name for pokemon_type in self.immunities],
             'weaknesses': [pokemon_type.name for pokemon_type in self.weaknesses],
@@ -101,6 +102,7 @@ class Pokemon:
         self.special_attack_boosts = state['special_attack_boosts']
         self.special_defense_boosts = state['special_defense_boosts']
         self.speed_boosts = state['speed_boosts']
+        self.ability = Ability[state['ability'].upper()]
         self.types = [Type[type_name.upper()] for type_name in state['types']]
         self.immunities = [Type[type_name.upper()] for type_name in state['immunities']]
         self.weaknesses = [Type[type_name.upper()] for type_name in state['weaknesses']]
@@ -171,6 +173,7 @@ class Pokemon:
             return attack_stat + (self.attack_boosts * self.attack_stat // 2)
         elif self.attack_boosts < 0:
             return round(attack_stat * self.malus_to_percentage(self.attack_boosts))
+        return attack_stat
 
     @property
     def special_attack(self) -> int:
@@ -179,6 +182,7 @@ class Pokemon:
             return self.special_attack_stat + (self.special_attack_boosts * self.special_attack_stat // 2)
         elif self.special_attack_boosts < 0:
             return round(self.special_attack_stat * self.malus_to_percentage(self.special_attack_boosts))
+        return self.special_attack_stat
 
     @property
     def defense(self) -> int:
@@ -191,6 +195,7 @@ class Pokemon:
             return defense_stat + (self.defense_boosts * self.defense_stat // 2)
         elif self.defense_boosts < 0:
             return round(defense_stat * self.malus_to_percentage(self.defense_boosts))
+        return defense_stat
 
     @property
     def special_defense(self) -> int:
@@ -205,21 +210,27 @@ class Pokemon:
             return special_defense_stat + (self.special_defense_boosts * self.special_defense_stat // 2)
         elif self.special_defense_boosts < 0:
             round(special_defense_stat * self.malus_to_percentage(self.special_defense_boosts))
+        return special_defense_stat
 
     @property
     def speed(self) -> int:
         """Returns the speed of the pokemon, taking into account the speed boosts."""
+        speed_stat = self.speed_stat
         if self.environment:
             if EnvironmentElements.TAILWIND in self.environment.elements:
-                return self.speed_stat * 2
+                speed_stat *= 2
             if EnvironmentElements.SAND in self.environment.elements and self.ability == Ability.SAND_RUSH:
-                return self.speed_stat * 2
+                speed_stat *= 2
             if EnvironmentElements.RAIN in self.environment.elements and self.ability == Ability.SWIFT_SWIM:
-                return self.speed_stat * 2
+                speed_stat *= 2
+
+        if self.status == PrimeStatus.PARALYSIS:
+            speed_stat //= 2
         if self.speed_boosts > 0:
-            return self.speed_stat + (self.speed_boosts * self.speed_stat // 2)
+            return speed_stat + (self.speed_boosts * self.speed_stat // 2)
         elif self.speed_boosts < 0:
-            return round(self.speed_stat * self.malus_to_percentage(self.speed_boosts))
+            return round(speed_stat * self.malus_to_percentage(self.speed_boosts))
+        return speed_stat
 
     @staticmethod
     def malus_to_percentage(malus_level: int) -> float:
@@ -261,6 +272,7 @@ class Pokemon:
                 self.attack_boosts -= boost
             else:
                 self.defense_boosts += boost
+                print(f"{self.name}'s defense rose by {boost} stages !")
         else:
             print(f"{self.name}'s defense can't go any higher!")
 
@@ -272,8 +284,10 @@ class Pokemon:
         if self.special_attack_boosts < 6:
             if self.ability == Ability.CONTRARY:
                 self.attack_boosts -= boost
+                print(f"{self.name}'s special attack fell by {boost} stages !")
             else:
                 self.special_attack_boosts += boost
+                print(f"{self.name}'s special attack rose by {boost} stages !")
         else:
             print(f"{self.name}'s special attack can't go any higher!")
 
@@ -302,6 +316,81 @@ class Pokemon:
                 self.speed_boosts += boost
         else:
             print(f"{self.name}'s speed can't go any higher!")
+
+    def lower_attack(self, malus: int) -> None:
+        """Lowers the attack of the pokemon by a certain amount.
+
+        :param malus: The amount of the malus
+        """
+        if self.attack_boosts > -6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts += malus
+                print(f"{self.name}'s attack rose by {malus} stages !")
+            else:
+                self.attack_boosts -= malus
+                print(f"{self.name}'s attack fell by {malus} stages !")
+        else:
+            print(f"{self.name}'s attack can't go any lower!")
+
+    def lower_defense(self, malus: int) -> None:
+        """Lowers the defense of the pokemon by a certain amount.
+
+        :param malus: The amount of the malus
+        """
+        if self.defense_boosts > -6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts += malus
+                print(f"{self.name}'s defense rose by {malus} stages !")
+            else:
+                self.defense_boosts -= malus
+                print(f"{self.name}'s defense fell by {malus} stages !")
+        else:
+            print(f"{self.name}'s defense can't go any lower!")
+
+    def lower_special_attack(self, malus: int) -> None:
+        """Lowers the special attack of the pokemon by a certain amount.
+
+        :param malus: The amount of the malus
+        """
+        if self.special_attack_boosts > -6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts += malus
+                print(f"{self.name}'s special attack rose by {malus} stages !")
+            else:
+                self.special_attack_boosts -= malus
+                print(f"{self.name}'s special attack fell by {malus} stages !")
+        else:
+            print(f"{self.name}'s special attack can't go any lower!")
+
+    def lower_special_defense(self, malus: int) -> None:
+        """Lowers the special defense of the pokemon by a certain amount.
+
+        :param malus: The amount of the malus
+        """
+        if self.special_defense_boosts > -6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts += malus
+                print(f"{self.name}'s special defense rose by {malus} stages !")
+            else:
+                self.special_defense_boosts -= malus
+                print(f"{self.name}'s special defense fell by {malus} stages !")
+        else:
+            print(f"{self.name}'s special defense can't go any lower!")
+
+    def lower_speed(self, malus: int) -> None:
+        """Lowers the speed of the pokemon by a certain amount.
+
+        :param malus: The amount of the malus
+        """
+        if self.speed_boosts > -6:
+            if self.ability == Ability.CONTRARY:
+                self.attack_boosts += malus
+                print(f"{self.name}'s speed rose by {malus} stages !")
+            else:
+                self.speed_boosts -= malus
+                print(f"{self.name}'s speed fell by {malus} stages !")
+        else:
+            print(f"{self.name}'s speed can't go any lower!")
 
     def convert_hp_to_percentage(self, hp: int) -> float:
         """Converts the HP to a percentage of the max HP.
@@ -399,7 +488,7 @@ class Pokemon:
         self.current_hp += max(amount, 0)
         print(f"{self.name} was healed by {round(self.convert_hp_to_percentage(amount), 1)} HP!")
             
-    def attack_target(self, move: int, is_secondary_effect_applied: bool, target: 'Pokemon or Player', damage=-1) -> None:  # The target can be a the opposing pokemon, the opposing player or the player itself
+    def attack_target(self, move: int, is_secondary_effect_applied: bool, target: 'Pokemon or Player', damage) -> None:
         """The pokemon attacks the target with a move.
 
         :param move: The index of the move to use
@@ -411,30 +500,55 @@ class Pokemon:
         if capacity.current_pp > 0:
             capacity.current_pp -= 1
             if isinstance(capacity, OffensiveCapacity):
-                target.receive_damage(damage)
-            if not target.is_dead():
+                attack_successful = target.receive_damage(damage)
+                # If the attack was successful, apply the secondary effect of abilities
+                if attack_successful:
+                    if target.ability == Ability.IRON_BARBS or target.ability == Ability.ROUGH_SKIN:
+                        print(f"{target.ability.name} from {target.name}")
+                        print(f"{self.name} lost 12.5% HP!")
+                        self.receive_damage(self.max_hp // 8)
+                    elif target.ability == Ability.STATIC:
+                        if randint(1, 100) <= 30:
+                            print(f"{target.ability.name} from {target.name}")
+                            print(f"{self.name} is paralyzed!")
+                            self.status = PrimeStatus.PARALYSIS
+                    elif target.ability == Ability.FLAME_BODY:
+                        if randint(1, 100) <= 30:
+                            print(f"{target.ability.name} from {target.name}")
+                            print(f"{self.name} is burned!")
+                            self.status = PrimeStatus.BURN
+
+            # If the target is a Pokemon, apply the secondary effect of the move
+            if isinstance(target, Pokemon):
+                if not target.is_dead():
+                    if is_secondary_effect_applied:
+                        capacity.apply_secondary_effect(target)
+            else:
+                # If the target is a player, apply the secondary effect of the move
                 if is_secondary_effect_applied:
                     capacity.apply_secondary_effect(target)
         else:
             print(f"{self.name} has no PP left!")
 
-    def receive_damage(self, damage: int) -> None:
+    def receive_damage(self, damage: int) -> bool:
         """The pokemon receives damage.
 
         :param damage: The amount of damage to receive
+        :return: Whether the pokemon was hit or not
         """
         # If the Pokemon is immune thanks to its type
         if damage == 0:
-            return
+            return False
         # If the Pokemon is immune thanks to its ability (volt absorb, water absorb, etc...)
         elif damage < 0:
             self.heal(-damage)
-            return
+            return False
 
         self.current_hp -= damage
         self.current_hp = max(self.current_hp, 0)
         print(f"{self.name} lost {min(round(self.convert_hp_to_percentage(damage), 1), 100)}% HP!")
         self.is_dead(True)
+        return True
         
     def receive_secondary_effect(self, move: Capacity) -> None:
         """The pokemon receives the secondary effect of a move.
@@ -512,7 +626,7 @@ class Pokemon:
         # Critical hit
         crit_multiplier: bool = self.get_critical_multiplier(move)
         # Type effectiveness
-        type_multiplier: float = self.get_types_multiplier(move_type, attacker)
+        type_multiplier: float = self.get_types_multiplier(move.type, attacker)
 
         return stab_multiplier, crit_multiplier, type_multiplier
 
@@ -554,6 +668,15 @@ class Pokemon:
         elif self.ability == Ability.SAP_SIPPER:
             self.boost_attack(1)
             return 0
+        elif self.ability == Ability.STORM_DRAIN and attack.type == Type.WATER:
+            print(f"Storm Drain from {self.name} !")
+            self.boost_special_attack(1)
+            return 0
+        elif self.ability == Ability.FLASH_FIRE and attack.type == Type.FIRE:
+            print(f"Flash Fire from {self.name} !")
+            print("The power of {self.name}'s fire move were increased!")
+            self.sub_status.append(SubStatus.FLASH_FIRE)
+            return 0
 
         # If the pokemon is immune to the move
         if multipliers[2] == 0.0:
@@ -567,9 +690,19 @@ class Pokemon:
             attack_stat: int = attacker.special_attack
             defense_stat: int = self.special_defense
 
+        # Abilities that modify the power of the move
         move_power = attack.power
         if attacker.ability == Ability.TECHNICIAN and move_power <= 60:
             move_power *= 1.5
+        elif attacker.ability == Ability.SAND_FORCE and EnvironmentElements.SAND in self.environment.elements and attack.type in [Type.ROCK, Type.STEEL, Type.GROUND]:
+            move_power *= 1.3
+        elif attacker.ability == Ability.TOUGH_CLAWS and attack.contact_move:
+            move_power *= 1.3
+        elif SubStatus.FLASH_FIRE in attacker.sub_status and attack.type == Type.FIRE:
+            move_power *= 1.5
+
+        if attacker.status == PrimeStatus.BURN and attack.category == CapacityCategory.PHYSICAL:
+            move_power //= 2
 
         multiplier = self.compute_multipliers(multipliers)
         damage = (floor(floor(attacker.lvl * 2 / 5 + 2) * move_power * attack_stat / defense_stat) / 50) + 2  # Calculate the raw damage
@@ -669,7 +802,7 @@ class Pokemon:
         if self.ability == Ability.TRACE:
             self.ability = enemy_pokemon.ability
 
-        enemy_environment = enemy_player.environement
+        enemy_environment = enemy_player.environment
 
         # Weather
         # Insert weather objects here TODO
@@ -770,14 +903,15 @@ class Pokemon:
             if EnvironmentElements.SAND in self.environment.elements and Type.ROCK not in self.types and Type.STEEL not in self.types and Type.GROUND not in self.types and self.ability != Ability.SAND_FORCE:
                 self.current_hp = max(self.current_hp - floor(self.max_hp / 16), 0)
                 print(f"{self.name} is hurt by the sandstorm!")
-            elif EnvironmentElements.HAIL in self.environment.elements and self.ability != Ability.ICE_BODY:
+            elif EnvironmentElements.SNOW in self.environment.elements and self.ability != Ability.ICE_BODY:
                 self.current_hp = max(self.current_hp - floor(self.max_hp / 16), 0)
                 print(f"{self.name} is hurt by the hail!")
 
     def end_turn(self) -> None:
         """Applies the end of turn effects of the pokemon."""
         self.apply_end_turn_primary_status()
-
+        self.apply_end_turn_ability()
+        self.apply_end_turn_weather()
         self.environment.pass_turn()
 
     # def mega_evolve(self):
@@ -794,3 +928,4 @@ Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAt
 Landorus_Therian = Pokemon("Landorus-Therian", 100, 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
 Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, Thunder, Surf, LeechSeed], Ability.NONE)
 Greninja = Pokemon("Greninja", 100, 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
+Magnezone = Pokemon("Magnezone", 100, 70, 70, 115, 130, 90, 60, [Type.ELECTRIC, Type.STEEL], [QuickAttack, Thunder, Surf, SkullBash], Ability.MAGNET_PULL)

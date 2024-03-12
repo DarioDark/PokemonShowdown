@@ -41,45 +41,48 @@ class SecondaryEffectClass:
         return True
 
     # Effects functions
-
     @staticmethod
     def burn(target: 'Pokemon') -> None:
-        if target.status == PrimeStatus.NORMAL and not Type.FIRE in target.types:
-            target.status = PrimeStatus.BURN
-            target.attack = int(target.attack / 2)
-            print(f"{target.name} is burned !")
+        if target.status != PrimeStatus.NORMAL or Type.FIRE in target.types:
+            return
+        target.status = PrimeStatus.BURN
+        print(f"{target.name} is burned !")
 
     @staticmethod
     def poison(target: 'Pokemon') -> None:
-        if target.status == PrimeStatus.NORMAL and Type.POISON in target.types:
-            target.status = PrimeStatus.POISON
-            print(f"{target.name} is poisoned !")
+        if target.status != PrimeStatus.NORMAL or Type.POISON in target.types:
+            return
+        target.status = PrimeStatus.POISON
+        print(f"{target.name} is poisoned !")
 
     @staticmethod
     def severe_poison(target: 'Pokemon') -> None:
-        if target.status == PrimeStatus.NORMAL and Type.POISON in target.types:
-            target.status = PrimeStatus.SEVERE_POISON
-            target.nbr_turn_severe_poison = 0
-            print(f"{target.name} is badly poisoned !")
+        if target.status != PrimeStatus.NORMAL or Type.POISON in target.types:
+            return
+        target.status = PrimeStatus.SEVERE_POISON
+        target.nbr_turn_severe_poison = 0
+        print(f"{target.name} is badly poisoned !")
 
     @staticmethod
     def paralysis(target: 'Pokemon') -> None:
-        if target.status == PrimeStatus.NORMAL and Type.ELECTRIC in target.types:
-            target.status = PrimeStatus.PARALYSIS
-            target.speed = int(target.speed / 2)
-            print(f"{target.name} is paralyzed !")
+        if target.status != PrimeStatus.NORMAL or Type.ELECTRIC in target.types:
+            return
+        target.status = PrimeStatus.PARALYSIS
+        print(f"{target.name} is paralyzed !")
 
     @staticmethod
     def sleep(target: 'Pokemon') -> None:
-        if target.status == PrimeStatus.NORMAL:
-            target.status = PrimeStatus.SLEEP
-            print(f"{target.name} fell asleep !")
+        if target.status != PrimeStatus.NORMAL:
+            return
+        target.status = PrimeStatus.SLEEP
+        print(f"{target.name} fell asleep !")
 
     @staticmethod
     def freeze(target: 'Pokemon') -> None:
-        if target.status == PrimeStatus.NORMAL and Type.ICE in target.types:
-            target.status = PrimeStatus.FREEZE
-            print(f"{target.name} is frozen !")
+        if target.status != PrimeStatus.NORMAL or Type.ICE in target.types:
+            return
+        target.status = PrimeStatus.FREEZE
+        print(f"{target.name} is frozen !")
 
     @staticmethod
     def confusion(target: 'Pokemon') -> None:
@@ -91,18 +94,7 @@ class SecondaryEffectClass:
         target.sub_status.append(SubStatus.FLINCH)
         print(f"{target.name} flinched !")
 
-    @staticmethod
     # Entire capacities
-    def leech_seed(target: 'Pokemon') -> None:
-        if Type.PLANT in target.types:
-            print(f"But it failed ! This doesn't affect {target.name}...")
-        else:
-            if SubStatus.LEECH_SEED in target.sub_status:
-                print(f"But it failed ! {target.name} is already infected !")
-            else:
-                target.sub_status.append(SubStatus.LEECH_SEED)
-                print(f"{target.name} is infected !")
-
     @staticmethod
     def stealth_rock(target: 'Player') -> None:
         if EnvironmentElements.STEALTH_ROCK in target.environment.elements:
@@ -110,6 +102,14 @@ class SecondaryEffectClass:
         else:
             target.environment.add_element(EnvironmentElements.STEALTH_ROCK)
             print(f"Sharp rocks are floating around the enemy team !")
+
+    @staticmethod
+    def spikes(target: 'Player') -> None:
+        if target.environment.elements.count(EnvironmentElements.SPIKES) == 3:
+            print(f"But it failed ! Spikes are already set up !")
+        else:
+            target.environment.add_element(EnvironmentElements.SPIKES)
+            print(f"Sharp spikes spread around the enemy team !")
 
     @staticmethod
     def light_screen(target: 'Player') -> None:
@@ -127,6 +127,17 @@ class SecondaryEffectClass:
             target.environment.add_element(EnvironmentElements.REFLECT, 5)
             print(f"Reflect was set up !")
 
+    @staticmethod
+    def leech_seed(target: 'Pokemon') -> None:
+        if Type.PLANT in target.types:
+            print(f"But it failed ! This doesn't affect {target.name}...")
+        else:
+            if SubStatus.LEECH_SEED in target.sub_status:
+                print(f"But it failed ! {target.name} is already infected !")
+            else:
+                target.sub_status.append(SubStatus.LEECH_SEED)
+                print(f"{target.name} is infected !")
+
 
 # Side effects declarations
 none_effect = SecondaryEffectClass("None", 0, "No secondary effect.", None)
@@ -143,7 +154,7 @@ leech_seed_effect = SecondaryEffectClass("Leech_seed", 100, "The opposing Pokemo
 stealth_rock_effect = SecondaryEffectClass("Stealth_rock", 100, "Set up Stealth Rock", SecondaryEffectClass.stealth_rock)
 light_screen_effect = SecondaryEffectClass("Light_screen", 100, "Set up Light Screen", SecondaryEffectClass.light_screen, 5)
 reflect_effect = SecondaryEffectClass("Reflect", 100, "Set up Reflect", SecondaryEffectClass.reflect, 5)
-spikes_effect = SecondaryEffectClass("Spikes", 100, "Set up Spikes", SecondaryEffectClass.stealth_rock)
+spikes_effect = SecondaryEffectClass("Spikes", 100, "Set up Spikes", SecondaryEffectClass.spikes)
 
 
 # Side effects enum
@@ -154,11 +165,12 @@ class SecondaryEffects(Enum):
     COMMON_POISON = common_poison
     COMMON_PARALYSIS = common_paralysis
     RARE_PARALYSIS = rare_paralysis
-    CONFUSION = confusion_effect
     RARE_FREEZE = rare_freeze
-    LEECH_SEED = leech_seed_effect
+    CONFUSION = confusion_effect
+
     STEALTH_ROCK = stealth_rock_effect
     SPIKES = spikes_effect
     LIGHT_SCREEN = light_screen_effect
     REFLECT = reflect_effect
-    FLINCH = SecondaryEffectClass.flinch
+
+    LEECH_SEED = leech_seed_effect

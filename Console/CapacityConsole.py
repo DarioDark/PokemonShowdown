@@ -38,14 +38,10 @@ class Capacity:
                 return True
         return False
     
-    def apply_secondary_effect(self, target) -> None:  # The target can be a the opposing pokemon, the opposing player or the player itself
-        print("secondary effect :", self.secondary_effect, type(self.secondary_effect))
+    def apply_secondary_effect(self, target) -> None:  # The target can be the opposing pokemon, the opposing player or the player itself
         if isinstance(self.secondary_effect, SecondaryEffectClass):
             self.secondary_effect.apply(target)
 
-
-
-            
             
 class CapacityCategory(Enum):
     PHYSICAL = "Physical"
