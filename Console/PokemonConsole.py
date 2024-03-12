@@ -249,6 +249,32 @@ class Pokemon:
         }
         return level_to_percentage[malus_level]
 
+    def get_highest_stat(self) -> str:
+        stats = {
+            'HP': self.max_hp,
+            'Attack': self.attack,
+            'Defense': self.defense,
+            'Special Attack': self.special_attack,
+            'Special Defense': self.special_defense,
+            'Speed': self.speed
+        }
+        highest_stat = max(stats, key=stats.get)
+        return highest_stat
+
+    def boost_highest_stat(self):
+        highest_stat = self.get_highest_stat()
+
+        if highest_stat == 'Attack':
+            self.boost_attack(1)
+        elif highest_stat == 'Defense':
+            self.boost_defense(1)
+        elif highest_stat == 'Special Attack':
+            self.boost_special_attack(1)
+        elif highest_stat == 'Special Defense':
+            self.boost_special_defense(1)
+        elif highest_stat == 'Speed':
+            self.boost_speed(1)
+
     def boost_attack(self, boost: int) -> None:
         """Boosts the attack of the pokemon by a certain amount.
 
@@ -259,6 +285,7 @@ class Pokemon:
                 self.attack_boosts -= boost
             else:
                 self.attack_boosts += boost
+                print(f"{self.name}'s attack rose by {boost} stages !")
         else:
             print(f"{self.name}'s attack can't go any higher!")
 
@@ -505,18 +532,20 @@ class Pokemon:
                 if attack_successful:
                     if target.ability == Ability.IRON_BARBS or target.ability == Ability.ROUGH_SKIN:
                         print(f"{target.ability.name} from {target.name}")
-                        print(f"{self.name} lost 12.5% HP!")
                         self.receive_damage(self.max_hp // 8)
                     elif target.ability == Ability.STATIC:
-                        if randint(1, 100) <= 30:
-                            print(f"{target.ability.name} from {target.name}")
-                            print(f"{self.name} is paralyzed!")
-                            self.status = PrimeStatus.PARALYSIS
+                        if self.status == PrimeStatus.NORMAL:
+                            if randint(1, 100) <= 30:
+                                print(f"{target.ability.name} from {target.name}")
+                                print(f"{self.name} is paralyzed!")
+                                self.status = PrimeStatus.PARALYSIS
+
                     elif target.ability == Ability.FLAME_BODY:
-                        if randint(1, 100) <= 30:
-                            print(f"{target.ability.name} from {target.name}")
-                            print(f"{self.name} is burned!")
-                            self.status = PrimeStatus.BURN
+                        if self.status == PrimeStatus.NORMAL:
+                            if randint(1, 100) <= 30:
+                                print(f"{target.ability.name} from {target.name}")
+                                print(f"{self.name} is burned!")
+                                self.status = PrimeStatus.BURN
 
             # If the target is a Pokemon, apply the secondary effect of the move
             if isinstance(target, Pokemon):
@@ -543,6 +572,9 @@ class Pokemon:
         elif damage < 0:
             self.heal(-damage)
             return False
+
+        if self.ability == Ability.STURDY and self.current_hp == self.max_hp:
+            damage = min(damage, self.current_hp - 1)
 
         self.current_hp -= damage
         self.current_hp = max(self.current_hp, 0)
@@ -777,10 +809,14 @@ class Pokemon:
                 hp_drained = 0
             else:
                 hp_drained = floor(self.max_hp / 8)
-            self.current_hp = min(self.current_hp + hp_drained, self.max_hp)
+            self.receive_damage(hp_drained)
             print(f"{target.name} is draining the energy of {self.name}!")
             return hp_drained
-        
+
+    def opponent_died(self) -> None:
+        if self.ability == Ability.BEAST_BOOST:
+            self.boost_highest_stat()
+
     def switch_out(self):
         """Resets the status of the pokemon when it switches out."""
         self.nbr_turn_severe_poison = 0
@@ -893,7 +929,7 @@ class Pokemon:
         elif self.ability == Ability.RAIN_DISH and EnvironmentElements.RAIN in self.environment.elements:
             self.heal(floor(self.max_hp / 16))
             print(f"{self.name} is healed by Rain Dish!")
-        elif self.ability == Ability.Hydration and EnvironmentElements.RAIN in self.environment.elements:
+        elif self.ability == Ability.HYDRATION and EnvironmentElements.RAIN in self.environment.elements:
             self.status = PrimeStatus.NORMAL
             print(f"{self.name} healed its status!")
 
@@ -924,8 +960,8 @@ class Pokemon:
 Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed], Ability.NONE)
 Blastoise = Pokemon("Blastoise", 100, 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail],Ability.NONE)
 Venusaur = Pokemon("Venusaur", 100, 80, 82, 83, 100, 100, 80, [Type.PLANT, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
-Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
+Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, Thunder, Surf, StealthRock], Ability.MAGIC_BOUNCE)
 Landorus_Therian = Pokemon("Landorus-Therian", 100, 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
-Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, Thunder, Surf, LeechSeed], Ability.NONE)
+Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, Thunder, Surf, LeechSeed], Ability.IRON_BARBS)
 Greninja = Pokemon("Greninja", 100, 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
 Magnezone = Pokemon("Magnezone", 100, 70, 70, 115, 130, 90, 60, [Type.ELECTRIC, Type.STEEL], [QuickAttack, Thunder, Surf, SkullBash], Ability.MAGNET_PULL)

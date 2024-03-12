@@ -102,11 +102,23 @@ class Player:
     def use_move(self, move: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> None:
         capacity = self.current_pokemon.moves[move]
         if isinstance(capacity, StatusCapacity):
-            if capacity.target == "enemy_player":
-                self.current_pokemon.attack_target(move, is_secondary_effect_applied, target, damage)
-            elif capacity.target == "self_player":
-                self.current_pokemon.attack_target(move, is_secondary_effect_applied, self, damage)
-        self.current_pokemon.attack_target(move, is_secondary_effect_applied, target.current_pokemon, damage)
+            if target.current_pokemon.ability == Ability.MAGIC_BOUNCE:
+                print(f"Magic Bounce from {target.name} reflected the status move!")
+                if capacity.target == "enemy_player":
+                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, self, damage)
+                elif capacity.target == "enemy_pokemon":
+                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, self.current_pokemon, damage)
+            else:
+                if capacity.target == "enemy_player":
+                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, target, damage)
+                elif capacity.target == "self_player":
+                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, self, damage)
+                elif capacity.target == "self_pokemon":
+                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, self.current_pokemon, damage)
+                elif capacity.target == "enemy_pokemon":
+                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, target.current_pokemon, damage)
+        else:
+            self.current_pokemon.attack_target(move, is_secondary_effect_applied, target.current_pokemon, damage)
 
     def choose_action(self, target: 'Player') -> tuple[int, 'Capacity / int']:
         system("cls")

@@ -97,6 +97,7 @@ class SecondaryEffectClass:
     # Entire capacities
     @staticmethod
     def stealth_rock(target: 'Player') -> None:
+        print("target env", target.environment.elements)
         if EnvironmentElements.STEALTH_ROCK in target.environment.elements:
             print(f"But it failed ! Stealth Rock is already set up !")
         else:

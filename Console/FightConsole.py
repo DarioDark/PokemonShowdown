@@ -241,10 +241,12 @@ class Fight:
         if self.end_game():
             return
         elif self.player1.current_pokemon.is_dead():
+            self.player2.current_pokemon.opponent_died()
             switch: int = self.player1.select_switch(self.player2.current_pokemon)
             final_switch = self.player_switch_in(self.player1, switch)
             self.client.send_info(final_switch)
         elif self.player2.current_pokemon.is_dead():
+            self.player1.current_pokemon.opponent_died()
             print("Waiting for the second player to select their next pokemon...")
             switch: int = self.client.get_last_info()
             self.player_switch_in(self.player2, switch)
@@ -254,10 +256,12 @@ class Fight:
         if self.end_game():
             return
         elif self.player1.current_pokemon.is_dead():
+            self.player2.current_pokemon.opponent_died()
             switch: int = self.player1.select_switch(self.player2.current_pokemon)
             final_switch = self.player_switch_in(self.player1, switch)
             self.client.send_info(final_switch)
         elif self.player2.current_pokemon.is_dead():
+            self.player1.current_pokemon.opponent_died()
             print("Waiting for the second player to select their next pokemon...")
             switch: int = self.client.get_last_info()
             self.player_switch_in(self.player2, switch)
@@ -305,7 +309,7 @@ class Fight:
 
 def main():
     rand = randint(0, 1000)
-    p = Player(team=[Charizard, Blastoise, Venusaur, Ferrothorn, Magnezone], name=f"Player {rand}")
+    p = Player(team=[Charizard, Blastoise, Venusaur, Ferrothorn, Magnezone, Mew], name=f"Player {rand}")
     Fight(p)
     print("Game over !")
 

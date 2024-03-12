@@ -6,7 +6,7 @@ class StatusCapacity(Capacity):
     def __init__(self, name: str = None, type: Type = None, accuracy:int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None, target: str = "pokemon"):
         super().__init__(name, type, accuracy, pp, secondary_effect)
         self.category = CapacityCategory.STATUS
-        self.target = target  # The target of the move, can be "enemy_pokemon", "self.pokemon", "enemy_player" or "self_player"
+        self.target = target  # The target of the move, can be "enemy_pokemon", "self_pokemon", "enemy_player" or "self_player"
         
     def __repr__(self) -> str:
         """Return a string representation of the capacity.
@@ -43,8 +43,8 @@ class StatusCapacity(Capacity):
         self.secondary_effect = SecondaryEffects[state['secondary_effect']].value
            
            
-LeechSeed = StatusCapacity("Leech Seed", Type.PLANT, 90, 10, SecondaryEffects.LEECH_SEED.value)
-StealthRock = StatusCapacity("Stealth Rock", Type.ROCK, 100, 10, SecondaryEffects.STEALTH_ROCK.value, "player")
-LightScreen = StatusCapacity("Light Screen", Type.PSYCHIC, 100, 30, SecondaryEffects.LIGHT_SCREEN.value, "self")
-Reflect = StatusCapacity("Reflect", Type.PSYCHIC, 100, 30, SecondaryEffects.REFLECT.value, "self")
-Spikes = StatusCapacity("Spikes", Type.GROUND, 100, 20, SecondaryEffects.SPIKES.value, "player")
+LeechSeed = StatusCapacity("Leech Seed", Type.PLANT, 90, 10, SecondaryEffects.LEECH_SEED.value, "enemy_pokemon")
+StealthRock = StatusCapacity("Stealth Rock", Type.ROCK, 100, 10, SecondaryEffects.STEALTH_ROCK.value, "enemy_player")
+LightScreen = StatusCapacity("Light Screen", Type.PSYCHIC, 100, 30, SecondaryEffects.LIGHT_SCREEN.value, "self_player")
+Reflect = StatusCapacity("Reflect", Type.PSYCHIC, 100, 30, SecondaryEffects.REFLECT.value, "enemy_self")
+Spikes = StatusCapacity("Spikes", Type.GROUND, 100, 20, SecondaryEffects.SPIKES.value, "enemy_player")

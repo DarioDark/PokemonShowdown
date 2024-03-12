@@ -40,11 +40,11 @@ class Ability(Enum):
     IRON_BARBS = "Iron Barbs"
     STORM_DRAIN = "Storm Drain"
     FLASH_FIRE = "Flash Fire"
-
     STATIC = "Static"
     FLAME_BODY = "Flame Body"
-
+    BEAST_BOOST = "Beast Boost"
     STURDY = "Sturdy"
+    MAGIC_BOUNCE = "Magic Bounce"
 
     NONE = "None"
     # ...
