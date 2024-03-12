@@ -3,7 +3,7 @@ from CapacitySideEffectsConsole import SecondaryEffects
 
 
 class StatusCapacity(Capacity):
-    def __init__(self, name: str = None, type: Type = None, accuracy:int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None, target: str = "pokemon"):
+    def __init__(self, name: str = None, type: Type = None, accuracy:int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None, target: str = None):
         super().__init__(name, type, accuracy, pp, secondary_effect)
         self.category = CapacityCategory.STATUS
         self.target = target  # The target of the move, can be "enemy_pokemon", "self_pokemon", "enemy_player" or "self_player"
@@ -30,7 +30,8 @@ class StatusCapacity(Capacity):
             'accuracy': self.accuracy,
             'current_pp': self.current_pp,
             'max_pp': self.max_pp,
-            'secondary_effect': self.secondary_effect.name.upper()
+            'secondary_effect': self.secondary_effect.name.upper(),
+            'target': self.target
         }
         
     def __setstate__(self, state) -> None:
@@ -41,6 +42,7 @@ class StatusCapacity(Capacity):
         self.current_pp = state['current_pp']
         self.max_pp = state['max_pp']
         self.secondary_effect = SecondaryEffects[state['secondary_effect']].value
+        self.target = state['target']
            
            
 LeechSeed = StatusCapacity("Leech Seed", Type.PLANT, 90, 10, SecondaryEffects.LEECH_SEED.value, "enemy_pokemon")

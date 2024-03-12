@@ -78,6 +78,9 @@ class Player:
         self.current_pokemon.switch_out()
         self.current_pokemon = pokemon
         print(f"{pokemon.name}, go!")
+        if self.current_pokemon.ability == Ability.INTIMIDATE:
+            print(f"{self.current_pokemon.name} intimidates the opposing pokemon!")
+            enemy_player.current_pokemon.lower_attack(1)
         self.current_pokemon.switch_in(enemy_player)
         if self.current_pokemon.is_dead():
             return False

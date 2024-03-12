@@ -2,6 +2,7 @@ from enum import Enum
 from random import randint
 from termcolor import colored
 
+from AbilityConsole import Ability
 from TypesConsole import Type
 from CapacitySideEffectsConsole import SecondaryEffectClass
 
@@ -32,9 +33,12 @@ class Capacity:
     def get_grey_pp_number(self) -> str:
         return colored(f"{self.current_pp}/{self.max_pp}", 'dark_grey')
     
-    def is_secondary_effect_applied(self) -> bool:
+    def is_secondary_effect_applied(self, attacker: 'Pokemon') -> bool:
         if self.secondary_effect:
-            if randint(1, 100) <= self.secondary_effect.probability:
+            if attacker.ability == Ability.SERENE_GRACE:
+                if randint(1, 100) <= self.secondary_effect.probability * 2:
+                    return True
+            elif randint(1, 100) <= self.secondary_effect.probability:
                 return True
         return False
     

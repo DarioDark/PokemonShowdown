@@ -1,4 +1,5 @@
 from math import floor
+from copy import deepcopy
 from OffensiveCapacityConsole import *
 from StatusCapacityConsole import *
 from StatusConsole import PrimeStatus, SubStatus
@@ -240,12 +241,12 @@ class Pokemon:
         :return: The percentage of the stat
         """
         level_to_percentage = {
-            -1: 67,
-            -2: 50,
-            -3: 40,
-            -4: 33,
-            -5: 29,
-            -6: 25
+            -1: 0.67,
+            -2: 0.50,
+            -3: 0.40,
+            -4: 0.33,
+            -5: 0.29,
+            -6: 0.25
         }
         return level_to_percentage[malus_level]
 
@@ -496,8 +497,8 @@ class Pokemon:
         :return: The immunities of the pokemon
         """
         immunities = []
-        if self.ability == Ability.LEVITATE:
-            immunities.append(Type.GROUND)
+        for pokemon_type in self.types:
+            immunities.extend(pokemon_type.value.immunities)
         return immunities
     
     def print_attacks(self) -> None:
@@ -525,11 +526,20 @@ class Pokemon:
         """
         capacity = self.moves[move]
         if capacity.current_pp > 0:
-            capacity.current_pp -= 1
+            if target.ability == Ability.PRESSURE:
+                capacity.current_pp -= 2
+            else:
+                capacity.current_pp -= 1
+
+            if self.ability == Ability.PROTEAN:
+                if capacity.type not in self.types:
+                    self.types = [capacity.type]
+                    print(f"Protean from {self.name} : He changed its type to {capacity.type.name}!")
+
             if isinstance(capacity, OffensiveCapacity):
                 attack_successful = target.receive_damage(damage)
                 # If the attack was successful, apply the secondary effect of abilities
-                if attack_successful:
+                if attack_successful and capacity.contact_move:
                     if target.ability == Ability.IRON_BARBS or target.ability == Ability.ROUGH_SKIN:
                         print(f"{target.ability.name} from {target.name}")
                         self.receive_damage(self.max_hp // 8)
@@ -539,7 +549,6 @@ class Pokemon:
                                 print(f"{target.ability.name} from {target.name}")
                                 print(f"{self.name} is paralyzed!")
                                 self.status = PrimeStatus.PARALYSIS
-
                     elif target.ability == Ability.FLAME_BODY:
                         if self.status == PrimeStatus.NORMAL:
                             if randint(1, 100) <= 30:
@@ -623,14 +632,15 @@ class Pokemon:
         :param attacker: The pokemon that uses the move
         :return: The type effectiveness multiplier of the move
         """
-        temp_immunities = self.immunities.copy()
+        temp_immunities = deepcopy(self.immunities)
         if self.ability == Ability.LEVITATE:
             temp_immunities.append(Type.GROUND)
         if attacker.ability == Ability.SCRAPPY:
-            temp_immunities.remove(Type.GHOST)
+            temp_immunities.remove(Type.FIGHT)
+            temp_immunities.remove(Type.NORMAL)
 
         multiplier = 1
-        if attack_type in self.immunities:
+        if attack_type in temp_immunities:
             print("This has no effect...")
             return 0.0
         if attack_type in self.weaknesses:
@@ -688,6 +698,7 @@ class Pokemon:
         :param multipliers: The multipliers of the move
         :return: The damage value of the move
         """
+        # If the pokemon is immune to the move thanks to its ability
         # TODO
         if self.ability == Ability.FLASH_FIRE and attack.type == Type.FIRE:
             return 0
@@ -709,8 +720,14 @@ class Pokemon:
             print("The power of {self.name}'s fire move were increased!")
             self.sub_status.append(SubStatus.FLASH_FIRE)
             return 0
+        elif self.ability == Ability.LEVITATE and attacker.ability != Ability.MOLD_BREAKER and attacker.ability != Ability.TERA_VOLTAGE and attack.type == Type.GROUND:
+            return 0
+        elif self.ability == Ability.BULLET_PROOF and attack.bullet_move:
+            return 0
+        elif self.ability == Ability.SOUNDPROOF and attack.sound_move:
+            return 0
 
-        # If the pokemon is immune to the move
+        # If the pokemon is immune to the move thanks to its type
         if multipliers[2] == 0.0:
             return 0
 
@@ -732,10 +749,19 @@ class Pokemon:
             move_power *= 1.3
         elif SubStatus.FLASH_FIRE in attacker.sub_status and attack.type == Type.FIRE:
             move_power *= 1.5
+        elif attacker.ability == Ability.TORRENT and attack.type == Type.WATER and attacker.current_hp <= attacker.max_hp / 3:
+            move_power *= 1.5
+        elif attacker.ability == Ability.SWARM and attack.type == Type.BUG and attacker.current_hp <= attacker.max_hp / 3:
+            move_power *= 1.5
+        elif attacker.ability == Ability.BLAZE and attack.type == Type.FIRE and attacker.current_hp <= attacker.max_hp / 3:
+            move_power *= 1.5
+        elif attacker.ability == Ability.OVERGROW and attack.type == Type.PLANT and attacker.current_hp <= attacker.max_hp / 3:
+            move_power *= 1.5
 
         if attacker.status == PrimeStatus.BURN and attack.category == CapacityCategory.PHYSICAL:
             move_power //= 2
 
+        # Multipliers
         multiplier = self.compute_multipliers(multipliers)
         damage = (floor(floor(attacker.lvl * 2 / 5 + 2) * move_power * attack_stat / defense_stat) / 50) + 2  # Calculate the raw damage
         damage *= multiplier  # Apply the modifiers
@@ -816,6 +842,13 @@ class Pokemon:
     def opponent_died(self) -> None:
         if self.ability == Ability.BEAST_BOOST:
             self.boost_highest_stat()
+        elif self.ability == Ability.BATTLE_BOND and self.name == "Greninja":
+            self.attack_stat += 50
+            self.special_attack_stat += 50
+            self.speed_stat += 10
+            print("Greninja's Battle Bond : Greninja became Ash-Greninja!")
+        elif self.ability == Ability.SOUL_HEART:
+            self.boost_special_attack(1)
 
     def switch_out(self):
         """Resets the status of the pokemon when it switches out."""
@@ -957,11 +990,12 @@ class Pokemon:
 
             
 # Create some pokemons
-Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed], Ability.NONE)
+Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed], Ability.SCRAPPY)
 Blastoise = Pokemon("Blastoise", 100, 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail],Ability.NONE)
 Venusaur = Pokemon("Venusaur", 100, 80, 82, 83, 100, 100, 80, [Type.PLANT, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
-Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, Thunder, Surf, StealthRock], Ability.MAGIC_BOUNCE)
+Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, CloseCombat, Surf, StealthRock], Ability.SCRAPPY)
 Landorus_Therian = Pokemon("Landorus-Therian", 100, 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
-Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, Thunder, Surf, LeechSeed], Ability.IRON_BARBS)
+Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, QuickAttack, CloseCombat, LeechSeed], Ability.IRON_BARBS)
 Greninja = Pokemon("Greninja", 100, 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
 Magnezone = Pokemon("Magnezone", 100, 70, 70, 115, 130, 90, 60, [Type.ELECTRIC, Type.STEEL], [QuickAttack, Thunder, Surf, SkullBash], Ability.MAGNET_PULL)
+Blacephalon = Pokemon("Blacephalon", 100, 53, 127, 53, 151, 79, 107, [Type.FIRE, Type.GHOST], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)

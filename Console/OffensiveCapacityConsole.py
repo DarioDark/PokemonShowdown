@@ -7,8 +7,10 @@ class OffensiveCapacity(Capacity):
         super().__init__(name, pokemon_type, accuracy, pp, secondary_effect)
         self.category = category
         self.contact_move = contact_move
+        self.bullet_move = False
+        self.sound_move = False
         self.power = power
-        self.target = 'pokemon'
+        self.target = 'enemy_pokemon'
         
     def __repr__(self) -> str:
         if self.category == CapacityCategory.PHYSICAL:
@@ -23,6 +25,9 @@ class OffensiveCapacity(Capacity):
             'name': self.name,
             'type': self.type.name,
             'category': self.category.name,
+            'contact_move': self.contact_move,
+            'bullet_move': self.bullet_move,
+            'sound_move': self.sound_move,
             'power': self.power,
             'base_accuracy': self.base_accuracy,
             'accuracy': self.accuracy,
@@ -35,6 +40,9 @@ class OffensiveCapacity(Capacity):
         self.name = state['name']
         self.type = Type[state['type']]
         self.category = CapacityCategory[state['category']]
+        self.contact_move = state['contact_move']
+        self.bullet_move = state['bullet_move']
+        self.sound_move = state['sound_move']
         self.power = int(state['power'])
         self.base_accuracy = state['base_accuracy']
         self.accuracy = state['accuracy']
@@ -56,3 +64,4 @@ Psychic = OffensiveCapacity("Psychic", Type.PSYCHIC, CapacityCategory.SPECIAL, F
 SkullBash = OffensiveCapacity("Skull Bash", Type.NORMAL, CapacityCategory.PHYSICAL, True, 130, 100, 5, SecondaryEffects.NONE.value)
 AquaTail = OffensiveCapacity("Aqua Tail", Type.WATER, CapacityCategory.PHYSICAL, True, 90, 90, 10, SecondaryEffects.NONE.value)
 QuickAttack = OffensiveCapacity("Quick Attack", Type.NORMAL, CapacityCategory.PHYSICAL, True, 40, 100, 30, SecondaryEffects.NONE.value)
+CloseCombat = OffensiveCapacity("Close Combat", Type.FIGHT, CapacityCategory.PHYSICAL, True, 60, 100, 5, SecondaryEffects.NONE.value)

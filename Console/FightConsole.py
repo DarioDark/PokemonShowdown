@@ -129,6 +129,14 @@ class Fight:
         if SubStatus.LEECH_SEED in player1.current_pokemon.sub_status:
             hp_drained = player1.current_pokemon.apply_leech_seed(player2.current_pokemon)
             player2.current_pokemon.heal(hp_drained)
+            if player1.current_pokemon.is_dead(True):
+                if player1 == self.player1:
+                    switch = player1.select_switch(player2.current_pokemon)
+                    final_switch = self.player_switch_in(player1, switch)
+                    self.client.send_info(final_switch)
+                else:
+                    switch = self.client.get_last_info()
+                    self.player_switch_in(player1, switch)
 
     def player_use_action(self, player: Player, target: Player, action: tuple) -> None:
         """Takes a player, a target, and tuple that contains a choice and the associated object.
@@ -164,7 +172,7 @@ class Fight:
                 else:
                     multipliers = (False, False, 1)
                     damage: int = -1
-                secondary_effect_applied: bool = move.is_secondary_effect_applied()
+                secondary_effect_applied: bool = move.is_secondary_effect_applied(player.current_pokemon)
 
                 # Sending the results to the server
                 result: tuple[tuple[bool, bool, float], bool, int] = (multipliers, secondary_effect_applied, damage)
@@ -309,7 +317,7 @@ class Fight:
 
 def main():
     rand = randint(0, 1000)
-    p = Player(team=[Charizard, Blastoise, Venusaur, Ferrothorn, Magnezone, Mew], name=f"Player {rand}")
+    p = Player(team=[Charizard, Blastoise, Blacephalon, Ferrothorn, Magnezone, Mew], name=f"Player {rand}")
     Fight(p)
     print("Game over !")
 

@@ -45,6 +45,22 @@ class Ability(Enum):
     BEAST_BOOST = "Beast Boost"
     STURDY = "Sturdy"
     MAGIC_BOUNCE = "Magic Bounce"
+    MOLD_BREAKER = "Mold Breaker"
+    TORRENT = "Torrent"
+    SWARM = "Swarm"
+    BLAZE = "Blaze"
+    OVERGROW = "Overgrow"
+    PRESSURE = "Pressure"
+    PROTEAN = "Protean"
+    BATTLE_BOND = "Battle Bond"
+    SERENE_GRACE = "Serene Grace"
+    TERA_VOLTAGE = "Teravolt"
+    INTIMIDATE = "Intimidate"
+    SOUL_HEART = "Soul-Heart"
+    BULLET_PROOF = "Bulletproof"
+    SOUNDPROOF = "Soundproof"
+
+    UNBURDEN = "Unburden"
 
     NONE = "None"
     # ...
