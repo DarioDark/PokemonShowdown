@@ -4,8 +4,8 @@ from enum import Enum
 class EnvironmentClass:
     def __init__(self):
         self.elements: list[EnvironmentElements] = []
-        self.temporary_elements_turns: dict = {}
-        
+        self.temporary_elements_turns: dict[EnvironmentElements: int] = {}
+
     def __getstate__(self):
         return {
             'elements': [element for element in self.elements if element]
@@ -13,6 +13,7 @@ class EnvironmentClass:
         
     def __setstate__(self, state):
         self.elements = [EnvironmentElements[element.name] for element in state['elements']]
+        # TODO
 
     def pass_turn(self) -> None:
         """Pass a turn in the environment, removing temporary elements if their duration is over."""
@@ -39,7 +40,7 @@ class EnvironmentClass:
                     del self.temporary_elements_turns[elem]
 
         if turns != -1:
-            self.temporary_elements_turns[element] = 5
+            self.temporary_elements_turns[element] = turns
 
     def remove_element(self, element: 'EnvironmentElements') -> None:
         """Remove an element from the environment.

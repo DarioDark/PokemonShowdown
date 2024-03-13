@@ -42,6 +42,7 @@ class Pokemon:
 
         # Types, ability and object
         self.ability: Ability = ability
+        self.object_start_turn = poke_object
         self.object: PokeObject = poke_object
         self.types: list[Type] = types
         self.immunities: list[Type] = self.get_types_immunities()
@@ -81,6 +82,7 @@ class Pokemon:
             'speed_boosts': self.speed_boosts,
             'ability': self.ability.name,
             'object': self.object.name,
+            'object_start_turn': self.object_start_turn.name,
             'types': [pokemon_type.name for pokemon_type in self.types],
             'immunities': [pokemon_type.name for pokemon_type in self.immunities],
             'weaknesses': [pokemon_type.name for pokemon_type in self.weaknesses],
@@ -111,6 +113,7 @@ class Pokemon:
         self.speed_boosts = state['speed_boosts']
         self.ability = Ability[state['ability'].upper()]
         self.object = PokeObject[state['object'].upper()]
+        self.object_start_turn = PokeObject[state['object'].upper()]
         self.types = [Type[type_name.upper()] for type_name in state['types']]
         self.immunities = [Type[type_name.upper()] for type_name in state['immunities']]
         self.weaknesses = [Type[type_name.upper()] for type_name in state['weaknesses']]
@@ -176,8 +179,15 @@ class Pokemon:
     def attack(self) -> int:
         """Returns the attack of the pokemon, taking into account the attack boosts."""
         attack_stat = self.attack_stat
+        # Ability
         if self.ability == Ability.HUGE_POWER or self.ability == Ability.PURE_POWER:
             attack_stat *= 2
+        elif self.ability == Ability.GUTS and self.status != PrimeStatus.NORMAL:
+            attack_stat *= 2
+        # Object
+        if self.object == PokeObject.CHOICE_BAND:
+            attack_stat *= 1.5
+        # Boosts
         if self.attack_boosts > 0:
             return attack_stat + (self.attack_boosts * self.attack_stat // 2)
         elif self.attack_boosts < 0:
@@ -187,19 +197,26 @@ class Pokemon:
     @property
     def special_attack(self) -> int:
         """Returns the special attack of the pokemon, taking into account the special attack boosts."""
+        special_attack_stat = self.special_attack_stat
+        # Object
+        if self.object == PokeObject.CHOICE_SPECS:
+            special_attack_stat *= 1.5
+        # Boosts
         if self.special_attack_boosts > 0:
-            return self.special_attack_stat + (self.special_attack_boosts * self.special_attack_stat // 2)
+            return special_attack_stat + (self.special_attack_boosts * self.special_attack_stat // 2)
         elif self.special_attack_boosts < 0:
-            return round(self.special_attack_stat * self.malus_to_percentage(self.special_attack_boosts))
-        return self.special_attack_stat
+            return round(special_attack_stat * self.malus_to_percentage(self.special_attack_boosts))
+        return special_attack_stat
 
     @property
     def defense(self) -> int:
         """Returns the defense of the pokemon, taking into account the defense boosts."""
         defense_stat = self.defense_stat
+        # Environment
         if self.environment:
             if EnvironmentElements.REFLECT in self.environment.elements or EnvironmentElements.AURORA_VEIL in self.environment.elements:
                 defense_stat *= 2
+        # Boosts
         if self.defense_boosts > 0:
             return defense_stat + (self.defense_boosts * self.defense_stat // 2)
         elif self.defense_boosts < 0:
@@ -210,11 +227,13 @@ class Pokemon:
     def special_defense(self) -> int:
         """Returns the special defense of the pokemon, taking into account the special defense boosts."""
         special_defense_stat = self.special_defense_stat
+        # Environment
         if self.environment:
             if EnvironmentElements.LIGHT_SCREEN in self.environment.elements or EnvironmentElements.AURORA_VEIL in self.environment.elements:
                 special_defense_stat *= 2
             if EnvironmentElements.SAND in self.environment.elements and Type.ROCK in self.types:
                 special_defense_stat *= 1.5
+        # Boosts
         if self.special_defense_boosts > 0:
             return special_defense_stat + (self.special_defense_boosts * self.special_defense_stat // 2)
         elif self.special_defense_boosts < 0:
@@ -225,6 +244,7 @@ class Pokemon:
     def speed(self) -> int:
         """Returns the speed of the pokemon, taking into account the speed boosts."""
         speed_stat = self.speed_stat
+        # Environment
         if self.environment:
             if EnvironmentElements.TAILWIND in self.environment.elements:
                 speed_stat *= 2
@@ -232,9 +252,13 @@ class Pokemon:
                 speed_stat *= 2
             if EnvironmentElements.RAIN in self.environment.elements and self.ability == Ability.SWIFT_SWIM:
                 speed_stat *= 2
-
+        # Object
+        if self.object == PokeObject.CHOICE_SCARF:
+            speed_stat *= 1.5
+        # Status
         if self.status == PrimeStatus.PARALYSIS:
             speed_stat //= 2
+        # Boosts
         if self.speed_boosts > 0:
             return speed_stat + (self.speed_boosts * self.speed_stat // 2)
         elif self.speed_boosts < 0:
@@ -593,6 +617,9 @@ class Pokemon:
 
         if self.ability == Ability.STURDY and self.current_hp == self.max_hp:
             damage = min(damage, self.current_hp - 1)
+        elif self.object == PokeObject.FOCUS_SASH and self.current_hp == self.max_hp:
+            damage = min(damage, self.current_hp - 1)
+            self.drop_object()
 
         self.current_hp -= damage
         self.current_hp = max(self.current_hp, 0)
@@ -682,8 +709,7 @@ class Pokemon:
 
         return stab_multiplier, crit_multiplier, type_multiplier
 
-    @staticmethod
-    def compute_multipliers(multipliers: tuple[bool, bool, int]) -> float:
+    def compute_multipliers(self, multipliers: tuple[bool, bool, int]) -> float:
         """Computes the multiplier of the move.
 
         :param multipliers: The multipliers of the move
@@ -692,7 +718,10 @@ class Pokemon:
         multiplier = 1
         # STAB
         if multipliers[0]:
-            multiplier *= 1.5
+            if self.ability == Ability.ADAPTABILITY:
+                multiplier *= 2
+            else:
+                multiplier *= 1.5
         # Critical hit
         if multipliers[1]:
             multiplier *= 1.5
@@ -780,7 +809,8 @@ class Pokemon:
         elif attacker.ability == Ability.OVERGROW and attack.type == Type.PLANT and attacker.current_hp <= attacker.max_hp / 3:
             move_power *= 1.5
 
-        if attacker.status == PrimeStatus.BURN and attack.category == CapacityCategory.PHYSICAL:
+        # Prime status
+        if attacker.status == PrimeStatus.BURN and attack.category == CapacityCategory.PHYSICAL and attacker.ability != Ability.GUTS:
             move_power //= 2
 
         # Multipliers
@@ -797,6 +827,10 @@ class Pokemon:
         elif EnvironmentElements.RAIN in self.environment.elements and attack.type == Type.WATER:
             damage *= 1.5
         elif EnvironmentElements.RAIN in self.environment.elements and attack.type == Type.FIRE:
+            damage *= 0.5
+
+        # Abilities that modify the damage directly
+        if self.ability == Ability.MULTISCALE and self.current_hp == self.max_hp:
             damage *= 0.5
 
         return max(int(damage), 1)
@@ -872,6 +906,14 @@ class Pokemon:
         elif self.ability == Ability.SOUL_HEART:
             self.boost_special_attack(1)
 
+    def drop_object(self) -> PokeObject:
+        poke_object = self.object
+        self.object = PokeObject.NONE
+        if poke_object != PokeObject.NONE and self.ability == Ability.UNBURDEN:
+            self.speed_stat *= 2
+
+        return poke_object
+
     def switch_out(self):
         """Resets the status of the pokemon when it switches out."""
         self.nbr_turn_severe_poison = 0
@@ -881,6 +923,8 @@ class Pokemon:
             print(f"{self.name} healed its status!")
         elif self.ability == Ability.REGENERATOR:
             self.heal(floor(self.max_hp / 3))
+        elif self.ability == Ability.UNBURDEN and self.object_start_turn != PokeObject.NONE and self.object == PokeObject.NONE:
+            self.speed_stat //= 2
         
     def switch_in(self, enemy_player: 'Player') -> None:
         """Applies the effects of the environment when the pokemon switches in."""
@@ -896,19 +940,28 @@ class Pokemon:
         enemy_environment = enemy_player.environment
 
         # Weather
-        # Insert weather objects here TODO
+        turns = 5
+        if self.object == PokeObject.HOT_ROCK:
+            turns = 8
+        elif self.object == PokeObject.DAMP_ROCK:
+            turns = 8
+        elif self.object == PokeObject.SMOOTH_ROCK:
+            turns = 8
+        elif self.object == PokeObject.ICY_ROCK:
+            turns = 8
+
         if self.ability == Ability.DROUGHT:
-            self.environment.add_element(EnvironmentElements.SUN, 5)
-            enemy_environment.add_element(EnvironmentElements.SUN, 5)
+            self.environment.add_element(EnvironmentElements.SUN, turns)
+            enemy_environment.add_element(EnvironmentElements.SUN, turns)
         elif self.ability == Ability.DRIZZLE:
-            self.environment.add_element(EnvironmentElements.RAIN, 5)
-            enemy_environment.add_element(EnvironmentElements.RAIN, 5)
+            self.environment.add_element(EnvironmentElements.RAIN, turns)
+            enemy_environment.add_element(EnvironmentElements.RAIN, turns)
         elif self.ability == Ability.SAND_STREAM:
-            self.environment.add_element(EnvironmentElements.SAND, 5)
-            enemy_environment.add_element(EnvironmentElements.SAND, 5)
+            self.environment.add_element(EnvironmentElements.SAND, turns)
+            enemy_environment.add_element(EnvironmentElements.SAND, turns)
         elif self.ability == Ability.SNOW_WARNING:
-            self.environment.add_element(EnvironmentElements.SNOW, 5)
-            enemy_environment.add_element(EnvironmentElements.SNOW, 5)
+            self.environment.add_element(EnvironmentElements.SNOW, turns)
+            enemy_environment.add_element(EnvironmentElements.SNOW, turns)
 
         # Terrains
         # Insert terrain objects here TODO
@@ -924,6 +977,20 @@ class Pokemon:
         elif self.ability == Ability.PSYCHIC_SURGE:
             self.environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, 5)
             enemy_environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, 5)
+
+        # Objects TODO
+        if self.object == PokeObject.GRASSY_SEED and EnvironmentElements.GRASSY_TERRAIN in self.environment.elements:
+            self.boost_defense(1)
+            self.drop_object()
+        elif self.object == PokeObject.MISTY_SEED and EnvironmentElements.MISTY_TERRAIN in self.environment.elements:
+            self.boost_special_defense(1)
+            self.drop_object()
+        elif self.object == PokeObject.ELECTRIC_SEED and EnvironmentElements.ELECTRIC_TERRAIN in self.environment.elements:
+            self.boost_defense(1)
+            self.drop_object()
+        elif self.object == PokeObject.PSYCHIC_SEED and EnvironmentElements.PSYCHIC_TERRAIN in self.environment.elements:
+            self.boost_special_defense(1)
+            self.drop_object()
 
     def switch_in_stealth_rock(self):
         """Applies the effects of stealth rock when the pokemon switches in."""
@@ -987,11 +1054,28 @@ class Pokemon:
         elif self.ability == Ability.HYDRATION and EnvironmentElements.RAIN in self.environment.elements:
             self.status = PrimeStatus.NORMAL
             print(f"{self.name} healed its status!")
+        elif self.ability == Ability.SPEED_BOOST:
+            self.boost_speed(1)
 
     def apply_end_turn_object(self):
         if self.object == PokeObject.LEFTOVERS:
             print(f"{self.name} recovered a bit of hp thanks to its leftovers!")
             self.heal(self.max_hp//16)
+        elif self.object == PokeObject.BLACK_SLUDGE:
+            if Type.POISON in self.types:
+                print(f"{self.name} recovered a bit of hp thanks to its black sludge!")
+                self.heal(self.max_hp // 16)
+            else:
+                print(f"{self.name} was hurt by its black sludge!")
+                self.receive_damage(self.max_hp // 8)
+        elif self.object == PokeObject.TOXIC_ORB:
+            if self.status == PrimeStatus.NORMAL:
+                print(f"{self.name} was badly poisoned")
+                self.status = PrimeStatus.SEVERE_POISON
+        elif self.object == PokeObject.FLAME_ORB:
+            if self.status == PrimeStatus.NORMAL:
+                print(f"{self.name} was burned")
+                self.status = PrimeStatus.BURN
 
     def apply_end_turn_weather(self) -> None:
         """Applies the end of turn effects of the weather."""
@@ -1012,10 +1096,64 @@ class Pokemon:
         self.apply_end_turn_weather()
         self.environment.pass_turn()
 
-    # def mega_evolve(self):
-        # if self.object == Object.VENUSAURITE:
-        # mega_venusaur_stats: tuple[int, int, int, int, int, Ability] = ()  Entrer les stats ici et faire pareil pour tous les pokemons
-        # self.attack, self.special_attack, self.defense, self.special_defense, self.ability = mega_venusaur_stat
+    def mega_evolve(self) -> None:
+        if self.object == PokeObject.ALAKAZAMITE and self.name == "Alakazam":
+            mega_alakazam_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (136, 166, 386, 246, 336, Ability.TRACE, [Type.PSYCHIC])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_alakazam_stats
+        elif self.object == PokeObject.BLAZIKENITE and self.name == "Blaziken":
+            mega_blaziken_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (356, 196, 296, 196, 236, Ability.SPEED_BOOST, [Type.FIRE, Type.FIGHT])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_blaziken_stats
+        elif self.object == PokeObject.GARCHOMPITE and self.name == "Garchomp":
+            mega_garchomp_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (376, 266, 276, 226, 220, Ability.SAND_FORCE, [Type.DRAGON, Type.GROUND])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_garchomp_stats
+        elif self.object == PokeObject.CHARMINITE and self.name == "Charmina":
+            mega_charmina_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (236, 206, 196, 206, 236, Ability.PURE_POWER, [Type.FIGHT, Type.PSYCHIC])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_charmina_stats
+        elif self.object == PokeObject.SCIZORITE and self.name == "Scizor":
+            mega_scizor_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (336, 316, 166, 236, 186, Ability.TECHNICIAN, [Type.BUG, Type.STEEL])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_scizor_stats
+        elif self.object == PokeObject.BEEDRILLITE and self.name == "Beedrill":
+            mega_beedrill_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (336, 116, 66, 196, 326, Ability.ADAPTABILITY, [Type.BUG, Type.POISON])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_beedrill_stats
+        elif self.object == PokeObject.DIANCITE and self.name == "Diancie":
+            mega_diancie_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (356, 256, 356, 256, 256, Ability.MAGIC_BOUNCE, [Type.ROCK, Type.FAIRY])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_diancie_stats
+        elif self.object == PokeObject.CHARIZARDITE_X and self.name == "Charizard":
+            mega_charizard_x_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (296, 258, 296, 206, 236, Ability.TOUGH_CLAWS, [Type.FIRE, Type.DRAGON])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_charizard_x_stats
+        elif self.object == PokeObject.CHARIZARDITE_Y and self.name == "Charizard":
+            mega_charizard_y_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (244, 192, 354, 266, 236, Ability.DROUGHT, [Type.FIRE, Type.FLYING])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_charizard_y_stats
+        elif self.object == PokeObject.SALAMENCITE and self.name == "Salamence":
+            mega_salamence_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (326, 296, 276, 216, 276, Ability.AERILATE, [Type.DRAGON, Type.FLYING])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_salamence_stats
+        elif self.object == PokeObject.MANECTITE and self.name == "Manectric":
+            mega_manectric_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (186, 196, 306, 196, 306, Ability.INTIMIDATE, [Type.ELECTRIC])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_manectric_stats
+        elif self.object == PokeObject.SWAMPERTITE and self.name == "Swampert":
+            mega_swampert_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (336, 256, 226, 256, 176, Ability.SWIFT_SWIM, [Type.WATER, Type.GROUND])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_swampert_stats
+        elif self.object == PokeObject.LOPUNNITE and self.name == "Lopunny":
+            mega_lopunny_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (308, 224, 144, 228, 306, Ability.SCRAPPY, [Type.NORMAL, Type.FIGHT])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_lopunny_stats
+        elif self.object == PokeObject.METAGROSSITE and self.name == "Metagross":
+            mega_metagross_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (326, 336, 246, 256, 256, Ability.TOUGH_CLAWS, [Type.STEEL, Type.PSYCHIC])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_metagross_stats
+        elif self.object == PokeObject.MAWILITE and self.name == "Mawile":
+            mega_mawile_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (246, 286, 146, 226, 136, Ability.HUGE_POWER, [Type.STEEL, Type.FAIRY])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_mawile_stats
+        elif self.object == PokeObject.PIDGEOTITE and self.name == "Pidgeot":
+            mega_pidgeot_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (196, 196, 306, 196, 278, Ability.NO_GUARD, [Type.NORMAL, Type.FLYING])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_pidgeot_stats
+        elif self.object == PokeObject.PINSIRITE and self.name == "Pinsir":
+            mega_pinsir_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (346, 276, 166, 216, 246, Ability.AERILATE, [Type.BUG, Type.FLYING])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_pinsir_stats
+        elif self.object == PokeObject.TYRANITARITE and self.name == "Tyraniytar":
+            mega_tyranitar_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (364, 336, 226, 276, 178, Ability.SAND_STREAM, [Type.ROCK, Type.DARK])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_tyranitar_stats
+        elif self.object == PokeObject.VENUSAURITE and self.name == "Venusaur":
+            mega_venusaur_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (236, 282, 280, 276, 196, Ability.THICK_FAT, [Type.PLANT, Type.POISON])
+            self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_venusaur_stats
 
             
 # Create some pokemons

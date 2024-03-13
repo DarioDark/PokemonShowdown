@@ -167,8 +167,11 @@ class Fight:
 
                 # Getting all the pieces of information of the move to send them and synchronize both clients
                 if isinstance(move, OffensiveCapacity):
+                    temp_move = deepcopy(move)
+                    if player.current_pokemon.ability == Ability.AERILATE and temp_move.type == Type.NORMAL:
+                        temp_move.type = Type.FLYING
                     multipliers: tuple[bool, bool, float] = target.current_pokemon.get_multipliers(move, player.current_pokemon)
-                    damage: int = target.current_pokemon.calculate_damage(move, player.current_pokemon, multipliers)
+                    damage: int = target.current_pokemon.calculate_damage(temp_move, player.current_pokemon, multipliers)
                 else:
                     multipliers = (False, False, 1)
                     damage: int = -1

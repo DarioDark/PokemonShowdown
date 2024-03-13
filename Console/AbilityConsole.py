@@ -61,9 +61,13 @@ class Ability(Enum):
     SOUNDPROOF = "Soundproof"
     UNAWARE = "Unaware"
     OVERCOAT = "Overcoat"
+    UNBURDEN = "Unburden"
+    GUTS = "Guts"
+    MULTISCALE = "Multiscale"
+    SPEED_BOOST = "Speed Boost"
+    ADAPTABILITY = "Adaptability"
+    AERILATE = "Aerilate"
 
     # PAS ENCORE FAITS CEUX LA
-    UNBURDEN = "Unburden"
-
     NONE = "None"
     # ...
