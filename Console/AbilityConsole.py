@@ -60,7 +60,16 @@ class Ability(Enum):
     BULLET_PROOF = "Bulletproof"
     SOUNDPROOF = "Soundproof"
 
+    # PAS ENCORE FAITS CEUX LA
     UNBURDEN = "Unburden"
+    UNAWARE = "Unaware"
+    OVERCOAT = "Overcoat"
+
+
+
+
+
+
 
     NONE = "None"
     # ...
