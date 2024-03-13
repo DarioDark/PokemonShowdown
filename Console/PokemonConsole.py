@@ -733,11 +733,23 @@ class Pokemon:
 
         # Physical or Special
         if attack.category == CapacityCategory.PHYSICAL:
-            attack_stat: int = attacker.attack
-            defense_stat: int = self.defense
+            if self.ability == Ability.UNAWARE:
+                attack_stat: int = attacker.attack_stat
+            else:
+                attack_stat: int = attacker.attack
+            if attacker.ability == Ability.UNAWARE:
+                defense_stat: int = self.defense_stat
+            else:
+                defense_stat: int = self.defense
         else:
-            attack_stat: int = attacker.special_attack
-            defense_stat: int = self.special_defense
+            if self.ability == Ability.UNAWARE:
+                attack_stat: int = attacker.special_attack_stat
+            else:
+                attack_stat: int = attacker.special_attack
+            if attacker.ability == Ability.UNAWARE:
+                defense_stat: int = self.special_defense_stat
+            else:
+                defense_stat: int = self.special_defense
 
         # Abilities that modify the power of the move
         move_power = attack.power
@@ -969,6 +981,8 @@ class Pokemon:
     def apply_end_turn_weather(self) -> None:
         """Applies the end of turn effects of the weather."""
         if self.environment:
+            if self.ability == Ability.OVERCOAT:
+                return
             if EnvironmentElements.SAND in self.environment.elements and Type.ROCK not in self.types and Type.STEEL not in self.types and Type.GROUND not in self.types and self.ability != Ability.SAND_FORCE:
                 self.current_hp = max(self.current_hp - floor(self.max_hp / 16), 0)
                 print(f"{self.name} is hurt by the sandstorm!")

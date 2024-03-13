@@ -59,17 +59,11 @@ class Ability(Enum):
     SOUL_HEART = "Soul-Heart"
     BULLET_PROOF = "Bulletproof"
     SOUNDPROOF = "Soundproof"
-
-    # PAS ENCORE FAITS CEUX LA
-    UNBURDEN = "Unburden"
     UNAWARE = "Unaware"
     OVERCOAT = "Overcoat"
 
-
-
-
-
-
+    # PAS ENCORE FAITS CEUX LA
+    UNBURDEN = "Unburden"
 
     NONE = "None"
     # ...
