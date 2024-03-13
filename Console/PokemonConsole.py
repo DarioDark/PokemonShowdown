@@ -13,14 +13,15 @@ class Pokemon:
                  lvl: int,
                  hp_stat: int,
                  attack_stat: int,
-                 special_attack_stat: int,
                  defense_stat: int,
+                 special_attack_stat: int,
                  special_defense_stat: int,
                  speed_stat: int,
                  types: 'list[Type]', 
                  moves: 'list',
                  ability: Ability,
-                 poke_object: PokeObject) -> None:
+                 poke_object: PokeObject,
+                 mega_evolution_stats: list[tuple[int, int, int, int, int, Ability, list[Type]]] = None) -> None:
         self.name = name
         self.lvl = lvl
 
@@ -63,6 +64,7 @@ class Pokemon:
                 move.accuracy = move.base_accuracy * 1.1
         self.last_used_move = None
         self.environment: EnvironmentClass = None
+        self.mega_evolution_stats: list[tuple[int, int, int, int, int, Ability, list[Type]]] = mega_evolution_stats
 
     def __getstate__(self):
         return {
@@ -940,7 +942,6 @@ class Pokemon:
         enemy_environment = enemy_player.environment
 
         # Weather
-        turns = 5
         if self.object == PokeObject.HOT_ROCK:
             turns = 8
         elif self.object == PokeObject.DAMP_ROCK:
@@ -949,6 +950,8 @@ class Pokemon:
             turns = 8
         elif self.object == PokeObject.ICY_ROCK:
             turns = 8
+        else:
+            turns = 5
 
         if self.ability == Ability.DROUGHT:
             self.environment.add_element(EnvironmentElements.SUN, turns)
@@ -978,7 +981,7 @@ class Pokemon:
             self.environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, 5)
             enemy_environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, 5)
 
-        # Objects TODO
+        # Objects
         if self.object == PokeObject.GRASSY_SEED and EnvironmentElements.GRASSY_TERRAIN in self.environment.elements:
             self.boost_defense(1)
             self.drop_object()
@@ -1096,6 +1099,47 @@ class Pokemon:
         self.apply_end_turn_weather()
         self.environment.pass_turn()
 
+    def can_mega_evolve(self) -> bool:
+        if self.object == PokeObject.ALAKAZAMITE and self.name == "Alakazam":
+            return True
+        elif self.object == PokeObject.BLAZIKENITE and self.name == "Blaziken":
+            return True
+        elif self.object == PokeObject.GARCHOMPITE and self.name == "Garchomp":
+            return True
+        elif self.object == PokeObject.CHARMINITE and self.name == "Charmina":
+            return True
+        elif self.object == PokeObject.SCIZORITE and self.name == "Scizor":
+            return True
+        elif self.object == PokeObject.BEEDRILLITE and self.name == "Beedrill":
+            return True
+        elif self.object == PokeObject.DIANCITE and self.name == "Diancie":
+            return True
+        elif self.object == PokeObject.CHARIZARDITE_X and self.name == "Charizard":
+            return True
+        elif self.object == PokeObject.CHARIZARDITE_Y and self.name == "Charizard":
+            return True
+        elif self.object == PokeObject.SALAMENCITE and self.name == "Salamence":
+            return True
+        elif self.object == PokeObject.MANECTITE and self.name == "Manectric":
+            return True
+        elif self.object == PokeObject.SWAMPERTITE and self.name == "Swampert":
+            return True
+        elif self.object == PokeObject.LOPUNNITE and self.name == "Lopunny":
+            return True
+        elif self.object == PokeObject.METAGROSSITE and self.name == "Metagross":
+            return True
+        elif self.object == PokeObject.MAWILITE and self.name == "Mawile":
+            return True
+        elif self.object == PokeObject.PIDGEOTITE and self.name == "Pidgeot":
+            return True
+        elif self.object == PokeObject.PINSIRITE and self.name == "Pinsir":
+            return True
+        elif self.object == PokeObject.TYRANITARITE and self.name == "Tyraniytar":
+            return True
+        elif self.object == PokeObject.VENUSAURITE and self.name == "Venusaur":
+            return True
+        return False
+
     def mega_evolve(self) -> None:
         if self.object == PokeObject.ALAKAZAMITE and self.name == "Alakazam":
             mega_alakazam_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (136, 166, 386, 246, 336, Ability.TRACE, [Type.PSYCHIC])
@@ -1154,15 +1198,3 @@ class Pokemon:
         elif self.object == PokeObject.VENUSAURITE and self.name == "Venusaur":
             mega_venusaur_stats: tuple[int, int, int, int, int, Ability, list[Type]] = (236, 282, 280, 276, 196, Ability.THICK_FAT, [Type.PLANT, Type.POISON])
             self.attack_stat, self.special_attack_stat, self.defense_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = mega_venusaur_stats
-
-            
-# Create some pokemons
-Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed], Ability.SCRAPPY, PokeObject.NONE)
-Blastoise = Pokemon("Blastoise", 100, 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail],Ability.NONE, PokeObject.NONE)
-Venusaur = Pokemon("Venusaur", 100, 80, 82, 83, 100, 100, 80, [Type.PLANT, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, PokeObject.NONE)
-Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, CloseCombat, Surf, StealthRock], Ability.SCRAPPY, PokeObject.NONE)
-Landorus_Therian = Pokemon("Landorus-Therian", 100, 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, PokeObject.NONE)
-Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, QuickAttack, CloseCombat, LeechSeed], Ability.IRON_BARBS, PokeObject.NONE)
-Greninja = Pokemon("Greninja", 100, 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, PokeObject.NONE)
-Magnezone = Pokemon("Magnezone", 100, 70, 70, 115, 130, 90, 60, [Type.ELECTRIC, Type.STEEL], [QuickAttack, Thunder, Surf, SkullBash], Ability.MAGNET_PULL, PokeObject.NONE)
-Blacephalon = Pokemon("Blacephalon", 100, 53, 127, 53, 151, 79, 107, [Type.FIRE, Type.GHOST], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, PokeObject.NONE)
