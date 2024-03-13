@@ -92,6 +92,10 @@ class Player:
         while True:
             try:
                 move = int(input(">> ")) - 1
+                if self.current_pokemon.object in (PokeObject.CHOICE_BAND, PokeObject.CHOICE_SPECS, PokeObject.CHOICE_SCARF):
+                    if self.current_pokemon.moves[move] != self.current_pokemon.last_used_move:
+                        print(f"{self.current_pokemon.name} is locked by it's {self.current_pokemon.object.name} and can't switch move!")
+                        continue
                 if 0 <= move < len(self.current_pokemon.moves):
                     if self.current_pokemon.moves[move].current_pp > 0:
                         return move

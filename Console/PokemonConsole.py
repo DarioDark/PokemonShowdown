@@ -5,6 +5,7 @@ from StatusCapacityConsole import *
 from StatusConsole import PrimeStatus, SubStatus
 from EnvironmentConsole import EnvironmentElements, EnvironmentClass
 from AbilityConsole import Ability
+from ObjectConsole import PokeObject
 
 
 class Pokemon:
@@ -18,7 +19,8 @@ class Pokemon:
                  speed_stat: int,
                  types: 'list[Type]', 
                  moves: 'list',
-                 ability) -> None:
+                 ability: Ability,
+                 poke_object: PokeObject) -> None:
         self.name = name
         self.lvl = lvl
 
@@ -38,8 +40,9 @@ class Pokemon:
         self.special_defense_boosts: int = 0
         self.speed_boosts: int = 0
 
-        # Types and ability
+        # Types, ability and object
         self.ability: Ability = ability
+        self.object: PokeObject = poke_object
         self.types: list[Type] = types
         self.immunities: list[Type] = self.get_types_immunities()
         self.weaknesses: list[Type] = self.calculate_weaknesses()
@@ -57,6 +60,7 @@ class Pokemon:
         elif self.ability == Ability.VICTORY_STAR:
             for move in self.moves:
                 move.accuracy = move.base_accuracy * 1.1
+        self.last_used_move = None
         self.environment: EnvironmentClass = None
 
     def __getstate__(self):
@@ -75,7 +79,8 @@ class Pokemon:
             'special_attack_boosts': self.special_attack_boosts,
             'special_defense_boosts': self.special_defense_boosts,
             'speed_boosts': self.speed_boosts,
-            'ability': self.ability.name if self.ability else 'None',
+            'ability': self.ability.name,
+            'object': self.object.name,
             'types': [pokemon_type.name for pokemon_type in self.types],
             'immunities': [pokemon_type.name for pokemon_type in self.immunities],
             'weaknesses': [pokemon_type.name for pokemon_type in self.weaknesses],
@@ -84,6 +89,7 @@ class Pokemon:
             'sub_status': [status.name for status in self.sub_status],
             'nbr_turn_severe_poison': self.nbr_turn_severe_poison,
             'moves': [attack.__getstate__() for attack in self.moves],
+            'last_used_move': self.last_used_move,
             'environment': self.environment
 
         }
@@ -104,6 +110,7 @@ class Pokemon:
         self.special_defense_boosts = state['special_defense_boosts']
         self.speed_boosts = state['speed_boosts']
         self.ability = Ability[state['ability'].upper()]
+        self.object = PokeObject[state['object'].upper()]
         self.types = [Type[type_name.upper()] for type_name in state['types']]
         self.immunities = [Type[type_name.upper()] for type_name in state['immunities']]
         self.weaknesses = [Type[type_name.upper()] for type_name in state['weaknesses']]
@@ -120,6 +127,7 @@ class Pokemon:
                 attack = StatusCapacity()
                 attack.__setstate__(attack_state)
             self.moves.append(attack)
+        self.last_used_move = state['last_used_move']
         self.environment = state['environment']
 
     def __repr__(self) -> str:
@@ -525,6 +533,7 @@ class Pokemon:
         :param damage: The damage to apply to the target
         """
         capacity = self.moves[move]
+        self.last_used_move = capacity
         if capacity.current_pp > 0:
             if target.ability == Ability.PRESSURE:
                 capacity.current_pp -= 2
@@ -636,8 +645,9 @@ class Pokemon:
         if self.ability == Ability.LEVITATE:
             temp_immunities.append(Type.GROUND)
         if attacker.ability == Ability.SCRAPPY:
-            temp_immunities.remove(Type.FIGHT)
-            temp_immunities.remove(Type.NORMAL)
+            if Type.GHOST in self.types:
+                temp_immunities.remove(Type.FIGHT)
+                temp_immunities.remove(Type.NORMAL)
 
         multiplier = 1
         if attack_type in temp_immunities:
@@ -978,6 +988,11 @@ class Pokemon:
             self.status = PrimeStatus.NORMAL
             print(f"{self.name} healed its status!")
 
+    def apply_end_turn_object(self):
+        if self.object == PokeObject.LEFTOVERS:
+            print(f"{self.name} recovered a bit of hp thanks to its leftovers!")
+            self.heal(self.max_hp//16)
+
     def apply_end_turn_weather(self) -> None:
         """Applies the end of turn effects of the weather."""
         if self.environment:
@@ -1004,12 +1019,12 @@ class Pokemon:
 
             
 # Create some pokemons
-Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed], Ability.SCRAPPY)
-Blastoise = Pokemon("Blastoise", 100, 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail],Ability.NONE)
-Venusaur = Pokemon("Venusaur", 100, 80, 82, 83, 100, 100, 80, [Type.PLANT, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
-Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, CloseCombat, Surf, StealthRock], Ability.SCRAPPY)
-Landorus_Therian = Pokemon("Landorus-Therian", 100, 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
-Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, QuickAttack, CloseCombat, LeechSeed], Ability.IRON_BARBS)
-Greninja = Pokemon("Greninja", 100, 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
-Magnezone = Pokemon("Magnezone", 100, 70, 70, 115, 130, 90, 60, [Type.ELECTRIC, Type.STEEL], [QuickAttack, Thunder, Surf, SkullBash], Ability.MAGNET_PULL)
-Blacephalon = Pokemon("Blacephalon", 100, 53, 127, 53, 151, 79, 107, [Type.FIRE, Type.GHOST], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE)
+Charizard = Pokemon("Charizard", 100, 78, 84, 78, 109, 85, 100, [Type.FIRE, Type.FLYING], [Flamethrower, Thunderbolt, Earthquake, LeechSeed], Ability.SCRAPPY, PokeObject.NONE)
+Blastoise = Pokemon("Blastoise", 100, 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail],Ability.NONE, PokeObject.NONE)
+Venusaur = Pokemon("Venusaur", 100, 80, 82, 83, 100, 100, 80, [Type.PLANT, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, PokeObject.NONE)
+Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, CloseCombat, Surf, StealthRock], Ability.SCRAPPY, PokeObject.NONE)
+Landorus_Therian = Pokemon("Landorus-Therian", 100, 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, PokeObject.NONE)
+Ferrothorn = Pokemon("Ferrothorn", 100, 74, 94, 131, 54, 116, 20, [Type.PLANT, Type.STEEL], [StealthRock, QuickAttack, CloseCombat, LeechSeed], Ability.IRON_BARBS, PokeObject.NONE)
+Greninja = Pokemon("Greninja", 100, 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, PokeObject.NONE)
+Magnezone = Pokemon("Magnezone", 100, 70, 70, 115, 130, 90, 60, [Type.ELECTRIC, Type.STEEL], [QuickAttack, Thunder, Surf, SkullBash], Ability.MAGNET_PULL, PokeObject.NONE)
+Blacephalon = Pokemon("Blacephalon", 100, 53, 127, 53, 151, 79, 107, [Type.FIRE, Type.GHOST], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, PokeObject.NONE)
