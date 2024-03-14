@@ -2,7 +2,7 @@ from CapacityConsole import *
 from OffensiveCapacityConsole import *
 
 
-class ZMove(Capacity):
+class ZMove(Move):
     MOVE_NAMES = {'NORMAL': 'Breakneck Blitz',
                   'FIRE': 'Inferno Overdrive',
                   'WATER': 'Hydro Vortex',
@@ -33,11 +33,11 @@ class ZMove(Capacity):
                   130: 195,
                   140: 200}
 
-    def __init__(self, move: 'OffensiveCapacity or StatusCapacity') -> None:
+    def __init__(self, move: 'OffensiveMove or StatusMove') -> None:
         # Get the move's attributes
         move_type: Type = move.type
         category: CapacityCategory = move.category
-        if isinstance(move, OffensiveCapacity):
+        if isinstance(move, OffensiveMove):
             power: int = move.power
         secondary_effect: SecondaryEffectClass = move.secondary_effect
         target = move.target
@@ -50,9 +50,8 @@ class ZMove(Capacity):
         super().__init__(name, move_type, 100, 1, secondary_effect)
         self.move = move
         self.category = category
-        if isinstance(move, OffensiveCapacity):
+        if isinstance(move, OffensiveMove):
             for power in self.REAL_POWER:
-                print("ZMove: ", move.power, power, self.REAL_POWER[power])
                 if power >= move.power:
                     self.power = self.REAL_POWER[power]
                     break
@@ -63,10 +62,10 @@ class ZMove(Capacity):
             category_color = "red"
         else:
             category_color = "magenta"
-        if isinstance(self.move, OffensiveCapacity):
-            return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.get_colored_pp_number() + " ~ "
+        if isinstance(self.move, OffensiveMove):
+            return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.print_colored_pp() + " ~ "
                     f"{colored(self.category.value, category_color)} / {self.power} power ~ {self.accuracy}% accuracy / {self.secondary_effect}")
         else:
-            return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.get_colored_pp_number() + " ~ "
+            return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.print_colored_pp() + " ~ "
                     f"{colored(self.category.value, category_color)} / {self.accuracy}% accuracy / {self.secondary_effect}")
 

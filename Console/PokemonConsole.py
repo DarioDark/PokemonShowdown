@@ -66,7 +66,7 @@ class Pokemon:
         self.sub_status: list[SubStatus] = []
         self.nbr_turn_severe_poison: int = 0
 
-        self.moves: list[Capacity] = moves
+        self.moves: list[Move] = moves
         if self.ability == Ability.NO_GUARD:
             for move in self.moves:
                 move.accuracy = 100
@@ -136,10 +136,10 @@ class Pokemon:
         self.moves = []
         for attack_state in state['moves']:
             if attack_state['category'] == 'PHYSICAL' or attack_state['category'] == 'SPECIAL':
-                attack = OffensiveCapacity()
+                attack = OffensiveMove()
                 attack.__setstate__(attack_state)
             else:
-                attack = StatusCapacity()
+                attack = StatusMove()
                 attack.__setstate__(attack_state)
             self.moves.append(attack)
         self.last_used_move = state['last_used_move']
@@ -186,6 +186,17 @@ class Pokemon:
     #         f"Weaknesses: {self.weaknesses} ~ Resistances: {self.resistances} ~ Immunities: {self.immunities} ~ \n" +
     #         f"Status: {self.status.name} ~ {colored('Attack',attrs=['bold'])}: {colored(self.attack, 'red')} ~ {colored('Special Attack',attrs=['bold'])}: {colored(self.special_attack, 'cyan')} ~ {colored('Defense',attrs=['bold'])}: {colored(self.defense, 'yellow')} ~ {colored('Special Defense',attrs=['bold'])}: {colored(self.special_defense, 'green')} ~ {colored('Speed',attrs=['bold'])}: {colored(self.speed, 'blue')} ~ " +
     #         f"Attacks: \n{attacks_str}") # Ajout d'un saut de ligne avant les attaques
+
+    @property
+    def mega_name(self) -> str:
+        if self.mega_evolution_stats:
+            if self.name == "Charizard":
+                if self.item == Item.CHARIZARDITE_X:
+                    return f"Mega {self.name} X"
+                elif self.item == Item.CHARIZARDITE_Y:
+                    return f"Mega {self.name} Y"
+            else:
+                return f"Mega {self.name}"
 
     @property
     def attack(self) -> int:
@@ -637,7 +648,7 @@ class Pokemon:
             if attack.type == z_type:
                 z_moves.append(ZMove(attack))
             else:
-                z_moves.append("--------------")
+                z_moves.append(colored("- - - - - - -", 'dark_grey'))
         return z_moves
 
     def print_z_moves(self) -> None:
@@ -645,6 +656,12 @@ class Pokemon:
         z_moves = self.get_z_moves()
         for i, z_move in enumerate(z_moves):
             print(f"{i + 1}. {z_move}")
+
+    def print_z_moves_without_indices(self) -> None:
+        """Prints the Z-Moves of the pokemon without their indices."""
+        z_moves = self.get_z_moves()
+        for z_move in z_moves:
+            print(f"    {z_move}")
 
     def heal(self, amount: int) -> None:
         """Heals the pokemon by a certain amount."""
@@ -673,7 +690,7 @@ class Pokemon:
                     self.types = [move.type]
                     print(f"Protean from {self.name} : He changed its type to {move.type.name}!")
 
-            if isinstance(move, OffensiveCapacity):
+            if isinstance(move, OffensiveMove):
                 attack_successful = target.receive_damage(damage)
                 # If the attack was successful, apply the secondary effect of abilities
                 if attack_successful and move.contact_move:
@@ -735,7 +752,7 @@ class Pokemon:
         self.is_dead(True)
         return True
         
-    def receive_secondary_effect(self, move: Capacity) -> None:
+    def receive_secondary_effect(self, move: Move) -> None:
         """The pokemon receives the secondary effect of a move.
 
         :param move: The move that has a secondary effect
@@ -756,13 +773,13 @@ class Pokemon:
         return False
 
     @staticmethod
-    def get_critical_multiplier(move: Capacity) -> bool:
+    def get_critical_multiplier(move: Move) -> bool:
         """Returns whether the move has a critical hit or not.
 
         :param move: The move used
         :return: Whether the move has a critical hit or not
         """
-        if isinstance(move, OffensiveCapacity):
+        if isinstance(move, OffensiveMove):
             critical_hit_chance = 4.17
             if randint(1, 100) <= critical_hit_chance:
                 print("Critical hit!")
@@ -800,7 +817,7 @@ class Pokemon:
                 multiplier *= 0.5
         return multiplier
 
-    def get_multipliers(self, move: Capacity, attacker: 'Pokemon') -> tuple[bool, bool, float]:
+    def get_multipliers(self, move: Move, attacker: 'Pokemon') -> tuple[bool, bool, float]:
         """Returns the multipliers of the move.
 
         :param move: The move used
@@ -837,7 +854,7 @@ class Pokemon:
         multiplier *= multipliers[2]
         return multiplier
 
-    def calculate_damage(self, attack: OffensiveCapacity, attacker: 'Pokemon', multipliers) -> int:
+    def calculate_damage(self, attack: OffensiveMove, attacker: 'Pokemon', multipliers) -> int:
         """Calculates the damage value of the move.
 
         :param attack: The move used
@@ -964,9 +981,9 @@ class Pokemon:
         :return: The moves of the pokemon with their indices
         """
         if self.current_hp <= 0:
-            attacks_str = colored("| Moves : ", 'dark_grey') + colored(" - ", 'dark_grey').join([colored(f"{attack.name} ({attack.print_pp_greyed_out()})", 'dark_grey') for attack in self.moves])
+            attacks_str = colored("| Moves : ", 'dark_grey') + colored(" - ", 'dark_grey').join([colored(f"{attack.name} ({attack.print_greyed_out_pp()})", 'dark_grey') for attack in self.moves])
         else:
-            attacks_str = f"| Moves : " + " - ".join([f"{attack.name} ({attack.get_colored_pp_number()})" for attack in self.moves])
+            attacks_str = f"| Moves : " + " - ".join([f"{attack.name} ({attack.print_colored_pp()})" for attack in self.moves])
         return attacks_str
     
     # Status

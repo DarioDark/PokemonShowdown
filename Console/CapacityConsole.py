@@ -13,7 +13,7 @@ class CapacityCategory(Enum):
     STATUS = "Status"
 
 
-class Capacity:
+class Move:
     PP_COLORS = {100: "green",
                  60: "light_green",
                  45: "yellow",
@@ -36,15 +36,15 @@ class Capacity:
         percentage = (self.current_pp / self.max_pp) * 100
         return round(percentage * 2) / 2
     
-    def get_colored_pp_number(self) -> str:
+    def print_colored_pp(self) -> str:
         pp_percentage = self.get_current_pp_percentage()
-        for key in sorted(Capacity.PP_COLORS.keys(), reverse=True):
+        for key in sorted(Move.PP_COLORS.keys(), reverse=True):
             if pp_percentage >= key:
-                color: str = Capacity.PP_COLORS[key]
+                color: str = Move.PP_COLORS[key]
                 break
         return f"{colored(self.current_pp, color)}/{self.max_pp}"
     
-    def print_pp_greyed_out(self) -> str:
+    def print_greyed_out_pp(self) -> str:
         return colored(f"{self.current_pp}/{self.max_pp}", 'dark_grey')
     
     def is_secondary_effect_applied(self, attacker: 'Pokemon') -> bool:

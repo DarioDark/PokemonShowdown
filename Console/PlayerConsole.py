@@ -108,7 +108,7 @@ class Player:
                 
     def use_move(self, move: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> None:
         capacity = self.current_pokemon.moves[move]
-        if isinstance(capacity, StatusCapacity):
+        if isinstance(capacity, StatusMove):
             if target.current_pokemon.ability == Ability.MAGIC_BOUNCE:
                 print(f"Magic Bounce from {target.name} reflected the status move!")
                 if capacity.target == "enemy_player":
@@ -127,21 +127,41 @@ class Player:
         else:
             self.current_pokemon.attack_target(move, is_secondary_effect_applied, target.current_pokemon, damage)
 
-    def choose_action(self, target: 'Player') -> tuple[int, int]:
-        system("cls")
-        print(f"Your pokemon : {self.current_pokemon}\nOpposing pokemon : {target.current_pokemon}\n")
+    def select_z_move(self) -> int:
+        print(f"{self.current_pokemon.name}, select your Z-Move:")
+        self.current_pokemon.print_z_moves()
         while True:
             try:
+                z_move_index = int(input(">> ")) - 1
+                if 0 <= z_move_index < len(self.current_pokemon.moves):
+                    return z_move_index
+                else:
+                    print("Invalid choice")
+            except ValueError:
+                print("Invalid choice")
+
+    def choose_action(self, target: 'Player') -> tuple[int, int, bool]:
+        system("cls")
+        bonus_option: bool = False
+        while True:
+            try:
+                print(f"Your pokemon : {self.current_pokemon}\nOpposing pokemon : {target.current_pokemon}\n")
                 print(f"{colored(self.name, attrs=['bold'])}, what will you do ?")
                 print(f"1. {colored('Switch', 'cyan', attrs=['bold'])} pokemon")
                 self.print_team_without_indices()
+
                 print(f"2. {colored('Select a move', 'red', attrs=['bold'])} on your current pokemon : {colored(self.current_pokemon.name, attrs=['underline'])}")
                 self.current_pokemon.print_attacks_without_indices()
+
                 if self.current_pokemon.can_mega_evolve():
-                    print(f"3. {colored('Mega Evolve', 'green', attrs=['bold'])}")
+                    if bonus_option:
+                        print(f"3. {colored('Mega Evolve (activated) : ' , 'green', attrs=['bold'])}{colored(self.current_pokemon.mega_name, 'white')}")
+                    else:
+                        print(f"3. {colored('Mega Evolve (not activated) : ', 'green', attrs=['bold'])}{colored(self.current_pokemon.mega_name, 'dark_grey')}")
                 elif self.current_pokemon.can_z_move():
                     print(f"3. {colored('Use Z-Move', 'green', attrs=['bold'])}")
-                    self.current_pokemon.print_z_moves()
+                    self.current_pokemon.print_z_moves_without_indices()
+
                 choice = int(input(">> "))
                 if choice == 1:
                     if target.current_pokemon:
@@ -149,13 +169,20 @@ class Player:
                             print("You are trapped by a magnetic field. You can't switch out this pokemon!")
                             continue
                     pokemon_index: int = self.select_switch(target.current_pokemon)
-                    return 1, pokemon_index
+                    return 1, pokemon_index, bonus_option
                 elif choice == 2:
                     move_index: int = self.select_move()
-                    return 2, move_index
+                    return 2, move_index, bonus_option
                 elif choice == 3:
                     if self.current_pokemon.can_mega_evolve():
-                        return 3, -1
+                        system("cls")
+                        if bonus_option:
+                            bonus_option = False
+                        else:
+                            bonus_option = True
+                    elif self.current_pokemon.can_z_move():
+                        z_move_index: int = self.select_z_move()
+                        return 2, z_move_index, True
                 else:
                     print("Invalid choice")
             except ValueError:

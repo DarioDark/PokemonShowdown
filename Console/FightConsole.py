@@ -143,7 +143,7 @@ class Fight:
 
         :param player: A Player item, the one that does the action.
         :param target: A Player item, the target of the action.
-        :param action: A tuple with 1 or 2 as it's first value and a Pokemon or a Capacity item as the second value.
+        :param action: A tuple with 1 or 2 as it's first value and a Pokemon or a Move item as the second value.
         """
         # If the player is the client
         if player == self.player1:
@@ -155,7 +155,7 @@ class Fight:
             # If the player selected a move
             elif action[0] == 2:
                 move_index: int = action[1]
-                move: Capacity = player.current_pokemon.moves[move_index]
+                move: Move = player.current_pokemon.moves[move_index]
                 print(f"{player.current_pokemon.name} used {move.name}!")
 
                 # If the pokemon misses
@@ -166,7 +166,7 @@ class Fight:
                     return
 
                 # Getting all the pieces of information of the move to send them and synchronize both clients
-                if isinstance(move, OffensiveCapacity):
+                if isinstance(move, OffensiveMove):
                     temp_move = deepcopy(move)
                     if player.current_pokemon.ability == Ability.AERILATE and temp_move.type == Type.NORMAL:
                         temp_move.type = Type.FLYING
@@ -204,10 +204,10 @@ class Fight:
 
                 # If the move didn't miss
                 else:
-                    move: Capacity = player.current_pokemon.moves[move_index]
+                    move: Move = player.current_pokemon.moves[move_index]
                     print(f"{player.current_pokemon.name} used {move.name}!")
 
-                    if isinstance(move, OffensiveCapacity):
+                    if isinstance(move, OffensiveMove):
                         multipliers: tuple[bool, bool, int] = result[0]
 
                         # Critical hit

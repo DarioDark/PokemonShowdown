@@ -2,7 +2,7 @@ from CapacityConsole import *
 from CapacitySideEffectsConsole import SecondaryEffects
 
 
-class StatusCapacity(Capacity):
+class StatusMove(Move):
     def __init__(self, name: str = None, type: Type = None, accuracy:int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None, target: str = None):
         super().__init__(name, type, accuracy, pp, secondary_effect)
         self.category = CapacityCategory.STATUS
@@ -19,7 +19,7 @@ class StatusCapacity(Capacity):
             if pp_percentage >= key:
                 color = pp_colors[key]
                 break
-        return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.get_colored_pp_number() + " ~ "
+        return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.print_colored_pp() + " ~ "
                 f"{colored(self.category.value, 'cyan')} / {self.accuracy}% accuracy / {self.secondary_effect}")
     
     def __getstate__(self) -> dict:
@@ -45,8 +45,8 @@ class StatusCapacity(Capacity):
         self.target = state['target']
            
            
-LeechSeed = StatusCapacity("Leech Seed", Type.GRASS, 90, 10, SecondaryEffects.LEECH_SEED.value, "enemy_pokemon")
-StealthRock = StatusCapacity("Stealth Rock", Type.ROCK, 100, 10, SecondaryEffects.STEALTH_ROCK.value, "enemy_player")
-LightScreen = StatusCapacity("Light Screen", Type.PSYCHIC, 100, 30, SecondaryEffects.LIGHT_SCREEN.value, "self_player")
-Reflect = StatusCapacity("Reflect", Type.PSYCHIC, 100, 30, SecondaryEffects.REFLECT.value, "enemy_self")
-Spikes = StatusCapacity("Spikes", Type.GROUND, 100, 20, SecondaryEffects.SPIKES.value, "enemy_player")
+LeechSeed = StatusMove("Leech Seed", Type.GRASS, 90, 10, SecondaryEffects.LEECH_SEED.value, "enemy_pokemon")
+StealthRock = StatusMove("Stealth Rock", Type.ROCK, 100, 10, SecondaryEffects.STEALTH_ROCK.value, "enemy_player")
+LightScreen = StatusMove("Light Screen", Type.PSYCHIC, 100, 30, SecondaryEffects.LIGHT_SCREEN.value, "self_player")
+Reflect = StatusMove("Reflect", Type.PSYCHIC, 100, 30, SecondaryEffects.REFLECT.value, "enemy_self")
+Spikes = StatusMove("Spikes", Type.GROUND, 100, 20, SecondaryEffects.SPIKES.value, "enemy_player")

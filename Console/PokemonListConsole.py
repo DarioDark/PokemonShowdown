@@ -1,8 +1,7 @@
 from PokemonConsole import *
 
 # Create some pokemons
-CHARIZARD = Pokemon("Charizard", 297, 204, 192, 254, 206, 236, [Type.FIRE, Type.FLYING], [], Ability.NONE, Item.CHARIZARDITE_X,
-                    [(296, 258, 296, 206, 236, Ability.TOUGH_CLAWS, [Type.FIRE, Type.DRAGON]), (244, 192, 354, 266, 236, Ability.DROUGHT, [Type.FIRE, Type.FLYING])])
+CHARIZARD = Pokemon("Charizard", 297, 204, 192, 254, 206, 236, [Type.FIRE, Type.FLYING], [], Ability.NONE, Item.CHARIZARDITE_X,[(296, 258, 296, 206, 236, Ability.TOUGH_CLAWS, [Type.FIRE, Type.DRAGON]), (244, 192, 354, 266, 236, Ability.DROUGHT, [Type.FIRE, Type.FLYING])])
 ALAKAZAM = Pokemon("Alakazam", 251, 136, 126, 306, 226, 276, [Type.PSYCHIC], [], Ability.MAGIC_GUARD, Item.NONE, [(136, 166, 386, 246, 336, Ability.TRACE, [Type.PSYCHIC])])
 BLAZIKEN = Pokemon("Blaziken", 301, 276, 176, 256, 176, 196, [Type.FIRE, Type.FIGHT], [], Ability.SPEED_BOOST, Item.NONE, [(356, 196, 296, 196, 236, Ability.SPEED_BOOST, [Type.FIRE, Type.FIGHT])])
 GARCHOMP = Pokemon("Garchomp", 357, 296, 226, 196, 206, 240, [Type.DRAGON, Type.GROUND], [], Ability.ROUGH_SKIN, Item.NONE, [(376, 266, 276, 226, 220, Ability.SAND_FORCE, [Type.DRAGON, Type.GROUND])])
@@ -19,8 +18,7 @@ MAWILE = Pokemon("Mawile", 241, 206, 206, 146, 146, 136, [Type.STEEL, Type.FAIRY
 PIDGEOT = Pokemon("Pidgeot", 241, 196, 186, 176, 176, 238, [Type.NORMAL, Type.FLYING], [], Ability.BIG_PECKS, Item.NONE, [(196, 196, 306, 196, 278, Ability.NO_GUARD, [Type.NORMAL, Type.FLYING])])
 PINSIR = Pokemon("Pinsir", 271, 286, 236, 146, 176, 206, [Type.BUG], [], Ability.MOXIE, Item.NONE, [(346, 276, 166, 216, 246, Ability.AERILATE, [Type.BUG, Type.FLYING])])
 TYRANITAR = Pokemon("Tyranitar", 341, 304, 256, 226, 236, 158, [Type.ROCK, Type.DARK], [], Ability.SAND_STREAM, Item.NONE, [(364, 336, 226, 276, 178, Ability.SAND_STREAM, [Type.ROCK, Type.DARK])])
-VENUSAUR = Pokemon("Venusaur", 301, 200, 202, 236, 236, 196, [Type.GRASS, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, Item.NONE,
-                   [(236, 282, 280, 276, 196, Ability.THICK_FAT, [Type.GRASS, Type.POISON])])
+VENUSAUR = Pokemon("Venusaur", 301, 200, 202, 236, 236, 196, [Type.GRASS, Type.POISON], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, Item.NONE, [(236, 282, 280, 276, 196, Ability.THICK_FAT, [Type.GRASS, Type.POISON])])
 
 
 Blastoise = Pokemon("Blastoise", 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroPump, IceBeam, Earthquake, AquaTail], Ability.NONE, Item.WATERIUM_Z)
