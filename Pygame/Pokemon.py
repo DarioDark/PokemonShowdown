@@ -287,7 +287,7 @@ class Pokemon:
         
     def print_moves(self) -> None:
         if self.current_hp <= 0:
-            attacks_str = colored("| Moves : ", 'dark_grey') + colored(" - ", 'dark_grey').join([colored(f"{attack.name} ({attack.get_grey_pp_number()})", 'dark_grey') for attack in self.moves])
+            attacks_str = colored("| Moves : ", 'dark_grey') + colored(" - ", 'dark_grey').join([colored(f"{attack.name} ({attack.print_pp_greyed_out()})", 'dark_grey') for attack in self.moves])
         else:
             attacks_str = f"| Moves : " + " - ".join([f"{attack.name} ({attack.get_colored_pp_number()})" for attack in self.moves])
         return attacks_str

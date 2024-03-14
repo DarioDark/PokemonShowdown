@@ -14,8 +14,7 @@ SALAMENCE = Pokemon("Salamence", 331, 306, 196, 256, 196, 236, [Type.DRAGON, Typ
 MANECTRIC = Pokemon("Manectric", 281, 186, 156, 246, 156, 246, [Type.ELECTRIC], [], Ability.LIGHTNING_ROD, Item.NONE, [(186, 196, 306, 196, 306, Ability.INTIMIDATE, [Type.ELECTRIC])])
 SWAMPERT = Pokemon("Swampert", 341, 256, 216, 206, 216, 156, [Type.WATER, Type.GROUND], [], Ability.TORRENT, Item.NONE, [(336, 256, 226, 256, 176, Ability.SWIFT_SWIM, [Type.WATER, Type.GROUND])])
 LOPUNNY = Pokemon("Lopunny", 271, 188, 204, 144, 228, 246, [Type.NORMAL, Type.FIGHT], [], Ability.LIMBER, Item.NONE, [(308, 224, 144, 228, 306, Ability.SCRAPPY, [Type.NORMAL, Type.FIGHT])])
-METAGROSS = Pokemon("Metagross", 301, 306, 296, 226, 216, 176, [Type.STEEL, Type.PSYCHIC], [], Ability.CLEAR_BODY, Item.NONE,
-                    [(326, 336, 246, 256, 256, Ability.TOUGH_CLAWS, [Type.STEEL, Type.PSYCHIC])])
+METAGROSS = Pokemon("Metagross", 301, 306, 296, 226, 216, 176, [Type.STEEL, Type.PSYCHIC], [], Ability.CLEAR_BODY, Item.NONE, [(326, 336, 246, 256, 256, Ability.TOUGH_CLAWS, [Type.STEEL, Type.PSYCHIC])])
 MAWILE = Pokemon("Mawile", 241, 206, 206, 146, 146, 136, [Type.STEEL, Type.FAIRY], [], Ability.INTIMIDATE, Item.NONE, [(246, 286, 146, 226, 136, Ability.HUGE_POWER, [Type.STEEL, Type.FAIRY])])
 PIDGEOT = Pokemon("Pidgeot", 241, 196, 186, 176, 176, 238, [Type.NORMAL, Type.FLYING], [], Ability.BIG_PECKS, Item.NONE, [(196, 196, 306, 196, 278, Ability.NO_GUARD, [Type.NORMAL, Type.FLYING])])
 PINSIR = Pokemon("Pinsir", 271, 286, 236, 146, 176, 206, [Type.BUG], [], Ability.MOXIE, Item.NONE, [(346, 276, 166, 216, 246, Ability.AERILATE, [Type.BUG, Type.FLYING])])
