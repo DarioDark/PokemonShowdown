@@ -67,7 +67,10 @@ class Ability(Enum):
     SPEED_BOOST = "Speed Boost"
     ADAPTABILITY = "Adaptability"
     AERILATE = "Aerilate"
+    CLEAR_BODY = "Clear Body"
+    LIGHTNING_ROD = "Lightning Rod"
+    LIMBER = "Limber"
+    BIG_PECKS = "Big Pecks"
+    MOXIE = "Moxie"
 
-    # PAS ENCORE FAITS CEUX LA
     NONE = "None"
-    # ...

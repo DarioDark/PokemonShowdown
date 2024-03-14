@@ -130,11 +130,11 @@ class Fight:
             player2.current_pokemon.heal(hp_drained)
 
     def player_use_action(self, player: Player, target: Player, action: tuple) -> None:
-        """Takes a player, a target, and tuple that contains a choice and the associated object.
+        """Takes a player, a target, and tuple that contains a choice and the associated item.
 
-        :param player: A Player object, the one that does the action.
-        :param target: A Player object, the target of the action.
-        :param action: A tuple with 1 or 2 as it's first value and a Pokemon or a Capacity object as the second value.
+        :param player: A Player item, the one that does the action.
+        :param target: A Player item, the target of the action.
+        :param action: A tuple with 1 or 2 as it's first value and a Pokemon or a Capacity item as the second value.
         """
         # If the player is the client
         if player == self.player1:

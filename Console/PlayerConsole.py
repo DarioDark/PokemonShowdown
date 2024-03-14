@@ -92,9 +92,9 @@ class Player:
         while True:
             try:
                 move = int(input(">> ")) - 1
-                if self.current_pokemon.object in (PokeObject.CHOICE_BAND, PokeObject.CHOICE_SPECS, PokeObject.CHOICE_SCARF):
+                if self.current_pokemon.item in (Item.CHOICE_BAND, Item.CHOICE_SPECS, Item.CHOICE_SCARF):
                     if self.current_pokemon.moves[move] != self.current_pokemon.last_used_move:
-                        print(f"{self.current_pokemon.name} is locked by it's {self.current_pokemon.object.name} and can't switch move!")
+                        print(f"{self.current_pokemon.name} is locked by it's {self.current_pokemon.item.name} and can't switch move!")
                         continue
                 if 0 <= move < len(self.current_pokemon.moves):
                     if self.current_pokemon.moves[move].current_pp > 0:
@@ -127,7 +127,7 @@ class Player:
         else:
             self.current_pokemon.attack_target(move, is_secondary_effect_applied, target.current_pokemon, damage)
 
-    def choose_action(self, target: 'Player') -> tuple[int, 'Capacity / int']:
+    def choose_action(self, target: 'Player') -> tuple[int, int]:
         system("cls")
         print(f"Your pokemon : {self.current_pokemon}\nOpposing pokemon : {target.current_pokemon}\n")
         while True:
@@ -137,6 +137,11 @@ class Player:
                 self.print_team_without_indices()
                 print(f"2. {colored('Select a move', 'red', attrs=['bold'])} on your current pokemon : {colored(self.current_pokemon.name, attrs=['underline'])}")
                 self.current_pokemon.print_attacks_without_indices()
+                if self.current_pokemon.can_mega_evolve():
+                    print(f"3. {colored('Mega Evolve', 'green', attrs=['bold'])}")
+                elif self.current_pokemon.can_z_move():
+                    print(f"3. {colored('Use Z-Move', 'green', attrs=['bold'])}")
+                    self.current_pokemon.print_z_moves()
                 choice = int(input(">> "))
                 if choice == 1:
                     if target.current_pokemon:
@@ -148,6 +153,9 @@ class Player:
                 elif choice == 2:
                     move_index: int = self.select_move()
                     return 2, move_index
+                elif choice == 3:
+                    if self.current_pokemon.can_mega_evolve():
+                        return 3, -1
                 else:
                     print("Invalid choice")
             except ValueError:

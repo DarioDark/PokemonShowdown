@@ -139,11 +139,11 @@ class Fight:
                     self.player_switch_in(player1, switch)
 
     def player_use_action(self, player: Player, target: Player, action: tuple) -> None:
-        """Takes a player, a target, and tuple that contains a choice and the associated object.
+        """Takes a player, a target, and tuple that contains a choice and the associated item.
 
-        :param player: A Player object, the one that does the action.
-        :param target: A Player object, the target of the action.
-        :param action: A tuple with 1 or 2 as it's first value and a Pokemon or a Capacity object as the second value.
+        :param player: A Player item, the one that does the action.
+        :param target: A Player item, the target of the action.
+        :param action: A tuple with 1 or 2 as it's first value and a Pokemon or a Capacity item as the second value.
         """
         # If the player is the client
         if player == self.player1:
@@ -183,6 +183,9 @@ class Fight:
 
                 # Applying the local results to the imported target
                 player.use_move(move_index, secondary_effect_applied, target, damage)
+
+            elif action[0] == 3:
+                player.current_pokemon
 
         # If the player is the imported player
         elif player == self.player2:
@@ -228,7 +231,7 @@ class Fight:
     def player_switch_in(self, player: Player, pokemon_index: int) -> int:
         """Tries to switch in a pokemon for the player until it succeeds.
 
-        :param player: A player object, the one that switches his pokemon.
+        :param player: A player item, the one that switches his pokemon.
         :param pokemon_index: An integer, the index of the pokemon to switch in.
         :return:
         """
@@ -320,7 +323,7 @@ class Fight:
 
 def main():
     rand = randint(0, 1000)
-    p = Player(team=[CHARIZARD, Blastoise, Blacephalon, Ferrothorn, Magnezone, Mew], name=f"Player {rand}")
+    p = Player(team=[CHARIZARD, Blastoise, Mew], name=f"Player {rand}")
     Fight(p)
     print("Game over !")
 

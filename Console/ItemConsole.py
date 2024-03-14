@@ -1,7 +1,8 @@
 from enum import Enum
 
 
-class PokeObject(Enum):
+class Item(Enum):
+    # Items
     LEFTOVERS = "Leftovers"
     CHOICE_BAND = "Choice Band"
     CHOICE_SPECS = "Choice Specs"
@@ -18,6 +19,8 @@ class PokeObject(Enum):
     SMOOTH_ROCK = "Smooth Rock"
     BLACK_SLUDGE = "Black Sludge"
     FLAME_ORB = "Flame Orb"
+
+    # Mega Stones
     ALAKAZAMITE = "Alakazamite"
     BEEDRILLITE = "Beedrillite"
     BLAZIKENITE = "Blazikenite"
@@ -36,9 +39,28 @@ class PokeObject(Enum):
     SCIZORITE = "Scizorite"
     TYRANITARITE = "Tyranitarite"
     SWAMPERTITE = "Swampertite"
-
-
     VENUSAURITE = "Venusaurite"
+
+    # Z-Crystals
+    NORMALIUM_Z = "Normalium Z"
+    FIGHTINIUM_Z = "Fightinium Z"
+    FLYINIUM_Z = "Flyinium Z"
+    POISONIUM_Z = "Poisonium Z"
+    GROUNDIUM_Z = "Groundium Z"
+    ROCKIUM_Z = "Rockium Z"
+    BUGINIUM_Z = "Buginium Z"
+    GHOSTIUM_Z = "Ghostium Z"
+    STEELIUM_Z = "Steelium Z"
+    FIRIUM_Z = "Firium Z"
+    WATERIUM_Z = "Waterium Z"
+    GRASSIUM_Z = "Grassium Z"
+    ELECTRIUM_Z = "Electrium Z"
+    PSYCHIUM_Z = "Psychium Z"
+    ICINIUM_Z = "Icium Z"
+    DRAGONIUM_Z = "Dragonium Z"
+    DARKINIUM_Z = "Darkinium Z"
+    FAIRIUM_Z = "Fairium Z"
+    INACTIVE_Z_CRYSTAL = "Inactive Z-Crystal"
 
     # TODO
 

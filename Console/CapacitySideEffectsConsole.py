@@ -1,5 +1,7 @@
 from enum import Enum
 from random import randint
+
+from AbilityConsole import Ability
 from StatusConsole import PrimeStatus, SubStatus
 from EnvironmentConsole import EnvironmentElements
 from TypesConsole import Type
@@ -65,7 +67,7 @@ class SecondaryEffectClass:
 
     @staticmethod
     def paralysis(target: 'Pokemon') -> None:
-        if target.status != PrimeStatus.NORMAL or Type.ELECTRIC in target.types:
+        if target.status != PrimeStatus.NORMAL or Type.ELECTRIC in target.types or target.ability == Ability.LIMBER:
             return
         target.status = PrimeStatus.PARALYSIS
         print(f"{target.name} is paralyzed !")
@@ -130,7 +132,7 @@ class SecondaryEffectClass:
 
     @staticmethod
     def leech_seed(target: 'Pokemon') -> None:
-        if Type.PLANT in target.types:
+        if Type.Grass in target.types:
             print(f"But it failed ! This doesn't affect {target.name}...")
         else:
             if SubStatus.LEECH_SEED in target.sub_status:

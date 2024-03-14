@@ -45,7 +45,7 @@ class StatusCapacity(Capacity):
         self.target = state['target']
            
            
-LeechSeed = StatusCapacity("Leech Seed", Type.PLANT, 90, 10, SecondaryEffects.LEECH_SEED.value, "enemy_pokemon")
+LeechSeed = StatusCapacity("Leech Seed", Type.GRASS, 90, 10, SecondaryEffects.LEECH_SEED.value, "enemy_pokemon")
 StealthRock = StatusCapacity("Stealth Rock", Type.ROCK, 100, 10, SecondaryEffects.STEALTH_ROCK.value, "enemy_player")
 LightScreen = StatusCapacity("Light Screen", Type.PSYCHIC, 100, 30, SecondaryEffects.LIGHT_SCREEN.value, "self_player")
 Reflect = StatusCapacity("Reflect", Type.PSYCHIC, 100, 30, SecondaryEffects.REFLECT.value, "enemy_self")

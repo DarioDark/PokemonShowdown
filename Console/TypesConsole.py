@@ -44,7 +44,7 @@ class TypeClass:
 
 Fire = TypeClass("Fire", "red")
 Water = TypeClass("Water", "blue")
-Plant = TypeClass("Plant", "green")
+GRASS = TypeClass("GRASS", "green")
 Electric = TypeClass("Electric", "yellow")
 Psychic = TypeClass("Psychic", "light_magenta")
 Fight = TypeClass("Fight", "light_red")
@@ -66,7 +66,7 @@ NoneType = TypeClass("None", "white")
 class Type(Enum):
     FIRE = Fire
     WATER = Water
-    PLANT = Plant
+    GRASS = GRASS
     ELECTRIC = Electric
     PSYCHIC = Psychic
     FIGHT = Fight
@@ -87,18 +87,18 @@ class Type(Enum):
 
 # Fire
 Type.FIRE.value.weaknesses = [Type.WATER, Type.ROCK, Type.GROUND]
-Type.FIRE.value.resistances = [Type.FIRE, Type.PLANT, Type.ICE, Type.BUG, Type.STEEL, Type.FAIRY]
+Type.FIRE.value.resistances = [Type.FIRE, Type.GRASS, Type.ICE, Type.BUG, Type.STEEL, Type.FAIRY]
 Type.FIRE.value.immunities = []
 
 # Water
-Type.WATER.value.weaknesses = [Type.ELECTRIC, Type.PLANT]
+Type.WATER.value.weaknesses = [Type.ELECTRIC, Type.GRASS]
 Type.WATER.value.resistances = [Type.FIRE, Type.WATER, Type.ICE, Type.STEEL]
 Type.WATER.value.immunities = []
 
 # Plant
-Type.PLANT.value.weaknesses = [Type.FIRE, Type.FLYING, Type.ICE, Type.POISON, Type.BUG]
-Type.PLANT.value.resistances = [Type.WATER, Type.ELECTRIC, Type.PLANT, Type.FIGHT, Type.FAIRY]
-Type.PLANT.value.immunities = []
+Type.GRASS.value.weaknesses = [Type.FIRE, Type.FLYING, Type.ICE, Type.POISON, Type.BUG]
+Type.GRASS.value.resistances = [Type.WATER, Type.ELECTRIC, Type.GRASS, Type.FIGHT, Type.FAIRY]
+Type.GRASS.value.immunities = []
 
 # Electric
 Type.ELECTRIC.value.weaknesses = [Type.GROUND]
@@ -122,7 +122,7 @@ Type.DARK.value.immunities = [Type.PSYCHIC]
 
 # Dragon
 Type.DRAGON.value.weaknesses = [Type.ICE, Type.DRAGON, Type.FAIRY]
-Type.DRAGON.value.resistances = [Type.FIRE, Type.WATER, Type.ELECTRIC, Type.PLANT]
+Type.DRAGON.value.resistances = [Type.FIRE, Type.WATER, Type.ELECTRIC, Type.GRASS]
 Type.DRAGON.value.immunities = []
 
 # Fairy
@@ -132,17 +132,17 @@ Type.FAIRY.value.immunities = [Type.DRAGON]
 
 # Steel
 Type.STEEL.value.weaknesses = [Type.FIRE, Type.FIGHT, Type.GROUND]
-Type.STEEL.value.resistances = [Type.NORMAL, Type.FLYING, Type.ROCK, Type.BUG, Type.STEEL, Type.PLANT, Type.PSYCHIC, Type.ICE, Type.DRAGON, Type.FAIRY]
+Type.STEEL.value.resistances = [Type.NORMAL, Type.FLYING, Type.ROCK, Type.BUG, Type.STEEL, Type.GRASS, Type.PSYCHIC, Type.ICE, Type.DRAGON, Type.FAIRY]
 Type.STEEL.value.immunities = [Type.POISON]
 
 # Ground
-Type.GROUND.value.weaknesses = [Type.WATER, Type.PLANT, Type.ICE]
+Type.GROUND.value.weaknesses = [Type.WATER, Type.GRASS, Type.ICE]
 Type.GROUND.value.resistances = [Type.POISON, Type.ROCK]
 Type.GROUND.value.immunities = [Type.ELECTRIC]
 
 # Flying
 Type.FLYING.value.weaknesses = [Type.ELECTRIC, Type.ICE, Type.ROCK]
-Type.FLYING.value.resistances = [Type.FIGHT, Type.BUG, Type.PLANT]
+Type.FLYING.value.resistances = [Type.FIGHT, Type.BUG, Type.GRASS]
 Type.FLYING.value.immunities = [Type.GROUND]
 
 # Normal
@@ -152,16 +152,16 @@ Type.NORMAL.value.immunities = []
 
 # Poison
 Type.POISON.value.weaknesses = [Type.GROUND, Type.PSYCHIC]
-Type.POISON.value.resistances = [Type.FIGHT, Type.POISON, Type.PLANT, Type.FAIRY]
+Type.POISON.value.resistances = [Type.FIGHT, Type.POISON, Type.GRASS, Type.FAIRY]
 Type.POISON.value.immunities = []
 
 # Bug
 Type.BUG.value.weaknesses = [Type.FIRE, Type.FLYING, Type.ROCK]
-Type.BUG.value.resistances = [Type.FIGHT, Type.GROUND, Type.PLANT]
+Type.BUG.value.resistances = [Type.FIGHT, Type.GROUND, Type.GRASS]
 Type.BUG.value.immunities = []
 
 # Rock
-Type.ROCK.value.weaknesses = [Type.WATER, Type.PLANT, Type.FIGHT, Type.GROUND, Type.STEEL]
+Type.ROCK.value.weaknesses = [Type.WATER, Type.GRASS, Type.FIGHT, Type.GROUND, Type.STEEL]
 Type.ROCK.value.resistances = [Type.NORMAL, Type.FLYING, Type.POISON, Type.FIRE]
 Type.ROCK.value.immunities = []
 
