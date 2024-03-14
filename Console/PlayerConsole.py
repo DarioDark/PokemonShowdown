@@ -14,7 +14,7 @@ class Player:
     def __eq__(self, other: 'Player') -> bool:
         return self.name == other.name
     
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         return {
             'team': [pokemon for pokemon in self.team],
             'name': self.name,
@@ -38,7 +38,6 @@ class Player:
             try:
                 lead_index = int(input(">> ")) - 1
                 if 0 <= lead_index < len(self.team):
-                    # print(f"{self.team[lead].name} is going first !")
                     return lead_index
                 else:
                     print("Invalid choice")
@@ -53,7 +52,7 @@ class Player:
         for pokemon in self.team:
             print(f"    {pokemon} {pokemon.print_moves()}")
        
-    def select_switch(self, enemy_current_pokemon: Pokemon = None) -> int:
+    def select_switch(self) -> int:
         print(f"{self.name}, select your next pokemon:")
         self.print_team()
         while True:
@@ -78,6 +77,7 @@ class Player:
         self.current_pokemon.switch_out()
         self.current_pokemon = pokemon
         print(f"{pokemon.name}, go!")
+
         if self.current_pokemon.ability == Ability.INTIMIDATE:
             print(f"{self.current_pokemon.name} intimidates the opposing pokemon!")
             enemy_player.current_pokemon.lower_attack(1)
@@ -91,14 +91,14 @@ class Player:
         self.current_pokemon.print_attacks()
         while True:
             try:
-                move = int(input(">> ")) - 1
+                move_index = int(input(">> ")) - 1
                 if self.current_pokemon.item in (Item.CHOICE_BAND, Item.CHOICE_SPECS, Item.CHOICE_SCARF):
-                    if self.current_pokemon.moves[move] != self.current_pokemon.last_used_move:
+                    if self.current_pokemon.moves[move_index] != self.current_pokemon.last_used_move:
                         print(f"{self.current_pokemon.name} is locked by it's {self.current_pokemon.item.name} and can't switch move!")
                         continue
-                if 0 <= move < len(self.current_pokemon.moves):
-                    if self.current_pokemon.moves[move].current_pp > 0:
-                        return move
+                if 0 <= move_index < len(self.current_pokemon.moves):
+                    if self.current_pokemon.moves[move_index].current_pp > 0:
+                        return move_index
                     else:
                         print("No PP left for this move!")
                 else:
@@ -106,34 +106,38 @@ class Player:
             except ValueError:
                 print("Invalid choice")
                 
-    def use_move(self, move: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> None:
-        capacity = self.current_pokemon.moves[move]
-        if isinstance(capacity, StatusMove):
+    def use_move(self, move_index: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> None:
+        move = self.current_pokemon.moves[move_index]
+        if move.category == MoveCategory.STATUS:
             if target.current_pokemon.ability == Ability.MAGIC_BOUNCE:
                 print(f"Magic Bounce from {target.name} reflected the status move!")
-                if capacity.target == "enemy_player":
-                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, self, damage)
-                elif capacity.target == "enemy_pokemon":
-                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, self.current_pokemon, damage)
+                if move.target == "enemy_player":
+                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage)
+                elif move.target == "enemy_pokemon":
+                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage)
             else:
-                if capacity.target == "enemy_player":
-                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, target, damage)
-                elif capacity.target == "self_player":
-                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, self, damage)
-                elif capacity.target == "self_pokemon":
-                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, self.current_pokemon, damage)
-                elif capacity.target == "enemy_pokemon":
-                    self.current_pokemon.attack_target(move, is_secondary_effect_applied, target.current_pokemon, damage)
+                if move.target == "enemy_player":
+                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target, damage)
+                elif move.target == "self_player":
+                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage)
+                elif move.target == "self_pokemon":
+                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage)
+                elif move.target == "enemy_pokemon":
+                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
         else:
-            self.current_pokemon.attack_target(move, is_secondary_effect_applied, target.current_pokemon, damage)
+            self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
 
     def select_z_move(self) -> int:
         print(f"{self.current_pokemon.name}, select your Z-Move:")
         self.current_pokemon.print_z_moves()
+        z_moves = self.current_pokemon.get_z_moves()
         while True:
             try:
                 z_move_index = int(input(">> ")) - 1
                 if 0 <= z_move_index < len(self.current_pokemon.moves):
+                    if isinstance(z_moves[z_move_index], str):
+                        print("This move can't be used as a Z-Move!")
+                        continue
                     return z_move_index
                 else:
                     print("Invalid choice")
@@ -168,7 +172,7 @@ class Player:
                         if target.current_pokemon.ability == Ability.MAGNET_PULL and Type.STEEL in self.current_pokemon.types:
                             print("You are trapped by a magnetic field. You can't switch out this pokemon!")
                             continue
-                    pokemon_index: int = self.select_switch(target.current_pokemon)
+                    pokemon_index: int = self.select_switch()
                     return 1, pokemon_index, bonus_option
                 elif choice == 2:
                     move_index: int = self.select_move()
@@ -180,6 +184,7 @@ class Player:
                             bonus_option = False
                         else:
                             bonus_option = True
+
                     elif self.current_pokemon.can_z_move():
                         z_move_index: int = self.select_z_move()
                         return 2, z_move_index, True

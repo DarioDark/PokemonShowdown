@@ -1,5 +1,4 @@
-from CapacityConsole import *
-from OffensiveCapacityConsole import *
+from MoveConsole import *
 
 
 class ZMove(Move):
@@ -22,50 +21,41 @@ class ZMove(Move):
                   'STEEL': 'Corkscrew Crash',
                   'FAIRY': 'Twinkle Tackle'}
 
-    REAL_POWER = {55: 100,
-                  65: 120,
-                  75: 140,
-                  85: 160,
-                  95: 175,
-                  100: 180,
-                  110: 185,
-                  125: 190,
-                  130: 195,
-                  140: 200}
+    TRANSFORMED_POWER = {55: 100,
+                         65: 120,
+                         75: 140,
+                         85: 160,
+                         95: 175,
+                         100: 180,
+                         110: 185,
+                         125: 190,
+                         130: 195,
+                         140: 200}
 
     def __init__(self, move: 'OffensiveMove or StatusMove') -> None:
-        # Get the move's attributes
-        move_type: Type = move.type
-        category: CapacityCategory = move.category
-        if isinstance(move, OffensiveMove):
-            power: int = move.power
-        secondary_effect: SecondaryEffectClass = move.secondary_effect
-        target = move.target
-
-        # Set the Z-Move's attributes
-        if category == CapacityCategory.PHYSICAL or category == CapacityCategory.SPECIAL:
-            name = self.MOVE_NAMES[move_type.name]
+        # Transforms the move into a Z-Move
+        if move.category == MoveCategory.PHYSICAL or move.category == MoveCategory.SPECIAL:
+            name = self.MOVE_NAMES[move.type.name]
         else:
-            name = move_type.name + ' Z'
-        super().__init__(name, move_type, 100, 1, secondary_effect)
-        self.move = move
-        self.category = category
-        if isinstance(move, OffensiveMove):
-            for power in self.REAL_POWER:
+            name = move.name + ' Z'
+        super().__init__(name, move.type, move.category, move.power, 100, 1, move.secondary_effect, move.target)
+
+        # Get the Z-Move's attributes
+        self.category = move.category
+        self.target = move.target
+        if self.category == MoveCategory.STATUS:
+            for power in self.TRANSFORMED_POWER:
                 if power >= move.power:
-                    self.power = self.REAL_POWER[power]
+                    self.power = self.TRANSFORMED_POWER[power]
                     break
-        self.target = target
 
     def __repr__(self) -> str:
-        if self.category == CapacityCategory.PHYSICAL:
+        if self.category == MoveCategory.STATUS:
+            return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.print_colored_pp() + " ~ "
+                    f"{colored(self.category.value, 'cyan')} / {self.accuracy}% accuracy / {self.secondary_effect}")
+        elif self.category == MoveCategory.PHYSICAL:
             category_color = "red"
         else:
             category_color = "magenta"
-        if isinstance(self.move, OffensiveMove):
-            return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.print_colored_pp() + " ~ "
-                    f"{colored(self.category.value, category_color)} / {self.power} power ~ {self.accuracy}% accuracy / {self.secondary_effect}")
-        else:
-            return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.print_colored_pp() + " ~ "
-                    f"{colored(self.category.value, category_color)} / {self.accuracy}% accuracy / {self.secondary_effect}")
-
+        return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.print_colored_pp() + " ~ "
+                f"{colored(self.category.value, category_color)} / {self.power} power ~ {self.accuracy}% accuracy / {self.secondary_effect}")

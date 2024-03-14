@@ -1,7 +1,6 @@
 from math import floor
 from copy import deepcopy
-from OffensiveCapacityConsole import *
-from StatusCapacityConsole import *
+from MoveConsole import *
 from ZMoveConsole import ZMove
 from StatusConsole import PrimeStatus, SubStatus
 from EnvironmentConsole import EnvironmentElements, EnvironmentClass
@@ -135,13 +134,10 @@ class Pokemon:
         self.nbr_turn_severe_poison = state['nbr_turn_severe_poison']
         self.moves = []
         for attack_state in state['moves']:
-            if attack_state['category'] == 'PHYSICAL' or attack_state['category'] == 'SPECIAL':
-                attack = OffensiveMove()
-                attack.__setstate__(attack_state)
-            else:
-                attack = StatusMove()
-                attack.__setstate__(attack_state)
+            attack = Move(None, None, None, None, None, None, None, None)
+            attack.__setstate__(attack_state)
             self.moves.append(attack)
+
         self.last_used_move = state['last_used_move']
         self.environment = state['environment']
 
@@ -678,22 +674,24 @@ class Pokemon:
         """
         move = self.moves[move_index]
         self.last_used_move = move
+        base_types = self.types
 
         if move.current_pp > 0:
-            if target.ability == Ability.PRESSURE:
-                move.current_pp -= 2
-            else:
-                move.current_pp -= 1
+            if isinstance(target, Pokemon):
+                if target.ability == Ability.PRESSURE:
+                    move.current_pp -= 2
+                else:
+                    move.current_pp -= 1
 
             if self.ability == Ability.PROTEAN:
                 if move.type not in self.types:
                     self.types = [move.type]
                     print(f"Protean from {self.name} : He changed its type to {move.type.name}!")
 
-            if isinstance(move, OffensiveMove):
+            if move.category != MoveCategory.STATUS:
                 attack_successful = target.receive_damage(damage)
                 # If the attack was successful, apply the secondary effect of abilities
-                if attack_successful and move.contact_move:
+                if attack_successful and move.attributes['contact'] is True:
                     if target.ability == Ability.IRON_BARBS or target.ability == Ability.ROUGH_SKIN:
                         print(f"{target.ability.name} from {target.name}")
                         self.receive_damage(self.max_hp // 8)
@@ -723,6 +721,8 @@ class Pokemon:
                 # If the target is a player, apply the secondary effect of the move
                 if is_secondary_effect_applied:
                     move.apply_secondary_effect(target)
+
+            self.types = base_types
         else:
             print(f"{self.name} has no PP left!")
 
@@ -779,7 +779,7 @@ class Pokemon:
         :param move: The move used
         :return: Whether the move has a critical hit or not
         """
-        if isinstance(move, OffensiveMove):
+        if move.category != MoveCategory.STATUS:
             critical_hit_chance = 4.17
             if randint(1, 100) <= critical_hit_chance:
                 print("Critical hit!")
@@ -854,43 +854,43 @@ class Pokemon:
         multiplier *= multipliers[2]
         return multiplier
 
-    def calculate_damage(self, attack: OffensiveMove, attacker: 'Pokemon', multipliers) -> int:
+    def calculate_damage(self, move: Move, attacker: 'Pokemon', multipliers) -> int:
         """Calculates the damage value of the move.
 
-        :param attack: The move used
+        :param move: A Move or ZMove object, the move used
         :param attacker: The pokemon that uses the move
         :param multipliers: The multipliers of the move
         :return: The damage value of the move
         """
         # If the pokemon is immune to the move thanks to its ability
         # TODO
-        if self.ability == Ability.FLASH_FIRE and attack.type == Type.FIRE:
+        if self.ability == Ability.FLASH_FIRE and move.type == Type.FIRE:
             return 0
-        elif self.ability == Ability.JUSTIFIED and attack.type == Type.DARK:
+        elif self.ability == Ability.JUSTIFIED and move.type == Type.DARK:
             self.boost_attack(1)
-        elif self.ability == Ability.WATER_ABSORB and attack.type == Type.WATER:
+        elif self.ability == Ability.WATER_ABSORB and move.type == Type.WATER:
             return -(self.max_hp // 4)
-        elif self.ability == Ability.VOLT_ABSORB and attack.type == Type.ELECTRIC:
+        elif self.ability == Ability.VOLT_ABSORB and move.type == Type.ELECTRIC:
             return -(self.max_hp // 4)
         elif self.ability == Ability.SAP_SIPPER:
             self.boost_attack(1)
             return 0
-        elif self.ability == Ability.STORM_DRAIN and attack.type == Type.WATER:
+        elif self.ability == Ability.STORM_DRAIN and move.type == Type.WATER:
             print(f"Storm Drain from {self.name} !")
             self.boost_special_attack(1)
             return 0
-        elif self.ability == Ability.FLASH_FIRE and attack.type == Type.FIRE:
+        elif self.ability == Ability.FLASH_FIRE and move.type == Type.FIRE:
             print(f"Flash Fire from {self.name} !")
             print("The power of {self.name}'s fire move were increased!")
             self.sub_status.append(SubStatus.FLASH_FIRE)
             return 0
-        elif self.ability == Ability.LEVITATE and attacker.ability != Ability.MOLD_BREAKER and attacker.ability != Ability.TERA_VOLTAGE and attack.type == Type.GROUND:
+        elif self.ability == Ability.LEVITATE and attacker.ability != Ability.MOLD_BREAKER and attacker.ability != Ability.TERA_VOLTAGE and move.type == Type.GROUND:
             return 0
-        elif self.ability == Ability.BULLET_PROOF and attack.bullet_move:
+        elif self.ability == Ability.BULLET_PROOF and move.attributes['bullet'] is True:
             return 0
-        elif self.ability == Ability.SOUNDPROOF and attack.sound_move:
+        elif self.ability == Ability.SOUNDPROOF and move.attributes['sound'] is True:
             return 0
-        elif self.ability == Ability.LIGHTNING_ROD and attack.type == Type.ELECTRIC:
+        elif self.ability == Ability.LIGHTNING_ROD and move.type == Type.ELECTRIC:
             print(f"Lightning Rod from {self.name} !")
             self.boost_special_attack(1)
             return 0
@@ -900,7 +900,7 @@ class Pokemon:
             return 0
 
         # Physical or Special
-        if attack.category == CapacityCategory.PHYSICAL:
+        if move.category == MoveCategory.PHYSICAL:
             if self.ability == Ability.UNAWARE:
                 attack_stat: int = attacker.attack_stat
             else:
@@ -920,26 +920,26 @@ class Pokemon:
                 defense_stat: int = self.special_defense
 
         # Abilities that modify the power of the move
-        move_power = attack.power
+        move_power = move.power
         if attacker.ability == Ability.TECHNICIAN and move_power <= 60:
             move_power *= 1.5
         elif attacker.ability == Ability.SAND_FORCE and EnvironmentElements.SAND in self.environment.elements and attack.type in [Type.ROCK, Type.STEEL, Type.GROUND]:
             move_power *= 1.3
-        elif attacker.ability == Ability.TOUGH_CLAWS and attack.contact_move:
+        elif attacker.ability == Ability.TOUGH_CLAWS and move.contact_move:
             move_power *= 1.3
-        elif SubStatus.FLASH_FIRE in attacker.sub_status and attack.type == Type.FIRE:
+        elif SubStatus.FLASH_FIRE in attacker.sub_status and move.type == Type.FIRE:
             move_power *= 1.5
-        elif attacker.ability == Ability.TORRENT and attack.type == Type.WATER and attacker.current_hp <= attacker.max_hp / 3:
+        elif attacker.ability == Ability.TORRENT and move.type == Type.WATER and attacker.current_hp <= attacker.max_hp / 3:
             move_power *= 1.5
-        elif attacker.ability == Ability.SWARM and attack.type == Type.BUG and attacker.current_hp <= attacker.max_hp / 3:
+        elif attacker.ability == Ability.SWARM and move.type == Type.BUG and attacker.current_hp <= attacker.max_hp / 3:
             move_power *= 1.5
-        elif attacker.ability == Ability.BLAZE and attack.type == Type.FIRE and attacker.current_hp <= attacker.max_hp / 3:
+        elif attacker.ability == Ability.BLAZE and move.type == Type.FIRE and attacker.current_hp <= attacker.max_hp / 3:
             move_power *= 1.5
-        elif attacker.ability == Ability.OVERGROW and attack.type == Type.Grass and attacker.current_hp <= attacker.max_hp / 3:
+        elif attacker.ability == Ability.OVERGROW and move.type == Type.GRASS and attacker.current_hp <= attacker.max_hp / 3:
             move_power *= 1.5
 
         # Prime status
-        if attacker.status == PrimeStatus.BURN and attack.category == CapacityCategory.PHYSICAL and attacker.ability != Ability.GUTS:
+        if attacker.status == PrimeStatus.BURN and move.category == MoveCategory.PHYSICAL and attacker.ability != Ability.GUTS:
             move_power //= 2
 
         # Multipliers
@@ -949,13 +949,13 @@ class Pokemon:
         damage = floor(damage * randint(85, 100) / 100)  # Apply the random factor
 
         # Weather multipliers
-        if EnvironmentElements.SUN in self.environment.elements and attack.type == Type.FIRE:
+        if EnvironmentElements.SUN in self.environment.elements and move.type == Type.FIRE:
             damage *= 1.5
-        elif EnvironmentElements.SUN in self.environment.elements and attack.type == Type.WATER:
+        elif EnvironmentElements.SUN in self.environment.elements and move.type == Type.WATER:
             damage *= 0.5
-        elif EnvironmentElements.RAIN in self.environment.elements and attack.type == Type.WATER:
+        elif EnvironmentElements.RAIN in self.environment.elements and move.type == Type.WATER:
             damage *= 1.5
-        elif EnvironmentElements.RAIN in self.environment.elements and attack.type == Type.FIRE:
+        elif EnvironmentElements.RAIN in self.environment.elements and move.type == Type.FIRE:
             damage *= 0.5
 
         # Abilities that modify the damage directly

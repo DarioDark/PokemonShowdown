@@ -1,9 +1,9 @@
-from CapacityConsole import *
+from MoveConsole import *
 from CapacitySideEffectsConsole import SecondaryEffects
 
 
 class OffensiveMove(Move):
-    def __init__(self, name: str = None, pokemon_type: Type = None, category: CapacityCategory = None, contact_move: bool = None, power: int = None, accuracy: int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None) -> None:
+    def __init__(self, name: str = None, pokemon_type: Type = None, category: MoveCategory = None, contact_move: bool = None, power: int = None, accuracy: int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None) -> None:
         super().__init__(name, pokemon_type, accuracy, pp, secondary_effect)
         self.category = category
         self.contact_move = contact_move
@@ -13,7 +13,7 @@ class OffensiveMove(Move):
         self.target = 'enemy_pokemon'
         
     def __repr__(self) -> str:
-        if self.category == CapacityCategory.PHYSICAL:
+        if self.category == MoveCategory.PHYSICAL:
             category_color = "red"
         else:
             category_color = "magenta"
@@ -39,7 +39,7 @@ class OffensiveMove(Move):
     def __setstate__(self, state):
         self.name = state['name']
         self.type = Type[state['type']]
-        self.category = CapacityCategory[state['category']]
+        self.category = MoveCategory[state['category']]
         self.contact_move = state['contact_move']
         self.bullet_move = state['bullet_move']
         self.sound_move = state['sound_move']
@@ -51,17 +51,3 @@ class OffensiveMove(Move):
         self.secondary_effect = SecondaryEffects[state['secondary_effect']].value
 
 
-# Move declarations
-Flamethrower = OffensiveMove("Flamethrower", Type.FIRE, CapacityCategory.SPECIAL, False, 90, 100, 15, SecondaryEffects.COMMON_BURN.value)
-Thunderbolt = OffensiveMove("Thunderbolt", Type.ELECTRIC, CapacityCategory.SPECIAL, False, 90, 100, 15, SecondaryEffects.RARE_PARALYSIS.value)
-Thunder = OffensiveMove("Thunder", Type.ELECTRIC, CapacityCategory.SPECIAL, False, 110, 70, 10, SecondaryEffects.COMMON_PARALYSIS.value)
-Surf = OffensiveMove("Surf", Type.WATER, CapacityCategory.SPECIAL, False, 90, 100, 15, SecondaryEffects.NONE.value)
-HydroPump = OffensiveMove("Hydro Pump", Type.WATER, CapacityCategory.SPECIAL, False, 110, 80, 5, SecondaryEffects.NONE.value)
-IceBeam = OffensiveMove("Ice Beam", Type.ICE, CapacityCategory.SPECIAL, False, 90, 100, 10, SecondaryEffects.RARE_FREEZE.value)
-Earthquake = OffensiveMove("Earthquake", Type.GROUND, CapacityCategory.PHYSICAL, False, 100, 100, 10, SecondaryEffects.NONE.value)
-RockSlide = OffensiveMove("Rock Slide", Type.ROCK, CapacityCategory.PHYSICAL, False, 75, 90, 10, SecondaryEffects.NONE.value)
-Psychic = OffensiveMove("Psychic", Type.PSYCHIC, CapacityCategory.SPECIAL, False, 90, 100, 15, SecondaryEffects.CONFUSION.value)
-SkullBash = OffensiveMove("Skull Bash", Type.NORMAL, CapacityCategory.PHYSICAL, True, 130, 100, 5, SecondaryEffects.NONE.value)
-AquaTail = OffensiveMove("Aqua Tail", Type.WATER, CapacityCategory.PHYSICAL, True, 90, 90, 10, SecondaryEffects.NONE.value)
-QuickAttack = OffensiveMove("Quick Attack", Type.NORMAL, CapacityCategory.PHYSICAL, True, 40, 100, 30, SecondaryEffects.NONE.value)
-CloseCombat = OffensiveMove("Close Combat", Type.FIGHT, CapacityCategory.PHYSICAL, True, 60, 100, 5, SecondaryEffects.NONE.value)

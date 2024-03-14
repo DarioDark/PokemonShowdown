@@ -131,7 +131,7 @@ class Fight:
             player2.current_pokemon.heal(hp_drained)
             if player1.current_pokemon.is_dead(True):
                 if player1 == self.player1:
-                    switch = player1.select_switch(player2.current_pokemon)
+                    switch = player1.select_switch()
                     final_switch = self.player_switch_in(player1, switch)
                     self.client.send_info(final_switch)
                 else:
@@ -165,8 +165,8 @@ class Fight:
                     self.client.send_info(result)
                     return
 
-                # Getting all the pieces of information of the move to send them and synchronize both clients
-                if isinstance(move, OffensiveMove):
+                # Getting all the pieces of information of the move to send them, and synchronize both clients
+                if move.category != MoveCategory.STATUS:
                     temp_move = deepcopy(move)
                     if player.current_pokemon.ability == Ability.AERILATE and temp_move.type == Type.NORMAL:
                         temp_move.type = Type.FLYING
@@ -183,9 +183,6 @@ class Fight:
 
                 # Applying the local results to the imported target
                 player.use_move(move_index, secondary_effect_applied, target, damage)
-
-            elif action[0] == 3:
-                player.current_pokemon
 
         # If the player is the imported player
         elif player == self.player2:
@@ -207,7 +204,7 @@ class Fight:
                     move: Move = player.current_pokemon.moves[move_index]
                     print(f"{player.current_pokemon.name} used {move.name}!")
 
-                    if isinstance(move, OffensiveMove):
+                    if move.category != MoveCategory.STATUS:
                         multipliers: tuple[bool, bool, int] = result[0]
 
                         # Critical hit
@@ -245,7 +242,7 @@ class Fight:
                 return switch
             self.end_game()
             if player.current_pokemon.is_dead():
-                switch = player.select_switch(target.current_pokemon)
+                switch = player.select_switch()
 
     def play_turn(self):
         """Handles the whole process of each player using their selected action and checking if one of the pokemon dies."""
@@ -256,7 +253,7 @@ class Fight:
             return
         elif self.player1.current_pokemon.is_dead():
             self.player2.current_pokemon.opponent_died()
-            switch: int = self.player1.select_switch(self.player2.current_pokemon)
+            switch: int = self.player1.select_switch()
             final_switch = self.player_switch_in(self.player1, switch)
             self.client.send_info(final_switch)
         elif self.player2.current_pokemon.is_dead():
@@ -271,7 +268,7 @@ class Fight:
             return
         elif self.player1.current_pokemon.is_dead():
             self.player2.current_pokemon.opponent_died()
-            switch: int = self.player1.select_switch(self.player2.current_pokemon)
+            switch: int = self.player1.select_switch()
             final_switch = self.player_switch_in(self.player1, switch)
             self.client.send_info(final_switch)
         elif self.player2.current_pokemon.is_dead():

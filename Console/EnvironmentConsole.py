@@ -6,14 +6,15 @@ class EnvironmentClass:
         self.elements: list[EnvironmentElements] = []
         self.temporary_elements_turns: dict[EnvironmentElements: int] = {}
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         return {
-            'elements': [element for element in self.elements if element]
+            'elements': [element for element in self.elements if element],
+            'temporary_elements_turns': self.temporary_elements_turns
         }
         
     def __setstate__(self, state):
         self.elements = [EnvironmentElements[element.name] for element in state['elements']]
-        # TODO
+        self.temporary_elements_turns = state['temporary_elements_turns']
 
     def pass_turn(self) -> None:
         """Pass a turn in the environment, removing temporary elements if their duration is over."""
@@ -42,13 +43,6 @@ class EnvironmentClass:
         if turns != -1:
             self.temporary_elements_turns[element] = turns
 
-    def remove_element(self, element: 'EnvironmentElements') -> None:
-        """Remove an element from the environment.
-
-        :param element: The element to remove.
-        """
-        self.elements.remove(element)
-        
     def remove_toxic_spikes(self) -> None:
         """Remove all toxic spikes from the environment.
         """

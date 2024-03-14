@@ -1,11 +1,11 @@
-from CapacityConsole import *
+from MoveConsole import *
 from CapacitySideEffectsConsole import SecondaryEffects
 
 
 class StatusMove(Move):
     def __init__(self, name: str = None, type: Type = None, accuracy:int = None, pp: int = None, secondary_effect: SecondaryEffectClass = None, target: str = None):
         super().__init__(name, type, accuracy, pp, secondary_effect)
-        self.category = CapacityCategory.STATUS
+        self.category = MoveCategory.STATUS
         self.target = target  # The target of the move, can be "enemy_pokemon", "self_pokemon", "enemy_player" or "self_player"
         
     def __repr__(self) -> str:
@@ -37,7 +37,7 @@ class StatusMove(Move):
     def __setstate__(self, state) -> None:
         self.name = state['name']
         self.type = Type[state['type']]
-        self.category = CapacityCategory[state['category']]
+        self.category = MoveCategory[state['category']]
         self.accuracy = state['accuracy']
         self.current_pp = state['current_pp']
         self.max_pp = state['max_pp']
