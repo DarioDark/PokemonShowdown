@@ -1062,6 +1062,12 @@ class Pokemon:
         """Resets the status of the pokemon when it switches out."""
         self.nbr_turn_severe_poison = 0
         self.sub_status = []
+        self.attack_boosts = 0
+        self.defense_boosts = 0
+        self.special_attack_boosts = 0
+        self.special_defense_boosts = 0
+        self.speed_boosts = 0
+
         if self.ability == Ability.NATURAL_CURE:
             self.status = PrimeStatus.NORMAL
             print(f"{self.name} healed its status!")

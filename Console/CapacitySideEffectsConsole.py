@@ -181,7 +181,7 @@ class SecondaryEffects(Enum):
 
     STEALTH_ROCK = stealth_rock_effect
     SPIKES = spikes_effect
-    TOXIC_SPIKES = spikes_effect
+    TOXIC_SPIKES = toxic_spikes_effect
     LIGHT_SCREEN = light_screen_effect
     REFLECT = reflect_effect
 
