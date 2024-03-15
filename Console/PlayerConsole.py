@@ -7,6 +7,7 @@ class Player:
         self.team: list[Pokemon] = team
         self.name: str = name
         self.current_pokemon: Pokemon = None
+        self.z_crystal_used: bool = False
         self.environment: EnvironmentClass = EnvironmentClass()
         for pokemon in self.team:
             pokemon.environment = self.environment
@@ -19,6 +20,7 @@ class Player:
             'team': [pokemon for pokemon in self.team],
             'name': self.name,
             'current_pokemon': self.current_pokemon,
+            'z_crystal_used': self.z_crystal_used,
             'environment': self.environment
         }
         
@@ -26,6 +28,7 @@ class Player:
         self.team = state['team']
         self.name = state['name']
         self.current_pokemon = state['current_pokemon']
+        self.z_crystal_used = state['z_crystal_used']
         self.environment = state['environment'] 
     
     def select_lead(self, enemy_team: list[Pokemon]) -> int:
@@ -106,7 +109,9 @@ class Player:
             except ValueError:
                 print("Invalid choice")
                 
-    def use_move(self, move_index: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> None:
+    def use_move(self, move_index: int, is_secondary_effect_applied: bool, target: 'Player', status: tuple['PrimeStatus or SubStatus', int], damage: int = -1) -> None:
+
+
         move = self.current_pokemon.moves[move_index]
         if move.category == MoveCategory.STATUS:
             if target.current_pokemon.ability == Ability.MAGIC_BOUNCE:

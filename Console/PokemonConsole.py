@@ -64,6 +64,7 @@ class Pokemon:
         self.status: PrimeStatus = PrimeStatus.NORMAL
         self.sub_status: list[SubStatus] = []
         self.nbr_turn_severe_poison: int = 0
+        self.sleep_turns: int = 0
 
         self.moves: list[Move] = moves
         if self.ability == Ability.NO_GUARD:
@@ -102,6 +103,7 @@ class Pokemon:
             'status': self.status,
             'sub_status': [status.name for status in self.sub_status],
             'nbr_turn_severe_poison': self.nbr_turn_severe_poison,
+            'sleep_turns': self.sleep_turns,
             'moves': [attack.__getstate__() for attack in self.moves],
             'last_used_move': self.last_used_move,
             'environment': self.environment,
@@ -133,6 +135,7 @@ class Pokemon:
         self.status = state['status']
         self.sub_status = [SubStatus[status_name.upper()] for status_name in state['sub_status']]
         self.nbr_turn_severe_poison = state['nbr_turn_severe_poison']
+        self.sleep_turns = state['sleep_turns']
         self.moves = []
         for attack_state in state['moves']:
             attack = Move(

@@ -1,5 +1,6 @@
 from PokemonConsole import *
 
+
 # Create some pokemons
 CHARIZARD = Pokemon("Charizard", 297, 204, 192, 254, 206, 236, [Type.FIRE, Type.FLYING], [FlameThrower, Earthquake, IceBeam, ToxicSpikes], Ability.NONE, Item.CHARIZARDITE_X,[(296, 258, 296, 206, 236, Ability.TOUGH_CLAWS, [Type.FIRE, Type.DRAGON]), (244, 192, 354, 266, 236, Ability.DROUGHT, [Type.FIRE, Type.FLYING])])
 ALAKAZAM = Pokemon("Alakazam", 251, 136, 126, 306, 226, 276, [Type.PSYCHIC], [], Ability.MAGIC_GUARD, Item.NONE, [(136, 166, 386, 246, 336, Ability.TRACE, [Type.PSYCHIC])])

@@ -156,11 +156,16 @@ class Fight:
             # If the player selected a move
             elif action[0] == 2:
                 move_index: int = action[1]
-                if player.current_pokemon.can_mega_evolve():
-                    print(f"{player.current_pokemon.name} is mega evolving !")
-                    player.current_pokemon.mega_evolve()
-                if player.current_pokemon.can_z_move():
-                    move: ZMove = player.current_pokemon.get_z_moves()[move_index]
+
+                # If the player selected the bonus option
+                if action[2]:
+                    if player.current_pokemon.can_mega_evolve():
+                        print(f"{player.current_pokemon.name} is mega evolving !")
+                        player.current_pokemon.mega_evolve()
+                    if player.current_pokemon.can_z_move():
+                        move: ZMove = player.current_pokemon.get_z_moves()[move_index]
+                    else:
+                        move: Move = player.current_pokemon.moves[move_index]
                 else:
                     move: Move = player.current_pokemon.moves[move_index]
                 print(f"{player.current_pokemon.name} used {move.name}!")
@@ -171,6 +176,32 @@ class Fight:
                     print(f"{player.current_pokemon.name} missed!")
                     self.client.send_info(result)
                     return
+
+                # STATUS TODO
+                status = (None, 0)
+                if SubStatus.FLINCH in player.current_pokemon.sub_status:
+                    print(f"{player.current_pokemon.name} flinched and couldn't move!")
+                    status = (SubStatus.FLINCH, 0)
+                elif SubStatus.CONFUSION in player.current_pokemon.sub_status:
+                    print(f"{player.current_pokemon.name} is confused...")
+                    if randint(1, 2) == 1:
+                        print(f"{player.current_pokemon.name} hurt itself in it's confusion")
+                        status = (SubStatus.CONFUSION, 'damage')  # TODO
+                if player.current_pokemon.status == PrimeStatus.PARALYSIS:
+                    print(f"{player.current_pokemon.name} is paralysed...")
+                    if randint(1, 4) == 1:
+                        print(f"{player.current_pokemon.name} was paralysed and couldn't move!")
+                        status = (PrimeStatus.PARALYSIS, 0)
+                elif player.current_pokemon.status == PrimeStatus.SLEEP:
+                    print(f"{player.current_pokemon.name} is asleep...")
+                    if randint(1, 2) == 1:
+                        print(f"{player.current_pokemon.name} is sleeping deeply!")
+                        status = (PrimeStatus.SLEEP, 0)
+                elif player.current_pokemon.status == PrimeStatus.FREEZE:
+                    print(f"{player.current_pokemon.name} is frozen...")
+                    if randint(1, 5) <= 4:
+                        print(f"{player.current_pokemon.name} is stuck in the ice!")
+                        status = (PrimeStatus.FREEZE, 0)
 
                 # Getting all the pieces of information of the move to send them, and synchronize both clients
                 if move.category != MoveCategory.STATUS:
@@ -185,11 +216,11 @@ class Fight:
                 secondary_effect_applied: bool = move.is_secondary_effect_applied(player.current_pokemon)
 
                 # Sending the results to the server
-                result: tuple[tuple[bool, bool, float], bool, int] = (multipliers, secondary_effect_applied, damage)
+                result: tuple[tuple[bool, bool, float], bool, int, tuple['PrimeStatus or SubStatus', int]] = (multipliers, secondary_effect_applied, damage, status)
                 self.client.send_info(result)
 
                 # Applying the local results to the imported target
-                player.use_move(move_index, secondary_effect_applied, target, damage)
+                player.use_move(move_index, secondary_effect_applied, target, status, damage)
 
         # If the player is the imported player
         elif player == self.player2:
@@ -208,11 +239,15 @@ class Fight:
 
                 # If the move didn't miss
                 else:
-                    if player.current_pokemon.can_mega_evolve():
-                        print(f"{player.current_pokemon.name} is mega evolving !")
-                        player.current_pokemon.mega_evolve()
-                    if player.current_pokemon.can_z_move():
-                        move: ZMove = player.current_pokemon.get_z_moves()[move_index]
+                    # If the player selected the bonus option
+                    if action[2]:
+                        if player.current_pokemon.can_mega_evolve():
+                            print(f"{player.current_pokemon.name} is mega evolving !")
+                            player.current_pokemon.mega_evolve()
+                        if player.current_pokemon.can_z_move():
+                            move: ZMove = player.current_pokemon.get_z_moves()[move_index]
+                        else:
+                            move: Move = player.current_pokemon.moves[move_index]
                     else:
                         move: Move = player.current_pokemon.moves[move_index]
                     print(f"{player.current_pokemon.name} used {move.name}!")
