@@ -16,3 +16,4 @@ class SubStatus(Enum):
     LEECH_SEED = "Leech Seed"
     FLINCH = "Flinch"
     FLASH_FIRE = "Flash Fire"
+    UNBURDEN = "Unburden"

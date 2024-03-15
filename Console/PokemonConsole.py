@@ -279,6 +279,9 @@ class Pokemon:
     def speed(self) -> int:
         """Returns the speed of the pokemon, taking into account the speed boosts."""
         speed_stat = self.speed_stat
+        # Ability
+        if SubStatus.UNBURDEN in self.sub_status:
+            speed_stat *= 2
         # Environment
         if self.environment:
             if EnvironmentElements.TAILWIND in self.environment.elements:
@@ -511,7 +514,8 @@ class Pokemon:
         :param hp: The amount of HP to convert
         :return: The percentage of the max HP
         """
-        return (hp / self.max_hp) * 100
+        computed_hp = max(self.current_hp, hp)
+        return round((computed_hp / self.max_hp) * 100, 1)
 
     def get_current_hp_percentage(self) -> float:
         """Returns the current HP as a percentage of the max HP.
@@ -678,9 +682,9 @@ class Pokemon:
     def heal(self, amount: int) -> None:
         """Heals the pokemon by a certain amount."""
         self.current_hp += max(amount, 0)
-        print(f"{self.name} was healed by {round(self.convert_hp_to_percentage(amount), 1)} HP!")
+        print(f"{self.name} was healed by {self.convert_hp_to_percentage(amount)} HP!")
             
-    def attack_target(self, move_index: int, is_secondary_effect_applied: bool, target: 'Pokemon or Player', damage) -> None:
+    def attack_target(self, move_index: int, is_secondary_effect_applied: bool, target: 'Pokemon or Player', damage) -> bool:
         """The pokemon attacks the target with a move.
 
         :param move_index: The index of the move to use
@@ -693,8 +697,13 @@ class Pokemon:
         base_types = self.types
 
         if move.current_pp > 0:
-            if isinstance(target, Pokemon):
+            if isinstance(target, Pokemon) and target != self:
                 if target.ability == Ability.PRESSURE:
+                    move.current_pp -= 2
+                else:
+                    move.current_pp -= 1
+            else:
+                if target.current_pokemon.ability == Ability.PRESSURE and target.current_pokemon != self:
                     move.current_pp -= 2
                 else:
                     move.current_pp -= 1
@@ -706,41 +715,41 @@ class Pokemon:
 
             if move.category != MoveCategory.STATUS:
                 attack_successful = target.receive_damage(damage)
-                # If the attack was successful, apply the secondary effect of abilities
-                if attack_successful and move.attributes['contact'] is True:
-                    if target.ability == Ability.IRON_BARBS or target.ability == Ability.ROUGH_SKIN:
-                        print(f"{target.ability.name} from {target.name}")
-                        self.receive_damage(self.max_hp // 8)
-                    elif target.ability == Ability.STATIC:
-                        if self.status == PrimeStatus.NORMAL:
-                            if randint(1, 100) <= 30:
-                                print(f"{target.ability.name} from {target.name}")
-                                print(f"{self.name} is paralyzed!")
-                                self.status = PrimeStatus.PARALYSIS
-                    elif target.ability == Ability.FLAME_BODY:
-                        if self.status == PrimeStatus.NORMAL:
-                            if randint(1, 100) <= 30:
-                                print(f"{target.ability.name} from {target.name}")
-                                print(f"{self.name} is burned!")
-                                self.status = PrimeStatus.BURN
-            # TODO
-            elif isinstance(move, ZMove):
-                target.receive_damage(damage)
-                self.item = Item.INACTIVE_Z_CRYSTAL
 
-            # If the target is a Pokemon, apply the secondary effect of the move
-            if isinstance(target, Pokemon):
-                if not target.is_dead():
-                    if is_secondary_effect_applied:
-                        move.apply_secondary_effect(target)
-            else:
-                # If the target is a player, apply the secondary effect of the move
-                if is_secondary_effect_applied:
-                    move.apply_secondary_effect(target)
+                # If the attack was successful, apply the secondary effect of abilities
+                if attack_successful:
+                    if move.attributes['contact'] is True:
+                        if target.ability == Ability.IRON_BARBS or target.ability == Ability.ROUGH_SKIN:
+                            print(f"{target.ability.name} from {target.name}")
+                            self.receive_damage(self.max_hp // 8)
+                        elif target.ability == Ability.STATIC:
+                            if self.status == PrimeStatus.NORMAL:
+                                if randint(1, 100) <= 30:
+                                    print(f"{target.ability.name} from {target.name}")
+                                    print(f"{self.name} is paralyzed!")
+                                    self.status = PrimeStatus.PARALYSIS
+                        elif target.ability == Ability.FLAME_BODY:
+                            if self.status == PrimeStatus.NORMAL:
+                                if randint(1, 100) <= 30:
+                                    print(f"{target.ability.name} from {target.name}")
+                                    print(f"{self.name} is burned!")
+                                    self.status = PrimeStatus.BURN
+
+                    # If the target is a Pokemon, apply the secondary effect of the move
+                    if isinstance(target, Pokemon):
+                        if not target.is_dead():
+                            if is_secondary_effect_applied:
+                                move.apply_secondary_effect(target)
+                    else:
+                        # If the target is a player, apply the secondary effect of the move
+                        if is_secondary_effect_applied:
+                            move.apply_secondary_effect(target)
+                    return True
 
             self.types = base_types
         else:
             print(f"{self.name} has no PP left!")
+            return False
 
     def receive_damage(self, damage: int) -> bool:
         """The pokemon receives damage.
@@ -764,7 +773,7 @@ class Pokemon:
 
         self.current_hp -= damage
         self.current_hp = max(self.current_hp, 0)
-        print(f"{self.name} lost {min(round(self.convert_hp_to_percentage(damage), 1), 100)}% HP!")
+        print(f"{self.name} lost {self.convert_hp_to_percentage(damage)}% HP!")
         self.is_dead(True)
         return True
         
@@ -1054,12 +1063,11 @@ class Pokemon:
             self.boost_attack(1)
 
     def drop_object(self) -> Item:
-        poke_object = self.item
+        item = self.item
         self.item = Item.NONE
-        if poke_object != Item.NONE and self.ability == Ability.UNBURDEN:
-            self.speed_stat *= 2
-
-        return poke_object
+        if self.ability == Ability.UNBURDEN:
+            self.sub_status.append(SubStatus.UNBURDEN)
+        return item
 
     def switch_out(self):
         """Resets the status of the pokemon when it switches out."""
@@ -1079,11 +1087,15 @@ class Pokemon:
         elif self.ability == Ability.UNBURDEN and self.item_start_turn != Item.NONE and self.item == Item.NONE:
             self.speed_stat //= 2
         
-    def switch_in(self, enemy_player: 'Player') -> None:
+    def switch_in(self, enemy_player: 'Player') -> bool:
         """Applies the effects of the environment when the pokemon switches in."""
         # Entry hazards
-        self.switch_in_spikes()
         self.switch_in_stealth_rock()
+        if self.is_dead(True):
+            return True
+        self.switch_in_spikes()
+        if self.is_dead(True):
+            return True
         self.switch_in_toxic_spikes()
 
         enemy_pokemon = enemy_player.current_pokemon
@@ -1091,46 +1103,46 @@ class Pokemon:
             self.ability = enemy_pokemon.ability
 
         enemy_environment = enemy_player.environment
-
         # Weather
+        weather_turns = 5
         if self.item == Item.HOT_ROCK:
-            turns = 8
+            weather_turns = 8
         elif self.item == Item.DAMP_ROCK:
-            turns = 8
+            weather_turns = 8
         elif self.item == Item.SMOOTH_ROCK:
-            turns = 8
+            weather_turns = 8
         elif self.item == Item.ICY_ROCK:
-            turns = 8
-        else:
-            turns = 5
+            weather_turns = 8
 
         if self.ability == Ability.DROUGHT:
-            self.environment.add_element(EnvironmentElements.SUN, turns)
-            enemy_environment.add_element(EnvironmentElements.SUN, turns)
+            self.environment.add_element(EnvironmentElements.SUN, weather_turns)
+            enemy_environment.add_element(EnvironmentElements.SUN, weather_turns)
         elif self.ability == Ability.DRIZZLE:
-            self.environment.add_element(EnvironmentElements.RAIN, turns)
-            enemy_environment.add_element(EnvironmentElements.RAIN, turns)
+            self.environment.add_element(EnvironmentElements.RAIN, weather_turns)
+            enemy_environment.add_element(EnvironmentElements.RAIN, weather_turns)
         elif self.ability == Ability.SAND_STREAM:
-            self.environment.add_element(EnvironmentElements.SAND, turns)
-            enemy_environment.add_element(EnvironmentElements.SAND, turns)
+            self.environment.add_element(EnvironmentElements.SAND, weather_turns)
+            enemy_environment.add_element(EnvironmentElements.SAND, weather_turns)
         elif self.ability == Ability.SNOW_WARNING:
-            self.environment.add_element(EnvironmentElements.SNOW, turns)
-            enemy_environment.add_element(EnvironmentElements.SNOW, turns)
+            self.environment.add_element(EnvironmentElements.SNOW, weather_turns)
+            enemy_environment.add_element(EnvironmentElements.SNOW, weather_turns)
 
         # Terrains
-        # Insert terrain objects here TODO
+        terrain_turns = 5
+        if self.item == Item.TERRAIN_EXTENDER:
+            terrain_turns = 8
         elif self.ability == Ability.GRASSY_SURGE:
-            self.environment.add_element(EnvironmentElements.GRASSY_TERRAIN, 5)
-            enemy_environment.add_element(EnvironmentElements.GRASSY_TERRAIN, 5)
+            self.environment.add_element(EnvironmentElements.GRASSY_TERRAIN, terrain_turns)
+            enemy_environment.add_element(EnvironmentElements.GRASSY_TERRAIN, terrain_turns)
         elif self.ability == Ability.MISTY_SURGE:
-            self.environment.add_element(EnvironmentElements.MISTY_TERRAIN, 5)
-            enemy_environment.add_element(EnvironmentElements.MISTY_TERRAIN, 5)
+            self.environment.add_element(EnvironmentElements.MISTY_TERRAIN, terrain_turns)
+            enemy_environment.add_element(EnvironmentElements.MISTY_TERRAIN, terrain_turns)
         elif self.ability == Ability.ELECTRIC_SURGE:
-            self.environment.add_element(EnvironmentElements.ELECTRIC_TERRAIN, 5)
-            enemy_environment.add_element(EnvironmentElements.ELECTRIC_TERRAIN, 5)
+            self.environment.add_element(EnvironmentElements.ELECTRIC_TERRAIN, terrain_turns)
+            enemy_environment.add_element(EnvironmentElements.ELECTRIC_TERRAIN, terrain_turns)
         elif self.ability == Ability.PSYCHIC_SURGE:
-            self.environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, 5)
-            enemy_environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, 5)
+            self.environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, terrain_turns)
+            enemy_environment.add_element(EnvironmentElements.PSYCHIC_TERRAIN, terrain_turns)
 
         # Objects
         if self.item == Item.GRASSY_SEED and EnvironmentElements.GRASSY_TERRAIN in self.environment.elements:
@@ -1159,9 +1171,7 @@ class Pokemon:
                     stealth_rock_damage /= 2
             stealth_rock_damage = floor(self.max_hp * (stealth_rock_damage / 100))
             self.current_hp = max(self.current_hp - stealth_rock_damage, 0)
-            print(self.current_hp, self.max_hp)
             print(f"{self.name} is hurt by stealth rock!")
-            self.is_dead(True)
 
     def switch_in_spikes(self):
         """Applies the effects of spikes when the pokemon switches in."""
@@ -1178,22 +1188,21 @@ class Pokemon:
                 spikes_damage = floor(self.max_hp / 4)
             self.current_hp = max(self.current_hp - spikes_damage, 0)
             print(f"{self.name} is hurt by spikes!")
-            self.is_dead(True)
             
     def switch_in_toxic_spikes(self) -> None:
         """Applies the effects of toxic spikes when the pokemon switches in."""
-        if Type.FLYING in self.types or self.ability == Ability.LEVITATE or self.ability == Ability.MAGIC_GUARD:
+        if Type.FLYING in self.types or self.ability == Ability.LEVITATE:
             return
         elif EnvironmentElements.TOXIC_SPIKES in self.environment.elements:
+            toxic_spikes_count = self.environment.elements.count(EnvironmentElements.TOXIC_SPIKES)
             if Type.POISON in self.types:
                 self.environment.remove_toxic_spikes()
                 print(f"{self.name} absorbed the toxic spikes!")
-                print(self.environment.elements)
-            elif self.environment.elements.count(EnvironmentElements.TOXIC_SPIKES) == 1:
+            elif toxic_spikes_count == 1:
                 if PrimeStatus == PrimeStatus.NORMAL:
                     self.status = PrimeStatus.POISON
                     print(f"{self.name} is poisoned by toxic spikes!")
-            elif self.environment.elements.count(EnvironmentElements.TOXIC_SPIKES) == 2:
+            elif toxic_spikes_count == 2:
                 if PrimeStatus == PrimeStatus.NORMAL:
                     self.status = PrimeStatus.SEVERE_POISON
                     print(f"{self.name} is badly poisoned by toxic spikes!")

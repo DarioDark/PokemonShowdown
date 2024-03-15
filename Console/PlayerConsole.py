@@ -8,6 +8,7 @@ class Player:
         self.name: str = name
         self.current_pokemon: Pokemon = None
         self.z_crystal_used: bool = False
+        self.mega_evolution_used: bool = False
         self.environment: EnvironmentClass = EnvironmentClass()
         for pokemon in self.team:
             pokemon.environment = self.environment
@@ -21,6 +22,7 @@ class Player:
             'name': self.name,
             'current_pokemon': self.current_pokemon,
             'z_crystal_used': self.z_crystal_used,
+            'mega_evolution_used': self.mega_evolution_used,
             'environment': self.environment
         }
         
@@ -29,6 +31,7 @@ class Player:
         self.name = state['name']
         self.current_pokemon = state['current_pokemon']
         self.z_crystal_used = state['z_crystal_used']
+        self.mega_evolution_used = state['mega_evolution_used']
         self.environment = state['environment'] 
     
     def select_lead(self, enemy_team: list[Pokemon]) -> int:
@@ -84,8 +87,8 @@ class Player:
         if self.current_pokemon.ability == Ability.INTIMIDATE:
             print(f"{self.current_pokemon.name} intimidates the opposing pokemon!")
             enemy_player.current_pokemon.lower_attack(1)
-        self.current_pokemon.switch_in(enemy_player)
-        if self.current_pokemon.is_dead():
+        is_pokemon_dead: bool = self.current_pokemon.switch_in(enemy_player)
+        if is_pokemon_dead:
             return False
         return True
 
@@ -109,28 +112,28 @@ class Player:
             except ValueError:
                 print("Invalid choice")
                 
-    def use_move(self, move_index: int, is_secondary_effect_applied: bool, target: 'Player', status: tuple['PrimeStatus or SubStatus', int], damage: int = -1) -> None:
-
-
+    def use_move(self, move_index: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> bool:
         move = self.current_pokemon.moves[move_index]
+        attack_successful: bool = False
         if move.category == MoveCategory.STATUS:
             if target.current_pokemon.ability == Ability.MAGIC_BOUNCE:
                 print(f"Magic Bounce from {target.name} reflected the status move!")
                 if move.target == "enemy_player":
-                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage)
                 elif move.target == "enemy_pokemon":
-                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage)
             else:
                 if move.target == "enemy_player":
-                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target, damage)
                 elif move.target == "self_player":
-                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage)
                 elif move.target == "self_pokemon":
-                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage)
                 elif move.target == "enemy_pokemon":
-                    self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
         else:
-            self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
+            attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
+        return attack_successful
 
     def select_z_move(self) -> int:
         print(f"{self.current_pokemon.name}, select your Z-Move:")
@@ -150,6 +153,11 @@ class Player:
                 print("Invalid choice")
 
     def choose_action(self, target: 'Player') -> tuple[int, int, bool]:
+        """Prints the available actions for the player and returns the choice of the player.
+
+        :param target: The opposing player
+        :return: A tuple containing the choice of the player, the index of the move or the pokemon and a boolean indicating if a bonus option is activated (Mega Evolution or Z-Move)
+        """
         system("cls")
         bonus_option: bool = False
         while True:
@@ -163,13 +171,15 @@ class Player:
                 self.current_pokemon.print_attacks_without_indices()
 
                 if self.current_pokemon.can_mega_evolve():
-                    if bonus_option:
-                        print(f"3. {colored('Mega Evolve (activated) : ' , 'green', attrs=['bold'])}{colored(self.current_pokemon.mega_name, 'white')}")
-                    else:
-                        print(f"3. {colored('Mega Evolve (not activated) : ', 'green', attrs=['bold'])}{colored(self.current_pokemon.mega_name, 'dark_grey')}")
+                    if not self.mega_evolution_used:
+                        if bonus_option:
+                            print(f"3. {colored('Mega Evolve (activated) : ' , 'green', attrs=['bold'])}{colored(self.current_pokemon.mega_name, 'white')}")
+                        else:
+                            print(f"3. {colored('Mega Evolve (not activated) : ', 'green', attrs=['bold'])}{colored(self.current_pokemon.mega_name, 'dark_grey')}")
                 elif self.current_pokemon.can_z_move():
-                    print(f"3. {colored('Use Z-Move', 'green', attrs=['bold'])}")
-                    self.current_pokemon.print_z_moves_without_indices()
+                    if not self.z_crystal_used:
+                        print(f"3. {colored('Use Z-Move', 'green', attrs=['bold'])}")
+                        self.current_pokemon.print_z_moves_without_indices()
 
                 choice = int(input(">> "))
                 if choice == 1:
