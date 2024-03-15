@@ -104,7 +104,8 @@ class Pokemon:
             'nbr_turn_severe_poison': self.nbr_turn_severe_poison,
             'moves': [attack.__getstate__() for attack in self.moves],
             'last_used_move': self.last_used_move,
-            'environment': self.environment
+            'environment': self.environment,
+            'mega_evolution_stats': None if self.mega_evolution_stats is None else [[stat if isinstance(stat, int) else stat.name if not isinstance(stat, list) else [item.name for item in stat] for stat in stats] for stats in self.mega_evolution_stats]
         }
         
     def __setstate__(self, state):
@@ -134,12 +135,39 @@ class Pokemon:
         self.nbr_turn_severe_poison = state['nbr_turn_severe_poison']
         self.moves = []
         for attack_state in state['moves']:
-            attack = Move(None, None, None, None, None, None, None, None)
-            attack.__setstate__(attack_state)
+            attack = Move(
+                name=attack_state['name'],
+                move_type=Type[attack_state['type']],
+                category=MoveCategory[attack_state['category']],
+                power=attack_state['power'],
+                base_accuracy=attack_state['base_accuracy'],
+                max_pp=attack_state['max_pp'],
+                secondary_effect=SecondaryEffects[attack_state['secondary_effect']].value,
+                target=attack_state['target'],
+                priority=attack_state['priority'],
+                contact_move=attack_state['contact_move'],
+                bullet_move=attack_state['bullet_move'],
+                sound_move=attack_state['sound_move']
+            )
             self.moves.append(attack)
-
         self.last_used_move = state['last_used_move']
         self.environment = state['environment']
+        if state['mega_evolution_stats'] is None:
+            self.mega_evolution_stats = None
+        else:
+            print(state['mega_evolution_stats'])
+            mega_evolution_stats = []
+            for stat_list in state['mega_evolution_stats']:
+                temp_stat_list = []
+                for stat in stat_list:
+                    if isinstance(stat, str):
+                        stat = Ability[stat.upper()]
+                    elif isinstance(stat, list):
+                        stat = [Type[stat_name.upper()] for stat_name in stat]
+                    temp_stat_list.append(stat)
+                mega_evolution_stats.append(tuple(temp_stat_list))
+            print(mega_evolution_stats)
+            self.mega_evolution_stats = mega_evolution_stats
 
     def __repr__(self) -> str:
         """Returns a string representation of the pokemon, with its name, types, HP and current status, greyed out if the pokemon is fainted.
@@ -1214,6 +1242,8 @@ class Pokemon:
         self.environment.pass_turn()
 
     def can_mega_evolve(self) -> bool:
+        if not self.mega_evolution_stats:
+            return False
         if self.item == Item.ALAKAZAMITE and self.name == "Alakazam":
             return True
         elif self.item == Item.BLAZIKENITE and self.name == "Blaziken":
@@ -1255,5 +1285,13 @@ class Pokemon:
         return False
 
     def mega_evolve(self) -> None:
-        self.attack_stat, self.defense_stat, self.special_attack_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = self.mega_evolution_stats
-        self.name = "Mega " + self.name
+        if self.name == "Charizard":
+            if self.item == Item.CHARIZARDITE_X:
+                self.attack_stat, self.defense_stat, self.special_attack_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = self.mega_evolution_stats[0]
+                self.name = "Mega " + self.name + " X"
+            elif self.item == Item.CHARIZARDITE_Y:
+                self.attack_stat, self.defense_stat, self.special_attack_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = self.mega_evolution_stats[1]
+                self.name = "Mega " + self.name + " Y"
+        else:
+            self.attack_stat, self.defense_stat, self.special_attack_stat, self.special_defense_stat, self.speed_stat, self.ability, self.types = self.mega_evolution_stats[0]
+            self.name = "Mega " + self.name

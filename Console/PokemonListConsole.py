@@ -1,7 +1,7 @@
 from PokemonConsole import *
 
 # Create some pokemons
-CHARIZARD = Pokemon("Charizard", 297, 204, 192, 254, 206, 236, [Type.FIRE, Type.FLYING], [], Ability.NONE, Item.CHARIZARDITE_X,[(296, 258, 296, 206, 236, Ability.TOUGH_CLAWS, [Type.FIRE, Type.DRAGON]), (244, 192, 354, 266, 236, Ability.DROUGHT, [Type.FIRE, Type.FLYING])])
+CHARIZARD = Pokemon("Charizard", 297, 204, 192, 254, 206, 236, [Type.FIRE, Type.FLYING], [FlameThrower, Earthquake, IceBeam, ToxicSpikes], Ability.NONE, Item.CHARIZARDITE_X,[(296, 258, 296, 206, 236, Ability.TOUGH_CLAWS, [Type.FIRE, Type.DRAGON]), (244, 192, 354, 266, 236, Ability.DROUGHT, [Type.FIRE, Type.FLYING])])
 ALAKAZAM = Pokemon("Alakazam", 251, 136, 126, 306, 226, 276, [Type.PSYCHIC], [], Ability.MAGIC_GUARD, Item.NONE, [(136, 166, 386, 246, 336, Ability.TRACE, [Type.PSYCHIC])])
 BLAZIKEN = Pokemon("Blaziken", 301, 276, 176, 256, 176, 196, [Type.FIRE, Type.FIGHT], [], Ability.SPEED_BOOST, Item.NONE, [(356, 196, 296, 196, 236, Ability.SPEED_BOOST, [Type.FIRE, Type.FIGHT])])
 GARCHOMP = Pokemon("Garchomp", 357, 296, 226, 196, 206, 240, [Type.DRAGON, Type.GROUND], [], Ability.ROUGH_SKIN, Item.NONE, [(376, 266, 276, 226, 220, Ability.SAND_FORCE, [Type.DRAGON, Type.GROUND])])

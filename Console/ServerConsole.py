@@ -39,7 +39,7 @@ class Server:
 
     def handle(self, client):
         while True:
-            data = client.recv(4096)
+            data = client.recv(8192)
             if data:
                 obj = pickle.loads(data)
                 if obj == 'Speed tie':

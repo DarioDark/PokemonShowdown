@@ -34,9 +34,10 @@ class Client:
 
     def handle(self) -> None:
         while True:
-            data = self.client.recv(4096)
+            data = self.client.recv(8192)
             if data:
                 obj = pickle.loads(data)
+                print(obj)
                 if isinstance(obj, Player):
                     if not self.enemy_player:
                         self.enemy_player = obj

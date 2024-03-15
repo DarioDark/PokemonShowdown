@@ -34,7 +34,7 @@ class Fight:
         self.players.append(self.client.get_enemy_player())
         print("Both players are ready !")
         time.sleep(2)
-        system("cls")
+        #system("cls")
         self.select_player_lead()
 
     def select_player_lead(self) -> None:
@@ -57,7 +57,7 @@ class Fight:
         :return: A tuple containing the first player action and the second player action.
         :rtype: tuple
         """
-        player1_action: tuple[int, int] = self.player1.choose_action(self.player2)
+        player1_action: tuple[int, int, bool] = self.player1.choose_action(self.player2)
         self.client.send_info(player1_action)
         player2_action = self.client.get_last_info()
         return player1_action, player2_action
@@ -145,6 +145,7 @@ class Fight:
         :param target: A Player item, the target of the action.
         :param action: A tuple with 1 or 2 as it's first value and a Pokemon or a Move item as the second value.
         """
+        print("test 1")
         # If the player is the client
         if player == self.player1:
             # If the player selected a switch
@@ -155,7 +156,13 @@ class Fight:
             # If the player selected a move
             elif action[0] == 2:
                 move_index: int = action[1]
-                move: Move = player.current_pokemon.moves[move_index]
+                if player.current_pokemon.can_mega_evolve():
+                    print(f"{player.current_pokemon.name} is mega evolving !")
+                    player.current_pokemon.mega_evolve()
+                if player.current_pokemon.can_z_move():
+                    move: ZMove = player.current_pokemon.get_z_moves()[move_index]
+                else:
+                    move: Move = player.current_pokemon.moves[move_index]
                 print(f"{player.current_pokemon.name} used {move.name}!")
 
                 # If the pokemon misses
@@ -201,7 +208,13 @@ class Fight:
 
                 # If the move didn't miss
                 else:
-                    move: Move = player.current_pokemon.moves[move_index]
+                    if player.current_pokemon.can_mega_evolve():
+                        print(f"{player.current_pokemon.name} is mega evolving !")
+                        player.current_pokemon.mega_evolve()
+                    if player.current_pokemon.can_z_move():
+                        move: ZMove = player.current_pokemon.get_z_moves()[move_index]
+                    else:
+                        move: Move = player.current_pokemon.moves[move_index]
                     print(f"{player.current_pokemon.name} used {move.name}!")
 
                     if move.category != MoveCategory.STATUS:
@@ -248,7 +261,7 @@ class Fight:
         """Handles the whole process of each player using their selected action and checking if one of the pokemon dies."""
         first_player, second_player, first_player_action, second_player_action = self.get_player_order()
         self.player_use_action(first_player, second_player, first_player_action)
-
+        print("test 2")
         if self.end_game():
             return
         elif self.player1.current_pokemon.is_dead():
@@ -312,6 +325,7 @@ class Fight:
         """Runs the game until it ends.
         """
         while True:
+            print("test 0")
             self.play_turn()
             if self.end_game():
                 break

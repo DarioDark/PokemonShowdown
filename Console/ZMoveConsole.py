@@ -32,7 +32,7 @@ class ZMove(Move):
                          130: 195,
                          140: 200}
 
-    def __init__(self, move: 'OffensiveMove or StatusMove') -> None:
+    def __init__(self, move: Move) -> None:
         # Transforms the move into a Z-Move
         if move.category == MoveCategory.PHYSICAL or move.category == MoveCategory.SPECIAL:
             name = self.MOVE_NAMES[move.type.name]
