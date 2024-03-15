@@ -150,7 +150,7 @@ class Pokemon:
         if self.current_hp <= 0:
             for pokemon_type in self.types:
                 pokemon_type.value.color = "dark_grey"
-            types_str = colored(" / ", 'dark_grey').join([str(type.value) for type in self.types])
+            types_str = colored(" / ", 'dark_grey').join([str(pokemon_type.value) for pokemon_type in self.types])
             full_str = colored(f"{self.name} : {types_str} ~ ", 'dark_grey') + colored(f"{self.current_hp}", 'red') + colored(f"/{self.max_hp}", 'dark_grey') + colored("HP", 'dark_grey')
             for pokemon_type in self.types:
                 pokemon_type.value.color = pokemon_type.value.default_color
@@ -167,21 +167,6 @@ class Pokemon:
         types_str = " / ".join([str(pokemon_type.value) for pokemon_type in self.types])
 
         return f"{self.name} : {types_str} ~ {colored(self.current_hp, color)}/{self.max_hp} HP"
-    
-    # def __repr__(self) -> str:
-    #     health_colors = {100: "green", 75: "light_green",  50: "yellow", 25: "light_red", 0: "red"}
-    #     health_percentage = self.get_current_hp_percentage()
-    #     for key in sorted(health_colors.keys(), reverse=True):
-    #         if health_percentage >= key:
-    #             color = health_colors[key]
-    #             break
-            
-    #     types_str = " / ".join([str(type.value) for type in self.types]) # Affiche les deux types séparés par une barre oblique
-    #     attacks_str = "\n".join([str(attack) for attack in self.attacks]) # Ajout d'un saut de ligne entre chaque attaque
-    #     return (f"{self.name} ~ {colored(self.current_hp, color)}/{self.max_hp} HP ~ {types_str} ~ " + 
-    #         f"Weaknesses: {self.weaknesses} ~ Resistances: {self.resistances} ~ Immunities: {self.immunities} ~ \n" +
-    #         f"Status: {self.status.name} ~ {colored('Attack',attrs=['bold'])}: {colored(self.attack, 'red')} ~ {colored('Special Attack',attrs=['bold'])}: {colored(self.special_attack, 'cyan')} ~ {colored('Defense',attrs=['bold'])}: {colored(self.defense, 'yellow')} ~ {colored('Special Defense',attrs=['bold'])}: {colored(self.special_defense, 'green')} ~ {colored('Speed',attrs=['bold'])}: {colored(self.speed, 'blue')} ~ " +
-    #         f"Attacks: \n{attacks_str}") # Ajout d'un saut de ligne avant les attaques
 
     @property
     def mega_name(self) -> str:
@@ -923,9 +908,9 @@ class Pokemon:
         move_power = move.power
         if attacker.ability == Ability.TECHNICIAN and move_power <= 60:
             move_power *= 1.5
-        elif attacker.ability == Ability.SAND_FORCE and EnvironmentElements.SAND in self.environment.elements and attack.type in [Type.ROCK, Type.STEEL, Type.GROUND]:
+        elif attacker.ability == Ability.SAND_FORCE and EnvironmentElements.SAND in self.environment.elements and move.type in [Type.ROCK, Type.STEEL, Type.GROUND]:
             move_power *= 1.3
-        elif attacker.ability == Ability.TOUGH_CLAWS and move.contact_move:
+        elif attacker.ability == Ability.TOUGH_CLAWS and move.attributes['contact'] is True:
             move_power *= 1.3
         elif SubStatus.FLASH_FIRE in attacker.sub_status and move.type == Type.FIRE:
             move_power *= 1.5

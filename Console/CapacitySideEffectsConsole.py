@@ -114,6 +114,13 @@ class SecondaryEffectClass:
             target.environment.add_element(EnvironmentElements.SPIKES)
             print(f"Sharp spikes spread around the enemy team !")
 
+    def toxic_spikes(target: 'Player') -> None:
+        if target.environment.elements.count(EnvironmentElements.TOXIC_SPIKES) == 2:
+            print(f"But it failed ! Toxic Spikes are already set up !")
+        else:
+            target.environment.add_element(EnvironmentElements.TOXIC_SPIKES)
+            print(f"Toxic Spikes spread around the enemy team !")
+
     @staticmethod
     def light_screen(target: 'Player') -> None:
         if EnvironmentElements.LIGHT_SCREEN in target.environment.elements:
@@ -158,6 +165,7 @@ stealth_rock_effect = SecondaryEffectClass("Stealth_rock", 100, "Set up Stealth 
 light_screen_effect = SecondaryEffectClass("Light_screen", 100, "Set up Light Screen", SecondaryEffectClass.light_screen, 5)
 reflect_effect = SecondaryEffectClass("Reflect", 100, "Set up Reflect", SecondaryEffectClass.reflect, 5)
 spikes_effect = SecondaryEffectClass("Spikes", 100, "Set up Spikes", SecondaryEffectClass.spikes)
+toxic_spikes_effect = SecondaryEffectClass("Toxic_spikes", 100, "Set up Toxic Spikes", SecondaryEffectClass.toxic_spikes)
 
 
 # Side effects enum
@@ -173,6 +181,7 @@ class SecondaryEffects(Enum):
 
     STEALTH_ROCK = stealth_rock_effect
     SPIKES = spikes_effect
+    TOXIC_SPIKES = spikes_effect
     LIGHT_SCREEN = light_screen_effect
     REFLECT = reflect_effect
 

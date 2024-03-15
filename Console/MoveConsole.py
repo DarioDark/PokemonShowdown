@@ -142,3 +142,4 @@ StealthRock = Move("Stealth Rock", Type.ROCK, MoveCategory.STATUS, 0, 100, 10, S
 LightScreen = Move("Light Screen", Type.PSYCHIC, MoveCategory.STATUS, 0, 100, 30, SecondaryEffects.LIGHT_SCREEN.value, "self_player")
 Reflect = Move("Reflect", Type.PSYCHIC, MoveCategory.STATUS, 0, 100, 30, SecondaryEffects.REFLECT.value, "self_player")
 Spikes = Move("Spikes", Type.GROUND, MoveCategory.STATUS, 0, 100, 20, SecondaryEffects.SPIKES.value, "enemy_player")
+ToxicSpikes = Move("Toxic Spikes", Type.POISON, MoveCategory.STATUS, 0, 100, 20, SecondaryEffects.TOXIC_SPIKES.value, "enemy_player")
