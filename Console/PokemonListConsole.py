@@ -29,3 +29,5 @@ Ferrothorn = Pokemon("Ferrothorn", 74, 94, 131, 54, 116, 20, [Type.GRASS, Type.S
 Greninja = Pokemon("Greninja", 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, Item.NONE)
 Magnezone = Pokemon("Magnezone", 70, 70, 115, 130, 90, 60, [Type.ELECTRIC, Type.STEEL], [QuickAttack, Thunder, Surf, SkullBash], Ability.MAGNET_PULL, Item.NONE)
 Blacephalon = Pokemon("Blacephalon", 53, 127, 53, 151, 79, 107, [Type.FIRE, Type.GHOST], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, Item.NONE)
+
+AVAILABLE_POKEMONS = [CHARIZARD, ALAKAZAM, BLAZIKEN, GARCHOMP, CHARMINA, SCIZOR, BEEDRILL, DIANCIE, SALAMENCE, MANECTRIC, SWAMPERT, LOPUNNY, METAGROSS, MAWILE, PIDGEOT, PINSIR, TYRANITAR, VENUSAUR, Blastoise, Mew, Landorus_Therian, Ferrothorn, Greninja, Magnezone, Blacephalon]

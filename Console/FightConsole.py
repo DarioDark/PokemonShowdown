@@ -34,7 +34,7 @@ class Fight:
         self.players.append(self.client.get_enemy_player())
         print("Both players are ready !")
         time.sleep(2)
-        #system("cls")
+        system("cls")
         self.select_player_lead()
 
     def select_player_lead(self) -> None:
@@ -108,14 +108,12 @@ class Fight:
         return first_player, second_player, first_player_action, second_player_action
 
     def apply_end_turn_primary_status(self):
-        """Apply the end turn primary status to both players.
-        """
+        """Apply the end turn primary status to both players."""
         self.player1.current_pokemon.apply_end_turn_primary_status()
         self.player2.current_pokemon.apply_end_turn_primary_status()
 
     def apply_end_turn_secondary_status(self):
-        """Apply the end turn secondary status to both players.
-        """
+        """Apply the end turn secondary status to both players."""
         for player in self.players:
             self.apply_end_turn_secondary_status_effects(player, self.players[1 - self.players.index(player)])
 
@@ -259,6 +257,7 @@ class Fight:
         :param move: A Move item, the move to use.
         :param target: A Player item, the target of the move.
         :param multipliers: A tuple containing the critical hit, the type effectiveness and the STAB multiplier.
+        :return: An integer, the damage of the move.
         """
         damage = -1
         if move.category != MoveCategory.STATUS:
@@ -381,7 +380,7 @@ class Fight:
 
         :param player: A player item, the one that switches his pokemon.
         :param pokemon_index: An integer, the index of the pokemon to switch in.
-        :return:
+        :return: The index of the pokemon that has been switched in.
         """
         switch_index: int = pokemon_index
         if player == self.player1:
