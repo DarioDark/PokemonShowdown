@@ -1,21 +1,20 @@
 import tkinter as tk
 
-def center_image_bottom():
-    # Création de la fenêtre
-    root = tk.Tk()
-    root.geometry("400x400")
+# Création de la fenêtre principale
+root = tk.Tk()
+root.title("Séparateurs avec grid")
 
-    # Création d'un canevas pour afficher l'image
-    canvas = tk.Canvas(root, width=300, height=300)
-    canvas.pack()
+# Séparateur horizontal
+separator_horizontal = tk.Frame(root, height=2, relief='sunken', bg='black')
+separator_horizontal.grid(row=1, column=0, columnspan=2, sticky='ew', padx=10, pady=5)
 
-    # Chargement de l'image
-    img = tk.PhotoImage(file="../Images/pixel-art-pokeball.png")
+# Texte entre les séparateurs
+label = tk.Label(root, text="Contenu entre les séparateurs")
+label.grid(row=0, column=0, columnspan=2, padx=10, pady=5)
 
-    # Affichage de l'image
-    canvas.create_image(150, 300, anchor=tk.S, image=img)  # Ancre l'image en bas (S) du canevas
+# Séparateur vertical
+separator_vertical = tk.Frame(root, width=2, relief='sunken', bg='black')
+separator_vertical.grid(row=0, column=1, rowspan=2, sticky='ns', padx=5, pady=10)
 
-    root.mainloop()
-
-# Appel de la fonction pour afficher la fenêtre
-center_image_bottom()
+# Lancement de la boucle principale
+root.mainloop()

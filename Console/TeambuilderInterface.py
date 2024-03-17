@@ -1,59 +1,29 @@
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
+import customtkinter
 
 from PokemonListConsole import AVAILABLE_POKEMONS
 
 
 class TeambuilderInterface:
     def __init__(self, master):
+        customtkinter.set_appearance_mode("dark")
+        customtkinter.set_default_color_theme("dark-blue")
+
         self.master = master
         self.master.title("Teambuilder")
-        self.master.geometry("800x600")
+        self.master.geometry("800x800")
         self.master.resizable(False, False)
 
-        self.mainframe = ttk.Frame(self.master, padding="5 5 5 5")
-        self.mainframe.grid(row=0, column=0, sticky=(N, W, E, S))
-        self.mainframe.columnconfigure(0, weight=1)
-        self.mainframe.rowconfigure(0, weight=1)
+        self.mainframe = customtkinter.CTkFrame(self.master)
+        self.mainframe.pack(fill=BOTH, expand=True)
 
-        self.create_widgets()
-
-    def create_widgets(self):
         self.create_tabs()
 
-    # def create_menu(self):
-        # self.menubar = Menu(self.master)
-        # self.master.config(menu=self.menubar)
-
-        # self.filemenu = Menu(self.menubar, tearoff=0)
-        # self.filemenu.add_command(label="New", command=self.donothing)
-        # self.filemenu.add_command(label="Open", command=self.donothing)
-        # self.filemenu.add_command(label="Save", command=self.donothing)
-        # self.filemenu.add_command(label="Save as...", command=self.donothing)
-        # self.filemenu.add_command(label="Close", command=self.donothing)
-        # self.filemenu.add_separator()
-        # self.filemenu.add_command(label="Exit", command=self.master.quit)
-        # self.menubar.add_cascade(label="File", menu=self.filemenu)
-
-        # self.editmenu = Menu(self.menubar, tearoff=0)
-        # self.editmenu.add_command(label="Undo", command=self.donothing)
-        # self.editmenu.add_separator()
-        # self.editmenu.add_command(label="Cut", command=self.donothing)
-        # self.editmenu.add_command(label="Copy", command=self.donothing)
-        # self.editmenu.add_command(label="Paste", command=self.donothing)
-        # self.editmenu.add_command(label="Delete", command=self.donothing)
-        # self.editmenu.add_command(label="Select All", command=self.donothing)
-        # self.menubar.add_cascade(label="Edit", menu=self.editmenu)
-
-        # self.helpmenu = Menu(self.menubar, tearoff=0)
-        # self.helpmenu.add_command(label="Help Index", command=self.donothing)        for i in range(1, 7):
-        # self.helpmenu.add_command(label="About...", command=self.donothing)
-        # self.menubar.add_cascade(label="Help", menu=self.helpmenu)
-
     def create_tabs(self):
-        self.tabs = ttk.Notebook(self.mainframe, height=300, width=200)
-        self.tabs.grid(row=0, sticky=(N, W, E, S))
+        self.tabs = customtkinter.CTkTabview(self.mainframe, height=750, width=500)
+        self.tabs.pack(pady=10)
 
         for i in range(1, 7):
             PokemonTab(self.tabs, i)
@@ -67,22 +37,42 @@ class PokemonTab:
     def __init__(self, master, column: int):
         self.master = master
         self.column = column
-        self.tab = ttk.Frame(self.master)
-        self.master.add(self.tab, text=f"Pokemon {column}")
+        self.tab = customtkinter.CTkFrame(self.master)
+        self.master.add(f"  Pokemon {column}  ")
 
-        # Create the frames
-        self.image_frame = Frame(self.tab)
-        self.utilities_frame = Frame(self.tab)
-        self.moves_frame = Frame(self.tab)
-        self.stats_frame = Frame(self.tab)
+        # Creating the frames
+        self.image_frame = customtkinter.CTkFrame(self.tab)
+        self.utilities_frame = customtkinter.CTkFrame(self.tab)
+        self.moves_frame = customtkinter.CTkFrame(self.tab)
+        self.stats_frame = customtkinter.CTkFrame(self.tab)
 
-        self.image_frame.grid(row=0, column=0, sticky="N, W, E, S")
-        self.utilities_frame.grid(row=0, column=1, sticky="N, W, E, S")
-        self.moves_frame.grid(row=0, column=2, sticky="N, W, E, S")
-        self.stats_frame.grid(row=1, sticky="N, W, E, S")
+        # Séparators
+        self.separator1 = ttk.Separator(self.tab, orient=VERTICAL)
+        self.separator2 = ttk.Separator(self.tab, orient=VERTICAL)
+        self.separator3 = ttk.Separator(self.tab, orient=HORIZONTAL)
+
+        self.image_frame.grid(row=0, column=0, sticky="nsew")
+        self.separator1.grid(row=0, column=1, sticky="ns")
+        self.utilities_frame.grid(row=0, column=2, sticky="nsew")
+        self.separator2.grid(row=0, column=3, sticky="ns")
+        self.moves_frame.grid(row=0, column=4, sticky="nsew")
+        self.separator3.grid(row=1, column=0, columnspan=5, sticky="ew")
+        self.stats_frame.grid(row=2, column=0, columnspan=5, sticky="nsew")
+
+        # Set the weights for the rows and columns
+        self.tab.rowconfigure(0, weight=1)
+        self.tab.rowconfigure(2, weight=3)
+        self.tab.columnconfigure(0, weight=0)
+        self.tab.columnconfigure(1, weight=0)  # Pas de poids pour le séparateur
+        self.tab.columnconfigure(2, weight=1)
+        self.tab.columnconfigure(3, weight=0)  # Pas de poids pour le séparateur
+        self.tab.columnconfigure(4, weight=1)
+
+        self.utilities_frame.grid_propagate(False)
+        self.moves_frame.grid_propagate(False)
 
         # Create a canvas to display the pokemon
-        self.canvas = Canvas(self.image_frame, width=200, height=150)
+        self.canvas = customtkinter.CTkCanvas(self.image_frame, width=200, height=150)
         self.canvas.grid(row=0, column=0, sticky="N, W, E, S")
         image = ImageTk.PhotoImage(Image.open(f"../Images/pixel-art-pokeball.png"))
         self.img_item = self.canvas.create_image(50, 75, anchor=W, image=image)
@@ -93,8 +83,12 @@ class PokemonTab:
         self.var.set("Select a Pokemon")
         self.var.trace("w", self.on_pokemon_selected)
 
-        options = ttk.Combobox(self.image_frame, textvariable=self.var, values=[pokemon.name for pokemon in AVAILABLE_POKEMONS])
+        options = ttk.Combobox(self.image_frame, textvariable=self.var, values=[pokemon.name for pokemon in AVAILABLE_POKEMONS], width=30, state="readonly")
         options.grid(row=1, column=0)
+
+
+
+
 
     def on_pokemon_selected(self, *args):
         selected_pokemon = self.var.get()
@@ -106,7 +100,7 @@ class PokemonTab:
 
 
 def main():
-    root = Tk()
+    root = customtkinter.CTk()
     app = TeambuilderInterface(root)
     root.mainloop()
 
