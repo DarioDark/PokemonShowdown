@@ -1,14 +1,21 @@
+from tkinter import *
 
-class obj:
-    def __init__(self):
-        self.x = 1
-        self.y = 2
+master = Tk()
 
+var = StringVar(master)
+var.set("one") # initial value
 
-a = obj()
+option = OptionMenu(master, var, "one", "two", "three", "four")
+option.pack()
 
-b = a
+#
+# test stuff
 
-b.x = 3
+def ok():
+    print("value is", var.get())
+    master.quit()
 
-print(a.x)  # 3
+button = Button(master, text="OK", command=ok)
+button.pack()
+
+master.mainloop()

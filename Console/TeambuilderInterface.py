@@ -1,9 +1,10 @@
 from tkinter import *
 from tkinter import ttk
-from customtkinter import *
+from PIL import Image, ImageTk
+
+from PokemonListConsole import AVAILABLE_POKEMONS
 
 
-# basic customtkinter interface
 class TeambuilderInterface:
     def __init__(self, master):
         self.master = master
@@ -19,9 +20,7 @@ class TeambuilderInterface:
         self.create_widgets()
 
     def create_widgets(self):
-        self.create_menu()
         self.create_tabs()
-        self.add_content_to_tabs()
 
     # def create_menu(self):
         # self.menubar = Menu(self.master)
@@ -48,39 +47,76 @@ class TeambuilderInterface:
         # self.menubar.add_cascade(label="Edit", menu=self.editmenu)
 
         # self.helpmenu = Menu(self.menubar, tearoff=0)
-        # self.helpmenu.add_command(label="Help Index", command=self.donothing)
+        # self.helpmenu.add_command(label="Help Index", command=self.donothing)        for i in range(1, 7):
         # self.helpmenu.add_command(label="About...", command=self.donothing)
         # self.menubar.add_cascade(label="Help", menu=self.helpmenu)
 
     def create_tabs(self):
-        self.tabs = ttk.Notebook(self.mainframe)
-        self.tabs.grid(row=0, column=0, sticky=(N, W, E, S))
+        self.tabs = ttk.Notebook(self.mainframe, height=300, width=200)
+        self.tabs.grid(row=0, sticky=(N, W, E, S))
 
-        self.tab1 = ttk.Frame(self.tabs)
-        self.tabs.add(self.tab1, text="Tab 1")
+        for i in range(1, 7):
+            PokemonTab(self.tabs, i)
 
-        self.tab2 = ttk.Frame(self.tabs)
-        self.tabs.add(self.tab2, text="Tab 2")
+        # Make the tabs take the entire space in width
+        self.mainframe.columnconfigure(0, weight=1)
+        self.mainframe.rowconfigure(0, weight=2)  # Increase the weight to make the tabs a little taller
 
-        self.tab3 = ttk.Frame(self.tabs)
-        self.tabs.add(self.tab3, text="Tab 3")
 
-    def add_content_to_tabs(self):
-        # Ajout de contenu à l'onglet 1
-        label1 = ttk.Label(self.tab1, text="Contenu de l'onglet 1")
-        label1.grid(row=0, column=0)
+class PokemonTab:
+    def __init__(self, master, column: int):
+        self.master = master
+        self.column = column
+        self.tab = ttk.Frame(self.master)
+        self.master.add(self.tab, text=f"Pokemon {column}")
 
-        # Ajout de contenu à l'onglet 2
-        label2 = ttk.Label(self.tab2, text="Contenu de l'onglet 2")
-        label2.grid(row=0, column=0)
+        # Create the Pokemon image
+        self.pokemon_image = Label(self.tab, image="")
+        self.pokemon_image.grid(row=0, column=self.column, sticky=(N, W, E, S))
 
-    def donothing(self):
-        pass
+
+        self.show_gif("../images/Sprites/charizard.gif")
+
+        self.var = StringVar(self.tab)
+        self.var.set("Select a Pokemon")  # initial value
+
+        # Trace the variable for changes
+        self.var.trace("w", self.on_pokemon_selected)
+
+        options = [pokemon.name for pokemon in AVAILABLE_POKEMONS]
+        drop = OptionMenu(self.tab, self.var, options[0], *options[1:])
+        drop.grid(row=1, column=column, sticky=(N, W, E, S))
+
+    def on_pokemon_selected(self, *args):
+        selected_pokemon = self.var.get()
+        if selected_pokemon != "Select a Pokemon":
+            self.update_data(selected_pokemon)
+
+    def show_gif(self, gif_path: str):
+        self.gif_image = Image.open(gif_path)
+        frames = self.gif_image.n_frames
+        image_objects = [PhotoImage(file=gif_path, format=f"gif -index {i}") for i in range(frames)]
+
+        count = 0
+        def animate(count):
+            frame = image_objects[count]
+            count += 1
+            self.pokemon_image.configure(image=frame)
+            if count == frames:
+                count = 0
+            self.master.after(50, lambda: animate(count))
+
+        animate(count)
+
+    def update_data(self, selected_pokemon: str):
+        self.pokemon_image.configure(file=f"../images/{selected_pokemon.lower()}.png")
+
 
 def main():
     root = Tk()
     app = TeambuilderInterface(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()
