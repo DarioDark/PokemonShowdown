@@ -1,21 +1,21 @@
-from tkinter import *
+import tkinter as tk
 
-master = Tk()
+def center_image_bottom():
+    # Création de la fenêtre
+    root = tk.Tk()
+    root.geometry("400x400")
 
-var = StringVar(master)
-var.set("one") # initial value
+    # Création d'un canevas pour afficher l'image
+    canvas = tk.Canvas(root, width=300, height=300)
+    canvas.pack()
 
-option = OptionMenu(master, var, "one", "two", "three", "four")
-option.pack()
+    # Chargement de l'image
+    img = tk.PhotoImage(file="../Images/pixel-art-pokeball.png")
 
-#
-# test stuff
+    # Affichage de l'image
+    canvas.create_image(150, 300, anchor=tk.S, image=img)  # Ancre l'image en bas (S) du canevas
 
-def ok():
-    print("value is", var.get())
-    master.quit()
+    root.mainloop()
 
-button = Button(master, text="OK", command=ok)
-button.pack()
-
-master.mainloop()
+# Appel de la fonction pour afficher la fenêtre
+center_image_bottom()

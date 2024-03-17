@@ -70,46 +70,39 @@ class PokemonTab:
         self.tab = ttk.Frame(self.master)
         self.master.add(self.tab, text=f"Pokemon {column}")
 
-        # Create the Pokemon image
-        self.pokemon_image = Label(self.tab, image="")
-        self.pokemon_image.grid(row=0, column=self.column, sticky=(N, W, E, S))
+        # Create the frames
+        self.image_frame = Frame(self.tab)
+        self.utilities_frame = Frame(self.tab)
+        self.moves_frame = Frame(self.tab)
+        self.stats_frame = Frame(self.tab)
 
+        self.image_frame.grid(row=0, column=0, sticky="N, W, E, S")
+        self.utilities_frame.grid(row=0, column=1, sticky="N, W, E, S")
+        self.moves_frame.grid(row=0, column=2, sticky="N, W, E, S")
+        self.stats_frame.grid(row=1, sticky="N, W, E, S")
 
-        self.show_gif("../images/Sprites/charizard.gif")
+        # Create a canvas to display the pokemon
+        self.canvas = Canvas(self.image_frame, width=200, height=150)
+        self.canvas.grid(row=0, column=0, sticky="N, W, E, S")
+        image = ImageTk.PhotoImage(Image.open(f"../Images/pixel-art-pokeball.png"))
+        self.img_item = self.canvas.create_image(50, 75, anchor=W, image=image)
+        self.canvas.image = image
 
-        self.var = StringVar(self.tab)
-        self.var.set("Select a Pokemon")  # initial value
-
-        # Trace the variable for changes
+        # Create a dropdown menu to select a pokemon
+        self.var = StringVar(self.image_frame)
+        self.var.set("Select a Pokemon")
         self.var.trace("w", self.on_pokemon_selected)
 
-        options = [pokemon.name for pokemon in AVAILABLE_POKEMONS]
-        drop = OptionMenu(self.tab, self.var, options[0], *options[1:])
-        drop.grid(row=1, column=column, sticky=(N, W, E, S))
+        options = ttk.Combobox(self.image_frame, textvariable=self.var, values=[pokemon.name for pokemon in AVAILABLE_POKEMONS])
+        options.grid(row=1, column=0)
 
     def on_pokemon_selected(self, *args):
         selected_pokemon = self.var.get()
         if selected_pokemon != "Select a Pokemon":
-            self.update_data(selected_pokemon)
-
-    def show_gif(self, gif_path: str):
-        self.gif_image = Image.open(gif_path)
-        frames = self.gif_image.n_frames
-        image_objects = [PhotoImage(file=gif_path, format=f"gif -index {i}") for i in range(frames)]
-
-        count = 0
-        def animate(count):
-            frame = image_objects[count]
-            count += 1
-            self.pokemon_image.configure(image=frame)
-            if count == frames:
-                count = 0
-            self.master.after(50, lambda: animate(count))
-
-        animate(count)
-
-    def update_data(self, selected_pokemon: str):
-        self.pokemon_image.configure(file=f"../images/{selected_pokemon.lower()}.png")
+            image = ImageTk.PhotoImage(Image.open(f"../Images/Sprites/{selected_pokemon.lower().replace(' ', '-')}.gif"))
+            self.canvas.delete(self.img_item)
+            self.img_item = self.canvas.create_image(100, 75, anchor=CENTER, image=image)
+            self.canvas.image = image
 
 
 def main():
