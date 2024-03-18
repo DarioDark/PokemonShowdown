@@ -31,3 +31,7 @@ Magnezone = Pokemon("Magnezone", 70, 70, 115, 130, 90, 60, [Type.ELECTRIC, Type.
 Blacephalon = Pokemon("Blacephalon", 53, 127, 53, 151, 79, 107, [Type.FIRE, Type.GHOST], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, Item.NONE)
 
 AVAILABLE_POKEMONS = [CHARIZARD, ALAKAZAM, BLAZIKEN, GARCHOMP, CHARMINA, SCIZOR, BEEDRILL, DIANCIE, SALAMENCE, MANECTRIC, SWAMPERT, LOPUNNY, METAGROSS, MAWILE, PIDGEOT, PINSIR, TYRANITAR, VENUSAUR, Blastoise, Mew, Landorus_Therian, Ferrothorn, Greninja, Magnezone, Blacephalon]
+
+# create a dictionnary pokemon_name: pokemon
+POKEMONS = {pokemon.name: pokemon for pokemon in AVAILABLE_POKEMONS}
+print(POKEMONS)
