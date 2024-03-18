@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import Label, PhotoImage
-from PIL import Image
+from PIL import Image, ImageTk
 import customtkinter
 
 from PokemonListConsole import AVAILABLE_POKEMONS
@@ -13,13 +13,13 @@ class TeambuilderInterface:
 
         self.master = master
         self.master.title("Teambuilder")
-        self.master.geometry("800x800")
+        self.master.geometry("1000x650")
         self.master.resizable(False, False)
 
         self.mainframe = customtkinter.CTkFrame(self.master)
         self.mainframe.pack(fill=BOTH, expand=True)
 
-        self.tabs = customtkinter.CTkTabview(self.mainframe, height=750, width=500, corner_radius=20)
+        self.tabs = customtkinter.CTkTabview(self.mainframe, height=600, width=800, corner_radius=20)
         self.tabs.pack(pady=10)
         self.tabs_objects = [PokemonTab(self.tabs, i) for i in range(1, 7)]
 
@@ -37,30 +37,30 @@ class PokemonTab:
 
         self.tab.grid_rowconfigure(0, weight=1)
         self.tab.grid_rowconfigure(1, weight=1)
-
         self.tab.grid_columnconfigure(0, weight=1)
+        self.tab.grid_columnconfigure(1, weight=2)
 
-        self.upper_frame = customtkinter.CTkFrame(self.tab, corner_radius=20)
-        self.upper_frame.grid(row=0, column=0, sticky="nsew")
-        self.upper_frame.grid_propagate(False)  # Prevent resizing based on contents
+        self.pokemon_frame = customtkinter.CTkFrame(self.tab, corner_radius=20)
+        self.pokemon_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        self.pokemon_frame.grid_propagate(False)
+
+        self.moves_frame = customtkinter.CTkFrame(self.tab, corner_radius=20)
+        self.moves_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.moves_frame.grid_propagate(False)
 
         self.lower_frame = customtkinter.CTkFrame(self.tab, corner_radius=20)
-        self.lower_frame.grid(row=1, column=0, sticky="nsew")
+        self.lower_frame.grid(row=1, columnspan=2, sticky="nsew", padx=10, pady=10)
         self.lower_frame.grid_propagate(False)
 
-        self.my_image = PhotoImage(file="../Images/pixel-art-pokeball.png")
+        self.photo_image = ImageTk.PhotoImage(Image.open("../Images/pixel-art-pokeball.png"))
 
-        self.my_label = Label(self.upper_frame, image=self.my_image)
-        self.my_label.image = self.my_image
-        self.my_label.grid(row=0, column=0)
+        image = customtkinter.CTkImage(dark_image=Image.open("../Images/Sprites/charizard.gif"),size=(125, 125))
+        self.label = customtkinter.CTkLabel(self.pokemon_frame, text="", image=image)
+        self.label.image = image
+        self.label.pack(side=TOP, fill=BOTH, expand=True, pady=15)
 
-
-        # Create a canvas to display the pokemon
-        # self.canvas = customtkinter.CTkCanvas(self.upper_frame, width=200, height=150)
-        #self.canvas.grid(row=0, column=0, sticky="N, W, E, S")
-        #image = ImageTk.PhotoImage(Image.open(f"../Images/pixel-art-pokeball.png"))
-        #self.img_item = self.canvas.create_image(50, 75, anchor=W, image=image)
-        #self.canvas.image = image
+        self.pokemon_selector = customtkinter.CTkComboBox(self.pokemon_frame, values=[pokemon.name for pokemon in AVAILABLE_POKEMONS], corner_radius=10)
+        self.pokemon_selector.pack(side=BOTTOM, pady=10)
 
 def main():
     root = customtkinter.CTk()
