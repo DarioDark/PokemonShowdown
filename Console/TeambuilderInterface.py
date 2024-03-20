@@ -31,8 +31,6 @@ class PokemonTab:
         self.column = index
         self.tab = self.master.add(f"  Pokemon {index}  ")
         self.selected_pokemon = None
-        self.frames_filled = False
-        self.evs_max_label = None
 
         # Stats variables
         self.hp_ev_var = customtkinter.StringVar(value="0")
@@ -52,26 +50,25 @@ class PokemonTab:
         self.tab.grid_columnconfigure(1, weight=2)
 
         self.evs_max_reached_label = customtkinter.CTkLabel(self.stats_frame,
-                                                    text="EVs maximum reached",
-                                                    font=("Arial", 15, "bold"),
-                                                    text_color="orange",
-                                                    compound="left",
-                                                    corner_radius=30,
-                                                    padx=5)
+                                                            text="EVs maximum reached",
+                                                            font=("Arial", 15, "bold"),
+                                                            text_color="orange",
+                                                            compound="left",
+                                                            corner_radius=30,
+                                                            padx=5)
 
         self.evs_max_reached_label.place(x=537, y=5)  # adjust the position as needed
         self.evs_max_reached_label.lower()
 
-
         self.evs_max_exceeded_label = customtkinter.CTkLabel(self.stats_frame,
-                                                    text="EVs maximum exceeded!",
-                                                    font=("Arial", 15, "bold"),
-                                                    text_color="red",
-                                                    compound="left",
-                                                    corner_radius=30,
-                                                    padx=5,
-                                                    image=customtkinter.CTkImage(Image.open("../Images/red-warning-icon.png"),
-                                                                                 size=(20, 20)))
+                                                             text="EVs maximum exceeded!",
+                                                             font=("Arial", 15, "bold"),
+                                                             text_color="red",
+                                                             compound="left",
+                                                             corner_radius=30,
+                                                             padx=5,
+                                                             image=customtkinter.CTkImage(Image.open("../Images/red-warning-icon.png"),
+                                                                                          size=(20, 20)))
         self.evs_max_exceeded_label.place(x=495, y=5)  # adjust the position as needed
         self.evs_max_exceeded_label.lower()  # Hide the label initially
 
@@ -79,13 +76,13 @@ class PokemonTab:
     def remaining_ev(self):
         if self.hp_ev_var.get() == '':
             self.hp_ev_var.set('0')
-        elif self.attack_ev_var.get() == '':
+        if self.attack_ev_var.get() == '':
             self.attack_ev_var.set('0')
-        elif self.defense_ev_var.get() == '':
+        if self.defense_ev_var.get() == '':
             self.defense_ev_var.set('0')
-        elif self.spe_attack_ev_var.get() == '':
+        if self.spe_attack_ev_var.get() == '':
             self.spe_attack_ev_var.set('0')
-        elif self.spe_defense_ev_var.get() == '':
+        if self.spe_defense_ev_var.get() == '':
             self.spe_defense_ev_var.set('0')
         return 508 - int(self.hp_ev_var.get()) - int(self.attack_ev_var.get()) - int(self.defense_ev_var.get()) - int(self.spe_attack_ev_var.get()) - int(self.spe_defense_ev_var.get()) - int(self.speed_ev_var.get())
 
@@ -162,7 +159,7 @@ class PokemonTab:
         self.spe_attack_ev_var = customtkinter.StringVar(value="0")
         self.spe_defense_ev_var = customtkinter.StringVar(value="0")
         self.speed_ev_var = customtkinter.StringVar(value="0")
-        
+
         self.fill_stats_frame()
 
     def create_moves_frame(self):
@@ -222,6 +219,7 @@ class PokemonTab:
                                                  width=200,
                                                  command=self.hp_slider_change,
                                                  number_of_steps=63)
+        self.config_hp_progress_bar_color()
         self.hp_slider.set(0)
         self.hp_slider.place(x=375, y=63)
 
@@ -241,8 +239,9 @@ class PokemonTab:
                                                                 determinate_speed=1,
                                                                 progress_color="green")
         self.attack_progress_bar.place(x=115, y=100)
-        self.attack_progress_bar.set(self.selected_pokemon.attack / 500)
+        self.attack_progress_bar.set(self.selected_pokemon_attack / 500)
 
+        self.attack_ev_var.trace_add("write", self.attack_entry_change)
         self.attack_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.attack_ev_var)
         self.attack_ev_entry.place(x=330, y=90)
 
@@ -253,10 +252,11 @@ class PokemonTab:
                                                      width=200,
                                                      command=self.attack_slider_change,
                                                      number_of_steps=63)
+        self.config_attack_progress_bar_color()
         self.attack_slider.set(0)
         self.attack_slider.place(x=375, y=96)
 
-        self.total_attack_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.attack, font=("Arial", 15))
+        self.total_attack_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.attack_stat, font=("Arial", 15))
         self.total_attack_label.place(x=585, y=90)
 
     def fill_defense_stat(self):
@@ -272,9 +272,9 @@ class PokemonTab:
                                                                  determinate_speed=1,
                                                                  progress_color="green")
         self.defense_progress_bar.place(x=115, y=133)
-        self.defense_progress_bar.set(self.selected_pokemon.defense / 500)
+        self.defense_progress_bar.set(self.selected_pokemon_defense / 500)
 
-        self.defense_ev_var = customtkinter.StringVar(value="0")
+        self.defense_ev_var.trace_add("write", self.defense_entry_change)
         self.defense_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.defense_ev_var)
         self.defense_ev_entry.place(x=330, y=123)
 
@@ -285,10 +285,11 @@ class PokemonTab:
                                                       width=200,
                                                       command=self.defense_slider_change,
                                                       number_of_steps=63)
+        self.config_defense_progress_bar_color()
         self.defense_slider.set(0)
         self.defense_slider.place(x=375, y=129)
 
-        self.total_defense_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.defense, font=("Arial", 15))
+        self.total_defense_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.defense_stat, font=("Arial", 15))
         self.total_defense_label.place(x=585, y=123)
 
     def fill_spe_attack_stat(self):
@@ -304,9 +305,9 @@ class PokemonTab:
                                                                     determinate_speed=1,
                                                                     progress_color="green")
         self.spe_attack_progress_bar.place(x=115, y=166)
-        self.spe_attack_progress_bar.set(self.selected_pokemon.special_attack_stat / 500)
+        self.spe_attack_progress_bar.set(self.selected_pokemon_spe_attack / 500)
 
-        self.spe_attack_ev_var = customtkinter.StringVar(value="0")
+        self.spe_attack_ev_var.trace_add("write", self.spe_attack_entry_change)
         self.spe_attack_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.spe_attack_ev_var)
         self.spe_attack_ev_entry.place(x=330, y=156)
 
@@ -317,6 +318,7 @@ class PokemonTab:
                                                          width=200,
                                                          command=self.spe_attack_slider_change,
                                                          number_of_steps=63)
+        self.config_spe_attack_progress_bar_color()
         self.spe_attack_slider.set(0)
         self.spe_attack_slider.place(x=375, y=162)
 
@@ -336,9 +338,9 @@ class PokemonTab:
                                                                      determinate_speed=1,
                                                                      progress_color="green")
         self.spe_defense_progress_bar.place(x=115, y=199)
-        self.spe_defense_progress_bar.set(self.selected_pokemon.special_defense_stat / 500)
+        self.spe_defense_progress_bar.set(self.selected_pokemon_spe_defense / 500)
 
-        self.spe_defense_ev_var = customtkinter.StringVar(value="0")
+        self.spe_defense_ev_var.trace_add("write", self.spe_defense_entry_change)
         self.spe_defense_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.spe_defense_ev_var)
         self.spe_defense_ev_entry.place(x=330, y=189)
 
@@ -349,6 +351,7 @@ class PokemonTab:
                                                           width=200,
                                                           command=self.spe_defense_slider_change,
                                                           number_of_steps=63)
+        self.config_spe_defense_progress_bar_color()
         self.spe_defense_slider.set(0)
         self.spe_defense_slider.place(x=375, y=195)
 
@@ -367,10 +370,12 @@ class PokemonTab:
                                                                width=200,
                                                                determinate_speed=1,
                                                                progress_color="green")
-        self.speed_progress_bar.place(x=115, y=232)
-        self.speed_progress_bar.set(self.selected_pokemon.speed_stat / 500)
 
-        self.speed_ev_var = customtkinter.StringVar(value="0")
+        self.config_speed_progress_bar_color()
+        self.speed_progress_bar.place(x=115, y=232)
+        self.speed_progress_bar.set(self.selected_pokemon_speed / 500)
+
+        self.speed_ev_var.trace_add("write", self.speed_entry_change)
         self.speed_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.speed_ev_var)
         self.speed_ev_entry.place(x=330, y=222)
 
@@ -384,16 +389,15 @@ class PokemonTab:
         self.speed_slider.set(0)
         self.speed_slider.place(x=375, y=228)
 
-        self.total_speed_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.speed, font=("Arial", 15))
+        self.total_speed_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.speed_stat, font=("Arial", 15))
         self.total_speed_label.place(x=585, y=222)
 
     def hp_slider_change(self, value):
         # Convert the value to an integer
         value = int(value)
-        remaining_ev = self.remaining_ev
 
         # If the remaining EVs are 0 and the new value is greater than the current EV, return
-        if remaining_ev <= 0 and value > int(self.hp_ev_var.get()):
+        if self.remaining_ev <= 0 and value > int(self.hp_ev_var.get()):
             self.hp_slider.set(int(self.hp_ev_var.get()))
             return
 
@@ -405,8 +409,18 @@ class PokemonTab:
         self.check_remaining_ev()
 
     def hp_entry_change(self, *args):
-        print("yes")
         value = self.hp_ev_var.get()
+        self.config_hp_progress_bar_color()
+
+        if self.remaining_ev > 0:
+            if value == '':
+                value = '0'
+                self.hp_ev_var.set('')
+
+        self.hp_slider_change(int(value))
+        self.total_hp_label.configure(text=self.selected_pokemon_hp)
+
+    def config_hp_progress_bar_color(self):
         if self.selected_pokemon_hp < 100:
             self.hp_progress_bar.configure(progress_color="red")
         elif self.selected_pokemon_hp < 150:
@@ -418,44 +432,41 @@ class PokemonTab:
         elif self.selected_pokemon_hp > 500:
             self.hp_progress_bar.configure(progress_color="cyan")
 
-        remaining_ev = self.remaining_ev
-        if remaining_ev > 0:
-            if value == '':
-                value = '0'
-                self.hp_ev_var.set('')
-
-        self.hp_slider_change(int(value))
-        self.total_hp_label.configure(text=self.selected_pokemon_hp)
-
     def attack_slider_change(self, value):
         value = int(value)
         if self.remaining_ev <= 0 and value > int(self.attack_ev_var.get()):
             self.attack_slider.set(int(self.attack_ev_var.get()))
             return
+
         self.attack_ev_var.set(str(value))
         self.attack_slider.set(value)
+
+        self.attack_progress_bar.set(self.selected_pokemon_attack / 500)
         self.check_remaining_ev()
 
     def attack_entry_change(self, *args):
         value = self.attack_ev_var.get()
-        if self.selected_pokemon_attack() < 100:
-            self.attack_progress_bar.configure(progress_color="red")
-        elif self.selected_pokemon_attack() < 150:
-            self.attack_progress_bar.configure(progress_color="orange")
-        elif self.selected_pokemon_attack() < 200:
-            self.attack_progress_bar.configure(progress_color="yellow")
-        elif self.selected_pokemon_attack() < 300:
-            self.attack_progress_bar.configure(progress_color="green")
-        elif self.selected_pokemon_attack() > 500:
-            self.attack_progress_bar.configure(progress_color="cyan")
+        self.config_attack_progress_bar_color()
 
         if self.remaining_ev > 0:
             if value == '':
                 value = '0'
                 self.attack_ev_var.set('')
 
-        self.attack_slider.set(int(value))
+        self.attack_slider_change(int(value))
         self.total_attack_label.configure(text=self.selected_pokemon_attack)
+
+    def config_attack_progress_bar_color(self):
+        if self.selected_pokemon_attack < 100:
+            self.attack_progress_bar.configure(progress_color="red")
+        elif self.selected_pokemon_attack < 150:
+            self.attack_progress_bar.configure(progress_color="orange")
+        elif self.selected_pokemon_attack < 200:
+            self.attack_progress_bar.configure(progress_color="yellow")
+        elif self.selected_pokemon_attack < 300:
+            self.attack_progress_bar.configure(progress_color="green")
+        elif self.selected_pokemon_attack > 500:
+            self.attack_progress_bar.configure(progress_color="cyan")
 
     def defense_slider_change(self, value):
         value = int(value)
@@ -464,28 +475,33 @@ class PokemonTab:
             return
         self.defense_ev_var.set(str(value))
         self.defense_slider.set(value)
+
+        self.defense_progress_bar.set(self.selected_pokemon_defense / 500)
         self.check_remaining_ev()
 
     def defense_entry_change(self, *args):
         value = self.defense_ev_var.get()
-        if self.selected_pokemon_defense() < 100:
-            self.defense_progress_bar.configure(progress_color="red")
-        elif self.selected_pokemon_defense() < 150:
-            self.defense_progress_bar.configure(progress_color="orange")
-        elif self.selected_pokemon_defense() < 200:
-            self.defense_progress_bar.configure(progress_color="yellow")
-        elif self.selected_pokemon_defense() < 300:
-            self.defense_progress_bar.configure(progress_color="green")
-        elif self.selected_pokemon_defense() > 500:
-            self.defense_progress_bar.configure(progress_color="cyan")
+        self.config_defense_progress_bar_color()
 
         if self.remaining_ev > 0:
             if value == '':
                 value = '0'
                 self.defense_ev_var.set('')
 
-        self.defense_slider.set(int(value))
+        self.defense_slider_change(int(value))
         self.total_defense_label.configure(text=self.selected_pokemon_defense)
+
+    def config_defense_progress_bar_color(self):
+        if self.selected_pokemon_defense < 100:
+            self.defense_progress_bar.configure(progress_color="red")
+        elif self.selected_pokemon_defense < 150:
+            self.defense_progress_bar.configure(progress_color="orange")
+        elif self.selected_pokemon_defense < 200:
+            self.defense_progress_bar.configure(progress_color="yellow")
+        elif self.selected_pokemon_defense < 300:
+            self.defense_progress_bar.configure(progress_color="green")
+        elif self.selected_pokemon_defense > 500:
+            self.defense_progress_bar.configure(progress_color="cyan")
 
     def spe_attack_slider_change(self, value):
         value = int(value)
@@ -494,28 +510,33 @@ class PokemonTab:
             return
         self.spe_attack_ev_var.set(str(value))
         self.spe_attack_slider.set(value)
+
+        self.spe_attack_progress_bar.set(self.selected_pokemon_spe_attack / 500)
         self.check_remaining_ev()
 
     def spe_attack_entry_change(self, *args):
         value = self.spe_attack_ev_var.get()
-        if self.selected_pokemon_spe_attack() < 100:
-            self.spe_attack_progress_bar.configure(progress_color="red")
-        elif self.selected_pokemon_spe_attack() < 150:
-            self.spe_attack_progress_bar.configure(progress_color="orange")
-        elif self.selected_pokemon_spe_attack() < 200:
-            self.spe_attack_progress_bar.configure(progress_color="yellow")
-        elif self.selected_pokemon_spe_attack() < 300:
-            self.spe_attack_progress_bar.configure(progress_color="green")
-        elif self.selected_pokemon_spe_attack() > 500:
-            self.spe_attack_progress_bar.configure(progress_color="cyan")
+        self.config_spe_attack_progress_bar_color()
 
         if self.remaining_ev > 0:
             if value == '':
                 value = '0'
                 self.spe_attack_ev_var.set('')
 
-        self.spe_attack_slider.set(int(value))
+        self.spe_attack_slider_change(int(value))
         self.total_spe_attack_label.configure(text=self.selected_pokemon.spe_attack + int(value) // 4)
+
+    def config_spe_attack_progress_bar_color(self):
+        if self.selected_pokemon_spe_attack < 100:
+            self.spe_attack_progress_bar.configure(progress_color="red")
+        elif self.selected_pokemon_spe_attack < 150:
+            self.spe_attack_progress_bar.configure(progress_color="orange")
+        elif self.selected_pokemon_spe_attack < 200:
+            self.spe_attack_progress_bar.configure(progress_color="yellow")
+        elif self.selected_pokemon_spe_attack < 300:
+            self.spe_attack_progress_bar.configure(progress_color="green")
+        elif self.selected_pokemon_spe_attack > 500:
+            self.spe_attack_progress_bar.configure(progress_color="cyan")
 
     def spe_defense_slider_change(self, value):
         value = int(value)
@@ -524,28 +545,33 @@ class PokemonTab:
             return
         self.spe_defense_ev_var.set(str(value))
         self.spe_defense_slider.set(value)
+
+        self.spe_defense_progress_bar.set(self.selected_pokemon_spe_defense / 500)
         self.check_remaining_ev()
 
     def spe_defense_entry_change(self, *args):
         value = self.spe_defense_ev_var.get()
-        if self.selected_pokemon_spe_defense() < 100:
-            self.spe_defense_progress_bar.configure(progress_color="red")
-        elif self.selected_pokemon_spe_defense() < 150:
-            self.spe_defense_progress_bar.configure(progress_color="orange")
-        elif self.selected_pokemon_spe_defense() < 200:
-            self.spe_defense_progress_bar.configure(progress_color="yellow")
-        elif self.selected_pokemon_spe_defense() < 300:
-            self.spe_defense_progress_bar.configure(progress_color="green")
-        elif self.selected_pokemon_spe_defense() > 500:
-            self.spe_defense_progress_bar.configure(progress_color="cyan")
+        self.config_spe_defense_progress_bar_color()
 
         if self.remaining_ev > 0:
             if value == '':
                 value = '0'
                 self.spe_defense_ev_var.set('')
 
-        self.spe_defense_slider.set(int(value))
+        self.spe_defense_slider_change(int(value))
         self.total_spe_defense_label.configure(text=self.selected_pokemon.spe_defense + int(value) // 4)
+
+    def config_spe_defense_progress_bar_color(self):
+        if self.selected_pokemon_spe_defense < 100:
+            self.spe_defense_progress_bar.configure(progress_color="red")
+        elif self.selected_pokemon_spe_defense < 150:
+            self.spe_defense_progress_bar.configure(progress_color="orange")
+        elif self.selected_pokemon_spe_defense < 200:
+            self.spe_defense_progress_bar.configure(progress_color="yellow")
+        elif self.selected_pokemon_spe_defense < 300:
+            self.spe_defense_progress_bar.configure(progress_color="green")
+        elif self.selected_pokemon_spe_defense > 500:
+            self.spe_defense_progress_bar.configure(progress_color="cyan")
 
     def speed_slider_change(self, value):
         value = int(value)
@@ -554,28 +580,33 @@ class PokemonTab:
             return
         self.speed_ev_var.set(str(value))
         self.speed_slider.set(value)
+
+        self.speed_progress_bar.set(self.selected_pokemon_speed / 500)
         self.check_remaining_ev()
 
     def speed_entry_change(self, *args):
         value = self.speed_ev_var.get()
-        if self.selected_pokemon_speed() < 100:
-            self.speed_progress_bar.configure(progress_color="red")
-        elif self.selected_pokemon_speed() < 150:
-            self.speed_progress_bar.configure(progress_color="orange")
-        elif self.selected_pokemon_speed() < 200:
-            self.speed_progress_bar.configure(progress_color="yellow")
-        elif self.selected_pokemon_speed() < 300:
-            self.speed_progress_bar.configure(progress_color="green")
-        elif self.selected_pokemon_speed() > 500:
-            self.speed_progress_bar.configure(progress_color="cyan")
+        self.config_speed_progress_bar_color()
 
         if self.remaining_ev > 0:
             if value == '':
                 value = '0'
                 self.speed_ev_var.set('')
 
-        self.speed_slider.set(int(value))
+        self.speed_slider_change(int(value))
         self.total_speed_label.configure(text=self.selected_pokemon.speed_stat + int(value) // 4)
+
+    def config_speed_progress_bar_color(self):
+        if self.selected_pokemon_speed < 100:
+            self.speed_progress_bar.configure(progress_color="red")
+        elif self.selected_pokemon_speed < 150:
+            self.speed_progress_bar.configure(progress_color="orange")
+        elif self.selected_pokemon_speed < 200:
+            self.speed_progress_bar.configure(progress_color="yellow")
+        elif self.selected_pokemon_speed < 300:
+            self.speed_progress_bar.configure(progress_color="green")
+        elif self.selected_pokemon_speed > 500:
+            self.speed_progress_bar.configure(progress_color="cyan")
 
     def check_remaining_ev(self):
         if self.remaining_ev < 0:
