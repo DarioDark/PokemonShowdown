@@ -1,7 +1,7 @@
 import time
 from PokemonListConsole import *
-from ClientConsole import Client
-from PlayerConsole import *
+from Console.Game.ClientConsole import Client
+from Console.Game.PlayerConsole import *
 from StatusConsole import SubStatus
 
 

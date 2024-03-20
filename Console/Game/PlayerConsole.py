@@ -1,5 +1,5 @@
 from os import system
-from PokemonConsole import *
+from Console.Pokemon.PokemonConsole import *
 
 
 class Player:
@@ -118,18 +118,14 @@ class Player:
         if move.category == MoveCategory.STATUS:
             if target.current_pokemon.ability == Ability.MAGIC_BOUNCE:
                 print(f"Magic Bounce from {target.name} reflected the status move!")
-                if move.target == "enemy_player":
+                if move.target == "player":
                     attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage)
-                elif move.target == "enemy_pokemon":
+                elif move.target == "pokemon":
                     attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage)
             else:
-                if move.target == "enemy_player":
+                if move.target == "player":
                     attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target, damage)
-                elif move.target == "self_player":
-                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage)
-                elif move.target == "self_pokemon":
-                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage)
-                elif move.target == "enemy_pokemon":
+                elif move.target == "pokemon":
                     attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
         else:
             attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
@@ -186,6 +182,9 @@ class Player:
                     if target.current_pokemon:
                         if target.current_pokemon.ability == Ability.MAGNET_PULL and Type.STEEL in self.current_pokemon.types:
                             print("You are trapped by a magnetic field. You can't switch out this pokemon!")
+                            continue
+                        elif SubStatus.MAGMA_STORM in self.current_pokemon.sub_status:
+                            print("You are trapped by a magma storm. You can't switch out this pokemon!")
                             continue
                     pokemon_index: int = self.select_switch()
                     return 1, pokemon_index, bonus_option

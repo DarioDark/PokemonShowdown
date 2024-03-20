@@ -1,11 +1,11 @@
 from math import floor
 from copy import deepcopy
-from MoveConsole import *
-from ZMoveConsole import ZMove
+from Console.Moves.MoveConsole import *
+from Console.Moves.ZMoveConsole import ZMove
 from StatusConsole import PrimeStatus, SubStatus
-from EnvironmentConsole import EnvironmentElements, EnvironmentClass
-from AbilityConsole import Ability
-from ItemConsole import Item
+from Console.Pokemon.EnvironmentConsole import EnvironmentElements, EnvironmentClass
+from Console.Pokemon.AbilityConsole import Ability
+from Console.Pokemon.ItemConsole import Item
 
 
 class Pokemon:
@@ -739,11 +739,11 @@ class Pokemon:
                     if isinstance(target, Pokemon):
                         if not target.is_dead():
                             if is_secondary_effect_applied:
-                                move.apply_secondary_effect(target)
+                                move.apply_secondary_effect(target, self)
                     else:
                         # If the target is a player, apply the secondary effect of the move
                         if is_secondary_effect_applied:
-                            move.apply_secondary_effect(target)
+                            move.apply_secondary_effect(target, self)
                     return True
 
             self.types = base_types
@@ -887,8 +887,12 @@ class Pokemon:
         :param multipliers: The multipliers of the move
         :return: The damage value of the move
         """
+        # Protect
+        if SubStatus.PROTECT in self.sub_status:
+            print(f"{self.name} protected itself!")
+            return 0
+
         # If the pokemon is immune to the move thanks to its ability
-        # TODO
         if self.ability == Ability.FLASH_FIRE and move.type == Type.FIRE:
             return 0
         elif self.ability == Ability.JUSTIFIED and move.type == Type.DARK:
@@ -925,6 +929,7 @@ class Pokemon:
             return 0
 
         # Physical or Special
+
         if move.category == MoveCategory.PHYSICAL:
             if self.ability == Ability.UNAWARE:
                 attack_stat: int = attacker.attack_stat
@@ -940,8 +945,13 @@ class Pokemon:
             else:
                 attack_stat: int = attacker.special_attack
             if attacker.ability == Ability.UNAWARE:
-                defense_stat: int = self.special_defense_stat
+                if move.name == "Psyshok":
+                    defense_stat: int = self.defense_stat
+                else:
+                    defense_stat: int = self.special_defense_stat
             else:
+                if move.name == "Psyshok":
+                    defense_stat: int = self.defense
                 defense_stat: int = self.special_defense
 
         # Abilities that modify the power of the move
@@ -1033,6 +1043,10 @@ class Pokemon:
                 self.current_hp = max(self.current_hp - poison_damage, 0)
                 print(f"{self.name} is hurt by poison!")
                 self.nbr_turn_severe_poison += 1
+
+    def apply_end_turn_secondary_status(self):
+        """Applies the end of turn effects of the secondary status of the pokemon."""
+
 
     def apply_leech_seed(self, target: 'Pokemon') -> int:
         """Applies the leech seed effect on the target.
@@ -1255,6 +1269,7 @@ class Pokemon:
     def end_turn(self) -> None:
         """Applies the end of turn effects of the pokemon."""
         self.apply_end_turn_primary_status()
+        self.apply_end_turn_secondary_status()
         self.apply_end_turn_ability()
         self.apply_end_turn_weather()
         self.environment.pass_turn()

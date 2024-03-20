@@ -2,9 +2,9 @@ from enum import Enum
 from random import randint
 from termcolor import colored
 
-from AbilityConsole import Ability
-from TypesConsole import Type
-from CapacitySideEffectsConsole import SecondaryEffects, SecondaryEffectClass
+from Console.Pokemon.AbilityConsole import Ability
+from Console.Pokemon.TypesConsole import Type
+from Console.Moves.MoveSideEffectsConsole import SecondaryEffects, SecondaryEffectClass
 
 
 class MoveCategory(Enum):
@@ -26,12 +26,13 @@ class Move:
                  power,
                  base_accuracy: int,
                  max_pp: int,
-                 secondary_effect: SecondaryEffectClass,
+                 secondary_effect: SecondaryEffects,
                  target: str,
                  priority: int = 0,
                  contact_move: bool = False,
                  bullet_move: bool = False,
-                 sound_move: bool = False) -> None:
+                 sound_move: bool = False,
+                 nbr_hit: int = 1) -> None:
         self.name: str = name
         self.type: Type = move_type
         self.category: MoveCategory = category
@@ -41,9 +42,9 @@ class Move:
         self.max_pp: int = max_pp
         self.current_pp: int = max_pp
         self.secondary_effect: SecondaryEffectClass = secondary_effect
-        self.target = target  # The target of the move, can be "enemy_pokemon", "self_pokemon", "enemy_player" or "self_player"
+        self.target = target  # The target of the move, can be "pokemon", "player"
         self.priority: int = priority
-        self.attributes: dict[str: bool] = {'contact': contact_move, 'bullet': bullet_move, 'sound': sound_move}
+        self.attributes: dict[str: bool] = {'contact': contact_move, 'bullet': bullet_move, 'sound': sound_move, 'nbr_hit': nbr_hit}
 
     def __repr__(self):
         if self.category == MoveCategory.STATUS:
@@ -113,13 +114,13 @@ class Move:
                 return True
         return False
     
-    def apply_secondary_effect(self, target) -> None:
+    def apply_secondary_effect(self, target, attacker) -> None:
         """Applies the move's secondary effect.
 
         :param target: "self_player", "enemy_player", "self_pokemon", "enemy_pokemon"
         """
         if isinstance(self.secondary_effect, SecondaryEffectClass):
-            self.secondary_effect.apply(target)
+            self.secondary_effect.apply(target, attacker)
 
 
 # Move declarations

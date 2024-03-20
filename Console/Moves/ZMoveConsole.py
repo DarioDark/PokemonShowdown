@@ -1,4 +1,4 @@
-from MoveConsole import *
+from Console.Moves.MoveConsole import *
 
 
 class ZMove(Move):

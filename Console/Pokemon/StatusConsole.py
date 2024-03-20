@@ -17,3 +17,5 @@ class SubStatus(Enum):
     FLINCH = "Flinch"
     FLASH_FIRE = "Flash Fire"
     UNBURDEN = "Unburden"
+    PROTECT = "Protect"
+    MAGMA_STORM = "Magma Storm"
