@@ -1,5 +1,4 @@
 from enum import Enum
-from random import randint
 
 from Console.Pokemon.AbilityConsole import Ability
 from Console.Pokemon.StatusConsole import PrimeStatus, SubStatus

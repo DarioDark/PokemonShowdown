@@ -684,13 +684,14 @@ class Pokemon:
         self.current_hp += max(amount, 0)
         print(f"{self.name} was healed by {self.convert_hp_to_percentage(amount)} HP!")
             
-    def attack_target(self, move_index: int, is_secondary_effect_applied: bool, target: 'Pokemon or Player', damage) -> bool:
+    def attack_target(self, move_index: int, is_secondary_effect_applied: bool, target: 'Pokemon | Player', damage, nbr_hit: int) -> bool:
         """The pokemon attacks the target with a move.
 
         :param move_index: The index of the move to use
         :param is_secondary_effect_applied: Whether the secondary effect is applied
         :param target: The target of the attack
         :param damage: The damage to apply to the target
+        :param nbr_hit: The number of hits of the move
         """
         move = self.moves[move_index]
         self.last_used_move = move
@@ -751,10 +752,11 @@ class Pokemon:
             print(f"{self.name} has no PP left!")
             return False
 
-    def receive_damage(self, damage: int) -> bool:
+    def receive_damage(self, damage: int, nbr_hit: int) -> bool:
         """The pokemon receives damage.
 
         :param damage: The amount of damage to receive
+        :param nbr_hit: The number of hits of the move
         :return: Whether the pokemon was hit or not
         """
         # If the Pokemon is immune thanks to its type
@@ -771,19 +773,16 @@ class Pokemon:
             damage = min(damage, self.current_hp - 1)
             self.drop_object()
 
-        self.current_hp -= damage
-        self.current_hp = max(self.current_hp, 0)
-        print(f"{self.name} lost {self.convert_hp_to_percentage(damage)}% HP!")
-        self.is_dead(True)
-        return True
-        
-    def receive_secondary_effect(self, move: Move) -> None:
-        """The pokemon receives the secondary effect of a move.
+        for _ in range(nbr_hit):
+            self.current_hp -= damage
+            self.current_hp = max(self.current_hp, 0)
 
-        :param move: The move that has a secondary effect
-        """
-        if move.secondary_effect:
-            move.secondary_effect.apply(self)
+            self.is_dead(True)
+
+        print(f"Hit {nbr_hit} times!")
+        print(f"{self.name} lost {min(self.convert_hp_to_percentage(damage * nbr_hit), 100)}% HP!")
+
+        return True
 
     @staticmethod
     def get_stab_multiplier(attacker: 'Pokemon', attack_type: Type) -> bool:
@@ -935,7 +934,7 @@ class Pokemon:
                 attack_stat: int = attacker.attack_stat
             else:
                 attack_stat: int = attacker.attack
-            if attacker.ability == Ability.UNAWARE:
+            if attacker.ability == Ability.UNAWARE or move.name == "Sacred Sword":
                 defense_stat: int = self.defense_stat
             else:
                 defense_stat: int = self.defense
@@ -952,10 +951,15 @@ class Pokemon:
             else:
                 if move.name == "Psyshok":
                     defense_stat: int = self.defense
-                defense_stat: int = self.special_defense
+                else:
+                    defense_stat: int = self.special_defense
+
+        # Acrobatics
+        move_power = move.power
+        if move.name == "Acrobatics" and attacker.item == Item.NONE:
+            move_power = 110
 
         # Abilities that modify the power of the move
-        move_power = move.power
         if attacker.ability == Ability.TECHNICIAN and move_power <= 60:
             move_power *= 1.5
         elif attacker.ability == Ability.SAND_FORCE and EnvironmentElements.SAND in self.environment.elements and move.type in [Type.ROCK, Type.STEEL, Type.GROUND]:

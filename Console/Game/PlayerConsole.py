@@ -112,23 +112,23 @@ class Player:
             except ValueError:
                 print("Invalid choice")
                 
-    def use_move(self, move_index: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1) -> bool:
+    def use_move(self, move_index: int, is_secondary_effect_applied: bool, target: 'Player', damage: int = -1, nbr_hit: int = 1) -> bool:
         move = self.current_pokemon.moves[move_index]
         attack_successful: bool = False
         if move.category == MoveCategory.STATUS:
             if target.current_pokemon.ability == Ability.MAGIC_BOUNCE:
                 print(f"Magic Bounce from {target.name} reflected the status move!")
                 if move.target == "player":
-                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self, damage, nbr_hit)
                 elif move.target == "pokemon":
-                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, self.current_pokemon, damage, nbr_hit)
             else:
                 if move.target == "player":
-                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target, damage, nbr_hit)
                 elif move.target == "pokemon":
-                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
+                    attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage, nbr_hit)
         else:
-            attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage)
+            attack_successful = self.current_pokemon.attack_target(move_index, is_secondary_effect_applied, target.current_pokemon, damage, nbr_hit)
         return attack_successful
 
     def select_z_move(self) -> int:

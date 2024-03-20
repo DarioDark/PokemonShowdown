@@ -93,6 +93,11 @@ class Move:
     def get_current_pp_percentage(self) -> float:
         percentage = (self.current_pp / self.max_pp) * 100
         return round(percentage * 2) / 2
+
+    def get_hit_number(self) -> int:
+        if self.name == "Water Shuriken":
+            return randint(2, 5)
+        return self.attributes['nbr_hit']
     
     def print_colored_pp(self) -> str:
         pp_percentage = self.get_current_pp_percentage()

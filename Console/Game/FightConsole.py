@@ -1,8 +1,8 @@
 import time
-from PokemonListConsole import *
+from Console.Pokemon.PokemonListConsole import *
 from Console.Game.ClientConsole import Client
 from Console.Game.PlayerConsole import *
-from StatusConsole import SubStatus
+from Console.Pokemon.StatusConsole import SubStatus
 
 
 class Fight:
@@ -312,9 +312,15 @@ class Fight:
                 multipliers: tuple[bool, bool, float] = self.get_multipliers_info(player, temp_move, target)
                 damage: int = self.get_damage_info(player, temp_move, target, multipliers)
                 secondary_effect_applied: bool = temp_move.is_secondary_effect_applied(player.current_pokemon)
+                nbr_hit: int = temp_move.get_hit_number()
 
                 # Sending the results to the server
-                result: tuple[tuple[bool, bool, float], bool, int, tuple['PrimeStatus or SubStatus', int]] = (multipliers, secondary_effect_applied, damage, status)
+                result: dict = {multipliers: multipliers,
+                                secondary_effect_applied: secondary_effect_applied,
+                                damage: damage,
+                                status: status,
+                                nbr_hit: nbr_hit}
+
                 self.client.send_info(result)
 
                 # Applying the local results to the imported target
@@ -343,7 +349,7 @@ class Fight:
                     return
 
                 print(f"{player.current_pokemon.name} used {move.name}!")
-                result: tuple[tuple[bool, bool, int], bool, int] = self.client.get_last_info()
+                result: dict = self.client.get_last_info()
                 # If the move missed
                 if len(result) == 1:
                     print(f"{player.current_pokemon.name} missed!")
@@ -353,7 +359,7 @@ class Fight:
                 else:
                     # Handling the multipliers
                     if move.category != MoveCategory.STATUS:
-                        multipliers: tuple[bool, bool, int] = result[0]
+                        multipliers: tuple[bool, bool, int] = result["multipliers"]
 
                         # Critical hit
                         if multipliers[1]:
@@ -369,9 +375,11 @@ class Fight:
                             print("This is very effective!")
 
                     # Applying the imported results to the local target
-                    secondary_effect_applied: bool = result[1]
-                    damage = result[2]
-                    attack_successful: bool = player.use_move(move_index, secondary_effect_applied, target, damage)
+                    secondary_effect_applied: bool = result["secondary_effect_applied"]
+                    damage = result["damage"]
+                    nbr_hit = result["nbr_hit"]
+
+                    attack_successful: bool = player.use_move(move_index, secondary_effect_applied, target, damage, nbr_hit)
                     if attack_successful and isinstance(move, ZMove):
                         player.current_pokemon.z_move_used = True
 

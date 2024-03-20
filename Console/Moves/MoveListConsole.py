@@ -43,3 +43,5 @@ POISON_JAB = Move("Poison Jab", Type.POISON, MoveCategory.PHYSICAL, 80, 100, 20,
 LIQUIDADATION = Move("Liquidation", Type.WATER, MoveCategory.PHYSICAL, 85, 100, 10, SecondaryEffects.NONE, "pokemon")
 LEAF_BLADE = Move("Leaf Blade", Type.GRASS, MoveCategory.PHYSICAL, 90, 100, 15, SecondaryEffects.NONE, "pokemon")
 DRACO_METEOR = Move("Draco Meteor", Type.DRAGON, MoveCategory.SPECIAL, 130, 90, 5, SecondaryEffects.LOWER_SPE_ATK_BY_2, "pokemon")
+ACROBATICS = Move("Acrobatics", Type.FLYING, MoveCategory.PHYSICAL, 55, 100, 15, SecondaryEffects.NONE, "pokemon")
+SACRED_SWORD = Move("Sacred Sword", Type.FIGHT, MoveCategory.PHYSICAL, 90, 100, 15, SecondaryEffects.NONE, "pokemon")
