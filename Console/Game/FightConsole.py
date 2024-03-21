@@ -383,6 +383,8 @@ class Fight:
                     if attack_successful and isinstance(move, ZMove):
                         player.current_pokemon.z_move_used = True
 
+                    self.player_switch_in()
+
     def player_switch_in(self, player: Player, pokemon_index: int) -> int:
         """Tries to switch in a pokemon for the player until it succeeds.
 

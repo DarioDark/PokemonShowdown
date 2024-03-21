@@ -45,3 +45,5 @@ LEAF_BLADE = Move("Leaf Blade", Type.GRASS, MoveCategory.PHYSICAL, 90, 100, 15, 
 DRACO_METEOR = Move("Draco Meteor", Type.DRAGON, MoveCategory.SPECIAL, 130, 90, 5, SecondaryEffects.LOWER_SPE_ATK_BY_2, "pokemon")
 ACROBATICS = Move("Acrobatics", Type.FLYING, MoveCategory.PHYSICAL, 55, 100, 15, SecondaryEffects.NONE, "pokemon")
 SACRED_SWORD = Move("Sacred Sword", Type.FIGHT, MoveCategory.PHYSICAL, 90, 100, 15, SecondaryEffects.NONE, "pokemon")
+AURA_SPHERE = Move("Aura Sphere", Type.FIGHT, MoveCategory.SPECIAL, 80, 100, 20, SecondaryEffects.NONE, "pokemon")
+

@@ -1,4 +1,4 @@
-from PokemonConsole import *
+from Console.Pokemon.PokemonConsole import *
 
 
 # Create some pokemons

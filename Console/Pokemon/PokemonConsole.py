@@ -2,7 +2,7 @@ from math import floor
 from copy import deepcopy
 from Console.Moves.MoveConsole import *
 from Console.Moves.ZMoveConsole import ZMove
-from StatusConsole import PrimeStatus, SubStatus
+from Console.Pokemon.StatusConsole import PrimeStatus, SubStatus
 from Console.Pokemon.EnvironmentConsole import EnvironmentElements, EnvironmentClass
 from Console.Pokemon.AbilityConsole import Ability
 from Console.Pokemon.ItemConsole import Item
