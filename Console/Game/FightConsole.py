@@ -1,8 +1,8 @@
 import time
-from PokemonListConsole import *
+from Console.Pokemon.PokemonListConsole import *
 from Console.Game.ClientConsole import Client
 from Console.Game.PlayerConsole import *
-from StatusConsole import SubStatus
+from Console.Pokemon.StatusConsole import SubStatus
 
 
 class Fight:
