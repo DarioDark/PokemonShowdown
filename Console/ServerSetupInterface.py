@@ -1,8 +1,11 @@
 import customtkinter
+import threading
 
 from CTkMessagebox import CTkMessagebox
 from PIL import Image
+from MulticolorCTkLabel import MultiColorLabel
 from ServerConsole import Server
+
 
 class ServerSetupInterface(customtkinter.CTk):
     def __init__(self, *args, **kwargs):
@@ -10,6 +13,7 @@ class ServerSetupInterface(customtkinter.CTk):
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("blue")
         self.title("Server Setup")
+        self.server: Server | None = None
         self.server_status: bool = False
 
         # Center the window
@@ -29,8 +33,8 @@ class ServerSetupInterface(customtkinter.CTk):
         self.main_frame = customtkinter.CTkFrame(self, corner_radius=10)
         self.main_frame.pack(expand=True, fill=customtkinter.BOTH, padx=50, pady=50)
 
-        self.fill_status_interface()
-
+        self.server_event = threading.Event()
+        self.fill_config_interface()
 
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
@@ -52,19 +56,63 @@ class ServerSetupInterface(customtkinter.CTk):
 
     def fill_status_interface(self):
         self.server_info_label = customtkinter.CTkLabel(self.main_frame, text="Server Info", font=("Arial", 20, "bold"), corner_radius=10, text_color="white")
-        self.server_info_label.pack(pady=3, fill=customtkinter.X, expand=True)
+        self.server_info_label.pack(pady=40, fill=customtkinter.X, expand=True)
 
-        self.server_status_label = customtkinter.CTkLabel(self.main_frame, text="Server status: Not running", font=("Arial", 15, "bold"), corner_radius=10, text_color="white")
-        self.server_status_label.pack(pady=3, fill=customtkinter.X, expand=True)
-        if self.server_status:
-            self.server_status_label.configure(text="Server status: Running", text_color="green")
+        self.server_status_label = MultiColorLabel(self.main_frame, fg_color="transparent", font=("Arial", 15, "bold"), corner_radius=10, height=70, width=50)
+        self.server_status_label.add("Server status:\n", "white")
+        self.server_status_label.add("    Running...", "green")
+        self.server_status_label.pack(pady=0, padx=60, fill=customtkinter.X, expand=True)
 
-
-        self.running_server_progress_bar = customtkinter.CTkProgressBar(self.main_frame, 100, corner_radius=10, mode="indeterminate")
-        self.running_server_progress_bar.pack(pady=3, padx=10, fill=customtkinter.X, expand=True)
+        self.running_server_progress_bar = customtkinter.CTkProgressBar(self.main_frame, 100, corner_radius=10, mode="indeterminate", progress_color="green")
+        self.running_server_progress_bar.pack(pady=5, padx=20, fill=customtkinter.X, expand=True)
         self.running_server_progress_bar.start()
 
+        self.stop_server_button = customtkinter.CTkButton(self.main_frame, text="Stop server", font=("Arial", 15, "bold"),
+                                                          corner_radius=10, fg_color="red", hover_color="dark red", command=self.stop_server, state=customtkinter.NORMAL)
+        self.stop_server_button.pack(pady=30, fill=customtkinter.BOTH, expand=True, padx=50)
 
+        self.restart_server_button = customtkinter.CTkButton(self.main_frame, text="Restart server", font=("Arial", 15, "bold"), corner_radius=10, fg_color="green", hover_color="dark green", command=self.restart_server, state=customtkinter.NORMAL)
+
+    def show_server_status(self):
+        self.start_button.configure(state=customtkinter.DISABLED)
+        if self.server_status:
+            self.msg = self.server_response_window = CTkMessagebox(self, title="Server status",
+                                                                    message=f"The server is ready to start with the provided settings.",
+                                                                    corner_radius=10, icon="check", option_1="Start", option_3="Change settings", button_width=10)
+        else:
+            self.msg = self.server_response_window = CTkMessagebox(self, title="Server status",
+                                                        message="The server cannot be started with the current settings.",
+                                                        corner_radius=10,
+                                                        icon="cancel")
+        if self.msg.get() == "Start":
+            server_thread = threading.Thread(target=self.server.start, args=(self.server_event,))
+            server_thread.start()
+            self.self_hide_config_interface()
+            self.fill_status_interface()
+        elif self.msg.get() == "Change settings":
+            self.msg.destroy()
+            self.server = None
+            self.start_button.configure(state=customtkinter.NORMAL)
+
+    def stop_server(self):
+        self.server_event.clear()
+        self.server_status = False
+        self.server_status_label.remove("    Running...")
+        self.server_status_label.add("    Stopped", "red")
+        self.running_server_progress_bar.configure(progress_color="red")
+        self.running_server_progress_bar.stop()
+        self.stop_server_button.pack_forget()
+        self.restart_server_button.pack(pady=30, fill=customtkinter.BOTH, expand=True, padx=50)
+
+    def restart_server(self):
+        self.server_event.set()
+        self.server_status = True
+        self.server_status_label.remove("    Stopped")
+        self.server_status_label.add("    Running...", "green")
+        self.running_server_progress_bar.configure(progress_color="green")
+        self.running_server_progress_bar.start()
+        self.restart_server_button.pack_forget()
+        self.stop_server_button.pack(pady=30, fill=customtkinter.BOTH, expand=True, padx=50)
 
     def self_hide_config_interface(self):
         self.title_label.pack_forget()
@@ -95,29 +143,17 @@ class ServerSetupInterface(customtkinter.CTk):
         else:
             self.server_status: bool = True
         finally:
+            self.server_event.set()
             self.show_server_status()
-
-    def show_server_status(self):
-        self.start_button.configure(state=customtkinter.DISABLED)
-        if self.server_status:
-            self.msg = self.server_response_window = CTkMessagebox(self, title="Server status",
-                                                                    message=f"The server is ready to start with the provided settings.",
-                                                                    corner_radius=10, icon="check", option_1="Start", option_3="Change settings", button_width=10)
-        else:
-            self.msg = self.server_response_window = CTkMessagebox(self, title="Server status",
-                                                        message="The server cannot be started with the current settings.",
-                                                        corner_radius=10,
-                                                        icon="cancel")
-        if self.msg.get() == "Start":
-            self.server.start(self)
-        elif self.msg.get() == "Change settings":
-            self.msg.destroy()
-            self.start_button.configure(state=customtkinter.NORMAL)
 
     def on_close(self):
         try:
             self.msg.destroy()
         except AttributeError:
+            pass
+        try:
+            self.server.stop()
+        except:
             pass
         self.destroy()
 

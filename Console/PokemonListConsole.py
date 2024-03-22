@@ -26,7 +26,7 @@ Blastoise = Pokemon("Blastoise", 79, 83, 100, 85, 105, 78, [Type.WATER], [HydroP
 Mew = Pokemon("Mew", 100, 100, 100, 100, 100, 100, [Type.PSYCHIC], [QuickAttack, CloseCombat, Surf, StealthRock], Ability.SCRAPPY, Item.ROCKIUM_Z)
 Landorus_Therian = Pokemon("Landorus-Therian", 89, 145, 90, 105, 80, 91, [Type.GROUND, Type.FLYING], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, Item.NONE)
 Ferrothorn = Pokemon("Ferrothorn", 74, 94, 131, 54, 116, 20, [Type.GRASS, Type.STEEL], [StealthRock, QuickAttack, CloseCombat, LeechSeed], Ability.IRON_BARBS, Item.NONE)
-Greninja = Pokemon("Greninja", 72, 95, 67, 103, 71, 122, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, Item.NONE)
+Greninja = Pokemon("Greninja", 285, 226, 170, 242, 178, 280, [Type.WATER, Type.DARK], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, Item.NONE)
 Magnezone = Pokemon("Magnezone", 70, 70, 115, 130, 90, 60, [Type.ELECTRIC, Type.STEEL], [QuickAttack, Thunder, Surf, SkullBash], Ability.MAGNET_PULL, Item.NONE)
 Blacephalon = Pokemon("Blacephalon", 53, 127, 53, 151, 79, 107, [Type.FIRE, Type.GHOST], [QuickAttack, Thunder, Surf, SkullBash], Ability.NONE, Item.NONE)
 

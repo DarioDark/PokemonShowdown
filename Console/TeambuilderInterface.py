@@ -13,7 +13,7 @@ class TeambuilderInterface(customtkinter.CTk):
         self.update_idletasks()  # Update window geometry
 
         width = 1000
-        height = 650
+        height = 750
 
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
@@ -54,31 +54,26 @@ class PokemonTab:
         self.create_stats_frame()
 
         self.tab.grid_rowconfigure(0, weight=1)
-        self.tab.grid_rowconfigure(1, weight=1)
+        self.tab.grid_rowconfigure(1, weight=2)
         self.tab.grid_columnconfigure(0, weight=1)
         self.tab.grid_columnconfigure(1, weight=2)
 
-        self.evs_max_reached_label = customtkinter.CTkLabel(self.stats_frame,
-                                                            text="EVs maximum reached",
-                                                            font=("Arial", 15, "bold"),
-                                                            text_color="orange",
-                                                            compound="left",
-                                                            corner_radius=30,
-                                                            padx=5)
-
-        self.evs_max_reached_label.place(x=537, y=5)  # adjust the position as needed
-        self.evs_max_reached_label.lower()
+        # Stats alert labels
+        self.remaining_ev_counter_label = customtkinter.CTkLabel(self.stats_frame, text=f"Remaining EVs: 508", font=("Arial", 10, "bold", "italic"),
+                                                                 text_color="white")
+        self.remaining_ev_counter_label.place(x=450, y=285)
+        self.remaining_ev_counter_label.lower()
 
         self.evs_max_exceeded_label = customtkinter.CTkLabel(self.stats_frame,
                                                              text="EVs maximum exceeded!",
-                                                             font=("Arial", 15, "bold"),
+                                                             font=("Arial", 10, "bold", "italic"),
                                                              text_color="red",
                                                              compound="left",
                                                              corner_radius=30,
                                                              padx=5,
                                                              image=customtkinter.CTkImage(Image.open("../Images/red-warning-icon.png"),
                                                                                           size=(20, 20)))
-        self.evs_max_exceeded_label.place(x=495, y=5)  # adjust the position as needed
+        self.evs_max_exceeded_label.place(x=420, y=285)  # adjust the position as needed
         self.evs_max_exceeded_label.lower()  # Hide the label initially
 
     @property
@@ -93,7 +88,9 @@ class PokemonTab:
             self.spe_attack_ev_var.set('0')
         if self.spe_defense_ev_var.get() == '':
             self.spe_defense_ev_var.set('0')
-        return 508 - int(self.hp_ev_var.get()) - int(self.attack_ev_var.get()) - int(self.defense_ev_var.get()) - int(self.spe_attack_ev_var.get()) - int(self.spe_defense_ev_var.get()) - int(self.speed_ev_var.get())
+        remaining_ev = 508 - int(self.hp_ev_var.get()) - int(self.attack_ev_var.get()) - int(self.defense_ev_var.get()) - int(self.spe_attack_ev_var.get()) - int(self.spe_defense_ev_var.get()) - int(self.speed_ev_var.get())
+        self.remaining_ev_counter_label.configure(text=f"Remaining EVs: {remaining_ev}")
+        return remaining_ev
 
     @property
     def selected_pokemon_hp(self):
@@ -136,7 +133,7 @@ class PokemonTab:
         self.pokemon_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         self.pokemon_frame.grid_propagate(False)
 
-        self.pokemon_frame_title = customtkinter.CTkLabel(self.pokemon_frame, text="Pokemon", font=("Arial", 20), corner_radius=35)
+        self.pokemon_frame_title = customtkinter.CTkLabel(self.pokemon_frame, text="Pokemon", font=("Arial", 20, "bold"), corner_radius=35)
         self.pokemon_frame_title.place(x=40, y=10)
 
         self.image = customtkinter.CTkImage(dark_image=Image.open("../Images/Static_sprites/greninja.png"), size=(124, 124))
@@ -182,18 +179,18 @@ class PokemonTab:
         self.stats_frame.grid_propagate(False)
 
     def fill_stats_frame(self):
-        self.stats_frame_title = customtkinter.CTkLabel(self.stats_frame, text="Stats", font=("Arial", 20), corner_radius=35)
-        self.stats_frame_title.place(x=55, y=10)
+        self.stats_frame_title = customtkinter.CTkLabel(self.stats_frame, text="Stats", font=("Arial", 20, "bold"), corner_radius=35)
+        self.stats_frame_title.place(x=335, y=10)
 
         # Base, Ev and total labels
         self.base_label = customtkinter.CTkLabel(self.stats_frame, text="Base", font=("Arial", 13, "italic"))
-        self.base_label.place(x=85, y=34)
+        self.base_label.place(x=105, y=64)
 
         self.ev_label = customtkinter.CTkLabel(self.stats_frame, text="EVs", font=("Arial", 12, "italic"))
-        self.ev_label.place(x=335, y=34)
+        self.ev_label.place(x=375, y=64)
 
         self.total_label = customtkinter.CTkLabel(self.stats_frame, text="Total", font=("Arial", 13, "italic"))
-        self.total_label.place(x=582, y=34)
+        self.total_label.place(x=622, y=64)
 
         self.fill_hp_stat()
         self.fill_attack_stat()
@@ -201,25 +198,26 @@ class PokemonTab:
         self.fill_spe_attack_stat()
         self.fill_spe_defense_stat()
         self.fill_speed_stat()
+        self.remaining_ev_counter_label.lift()
 
     def fill_hp_stat(self):
         # Hp
         self.hp_stat_name_label = customtkinter.CTkLabel(self.stats_frame, text="HP", font=("Arial", 15), justify="right")
-        self.hp_stat_name_label.place(x=45, y=57)
+        self.hp_stat_name_label.place(x=85, y=87)
 
         self.hp_base_stat_number_label = customtkinter.CTkLabel(self.stats_frame, text=str(self.selected_pokemon.max_hp), font=("Arial", 15))
-        self.hp_base_stat_number_label.place(x=85, y=56)
+        self.hp_base_stat_number_label.place(x=125, y=86)
 
         self.hp_progress_bar = customtkinter.CTkProgressBar(self.stats_frame,
                                                             width=200,
                                                             determinate_speed=1,
                                                             progress_color="green")
-        self.hp_progress_bar.place(x=115, y=67)
+        self.hp_progress_bar.place(x=155, y=97)
         self.hp_progress_bar.set(self.selected_pokemon_hp / 500)
 
         self.hp_ev_var.trace_add("write", self.hp_entry_change)
         self.hp_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.hp_ev_var)
-        self.hp_ev_entry.place(x=330, y=57)
+        self.hp_ev_entry.place(x=370, y=87)
 
         self.hp_slider = customtkinter.CTkSlider(self.stats_frame,
                                                  from_=0,
@@ -230,29 +228,29 @@ class PokemonTab:
                                                  number_of_steps=63)
         self.config_hp_progress_bar_color()
         self.hp_slider.set(0)
-        self.hp_slider.place(x=375, y=63)
+        self.hp_slider.place(x=415, y=93)
 
         self.total_hp_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.max_hp, font=("Arial", 15))
-        self.total_hp_label.place(x=585, y=57)
+        self.total_hp_label.place(x=625, y=87)
 
     def fill_attack_stat(self):
         # Attack
         self.attack_stat_name_label = customtkinter.CTkLabel(self.stats_frame, text="Attack", font=("Arial", 15), justify="right")
-        self.attack_stat_name_label.place(x=25, y=90)
+        self.attack_stat_name_label.place(x=65, y=120)
 
         self.attack_base_stat_number_label = customtkinter.CTkLabel(self.stats_frame, text=str(self.selected_pokemon.attack_stat), font=("Arial", 15))
-        self.attack_base_stat_number_label.place(x=85, y=89)
+        self.attack_base_stat_number_label.place(x=125, y=119)
 
         self.attack_progress_bar = customtkinter.CTkProgressBar(self.stats_frame,
                                                                 width=200,
                                                                 determinate_speed=1,
                                                                 progress_color="green")
-        self.attack_progress_bar.place(x=115, y=100)
+        self.attack_progress_bar.place(x=155, y=130)
         self.attack_progress_bar.set(self.selected_pokemon_attack / 500)
 
         self.attack_ev_var.trace_add("write", self.attack_entry_change)
         self.attack_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.attack_ev_var)
-        self.attack_ev_entry.place(x=330, y=90)
+        self.attack_ev_entry.place(x=370, y=120)
 
         self.attack_slider = customtkinter.CTkSlider(self.stats_frame,
                                                      from_=0,
@@ -263,29 +261,29 @@ class PokemonTab:
                                                      number_of_steps=63)
         self.config_attack_progress_bar_color()
         self.attack_slider.set(0)
-        self.attack_slider.place(x=375, y=96)
+        self.attack_slider.place(x=415, y=126)
 
         self.total_attack_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.attack_stat, font=("Arial", 15))
-        self.total_attack_label.place(x=585, y=90)
+        self.total_attack_label.place(x=625, y=120)
 
     def fill_defense_stat(self):
         # Defense
         self.defense_stat_name_label = customtkinter.CTkLabel(self.stats_frame, text="Defense", font=("Arial", 15), justify="right")
-        self.defense_stat_name_label.place(x=12, y=123)
+        self.defense_stat_name_label.place(x=52, y=153)
 
         self.defense_base_stat_number_label = customtkinter.CTkLabel(self.stats_frame, text=str(self.selected_pokemon.defense_stat), font=("Arial", 15))
-        self.defense_base_stat_number_label.place(x=85, y=122)
+        self.defense_base_stat_number_label.place(x=125, y=153)
 
         self.defense_progress_bar = customtkinter.CTkProgressBar(self.stats_frame,
                                                                  width=200,
                                                                  determinate_speed=1,
                                                                  progress_color="green")
-        self.defense_progress_bar.place(x=115, y=133)
+        self.defense_progress_bar.place(x=155, y=163)
         self.defense_progress_bar.set(self.selected_pokemon_defense / 500)
 
         self.defense_ev_var.trace_add("write", self.defense_entry_change)
         self.defense_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.defense_ev_var)
-        self.defense_ev_entry.place(x=330, y=123)
+        self.defense_ev_entry.place(x=370, y=153)
 
         self.defense_slider = customtkinter.CTkSlider(self.stats_frame,
                                                       from_=0,
@@ -296,29 +294,29 @@ class PokemonTab:
                                                       number_of_steps=63)
         self.config_defense_progress_bar_color()
         self.defense_slider.set(0)
-        self.defense_slider.place(x=375, y=129)
+        self.defense_slider.place(x=415, y=159)
 
         self.total_defense_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.defense_stat, font=("Arial", 15))
-        self.total_defense_label.place(x=585, y=123)
+        self.total_defense_label.place(x=625, y=153)
 
     def fill_spe_attack_stat(self):
         # Special Attack
         self.spe_attack_stat_name_label = customtkinter.CTkLabel(self.stats_frame, text="Sp. Atk.", font=("Arial", 15), justify="right")
-        self.spe_attack_stat_name_label.place(x=12, y=156)
+        self.spe_attack_stat_name_label.place(x=52, y=186)
 
         self.spe_attack_base_stat_number_label = customtkinter.CTkLabel(self.stats_frame, text=str(self.selected_pokemon.special_attack_stat), font=("Arial", 15))
-        self.spe_attack_base_stat_number_label.place(x=85, y=155)
+        self.spe_attack_base_stat_number_label.place(x=125, y=185)
 
         self.spe_attack_progress_bar = customtkinter.CTkProgressBar(self.stats_frame,
                                                                     width=200,
                                                                     determinate_speed=1,
                                                                     progress_color="green")
-        self.spe_attack_progress_bar.place(x=115, y=166)
+        self.spe_attack_progress_bar.place(x=155, y=196)
         self.spe_attack_progress_bar.set(self.selected_pokemon_spe_attack / 500)
 
         self.spe_attack_ev_var.trace_add("write", self.spe_attack_entry_change)
         self.spe_attack_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.spe_attack_ev_var)
-        self.spe_attack_ev_entry.place(x=330, y=156)
+        self.spe_attack_ev_entry.place(x=370, y=186)
 
         self.spe_attack_slider = customtkinter.CTkSlider(self.stats_frame,
                                                          from_=0,
@@ -329,29 +327,29 @@ class PokemonTab:
                                                          number_of_steps=63)
         self.config_spe_attack_progress_bar_color()
         self.spe_attack_slider.set(0)
-        self.spe_attack_slider.place(x=375, y=162)
+        self.spe_attack_slider.place(x=415, y=192)
 
         self.total_spe_attack_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.special_attack_stat, font=("Arial", 15))
-        self.total_spe_attack_label.place(x=585, y=156)
+        self.total_spe_attack_label.place(x=625, y=186)
 
     def fill_spe_defense_stat(self):
         # Special Defense
         self.spe_defense_stat_name_label = customtkinter.CTkLabel(self.stats_frame, text="Sp. Def.", font=("Arial", 15), justify="right")
-        self.spe_defense_stat_name_label.place(x=12, y=189)
+        self.spe_defense_stat_name_label.place(x=52, y=219)
 
         self.spe_defense_base_stat_number_label = customtkinter.CTkLabel(self.stats_frame, text=str(self.selected_pokemon.special_defense_stat), font=("Arial", 15))
-        self.spe_defense_base_stat_number_label.place(x=85, y=188)
+        self.spe_defense_base_stat_number_label.place(x=125, y=218)
 
         self.spe_defense_progress_bar = customtkinter.CTkProgressBar(self.stats_frame,
                                                                      width=200,
                                                                      determinate_speed=1,
                                                                      progress_color="green")
-        self.spe_defense_progress_bar.place(x=115, y=199)
+        self.spe_defense_progress_bar.place(x=155, y=229)
         self.spe_defense_progress_bar.set(self.selected_pokemon_spe_defense / 500)
 
         self.spe_defense_ev_var.trace_add("write", self.spe_defense_entry_change)
         self.spe_defense_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.spe_defense_ev_var)
-        self.spe_defense_ev_entry.place(x=330, y=189)
+        self.spe_defense_ev_entry.place(x=370, y=219)
 
         self.spe_defense_slider = customtkinter.CTkSlider(self.stats_frame,
                                                           from_=0,
@@ -362,18 +360,18 @@ class PokemonTab:
                                                           number_of_steps=63)
         self.config_spe_defense_progress_bar_color()
         self.spe_defense_slider.set(0)
-        self.spe_defense_slider.place(x=375, y=195)
+        self.spe_defense_slider.place(x=415, y=225)
 
         self.total_spe_defense_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.special_defense_stat, font=("Arial", 15))
-        self.total_spe_defense_label.place(x=585, y=189)
+        self.total_spe_defense_label.place(x=625, y=219)
 
     def fill_speed_stat(self):
         # Speed
         self.speed_stat_name_label = customtkinter.CTkLabel(self.stats_frame, text="Speed ", font=("Arial", 15), justify="right")
-        self.speed_stat_name_label.place(x=12, y=222)
+        self.speed_stat_name_label.place(x=62, y=252)
 
         self.speed_base_stat_number_label = customtkinter.CTkLabel(self.stats_frame, text=str(self.selected_pokemon.speed_stat), font=("Arial", 15))
-        self.speed_base_stat_number_label.place(x=85, y=221)
+        self.speed_base_stat_number_label.place(x=125, y=251)
 
         self.speed_progress_bar = customtkinter.CTkProgressBar(self.stats_frame,
                                                                width=200,
@@ -381,12 +379,12 @@ class PokemonTab:
                                                                progress_color="green")
 
         self.config_speed_progress_bar_color()
-        self.speed_progress_bar.place(x=115, y=232)
+        self.speed_progress_bar.place(x=155, y=262)
         self.speed_progress_bar.set(self.selected_pokemon_speed / 500)
 
         self.speed_ev_var.trace_add("write", self.speed_entry_change)
         self.speed_ev_entry = customtkinter.CTkEntry(self.stats_frame, width=40, font=("Arial", 15), textvariable=self.speed_ev_var)
-        self.speed_ev_entry.place(x=330, y=222)
+        self.speed_ev_entry.place(x=370, y=252)
 
         self.speed_slider = customtkinter.CTkSlider(self.stats_frame,
                                                     from_=0,
@@ -396,10 +394,10 @@ class PokemonTab:
                                                     command=self.speed_slider_change,
                                                     number_of_steps=63)
         self.speed_slider.set(0)
-        self.speed_slider.place(x=375, y=228)
+        self.speed_slider.place(x=415, y=258)
 
         self.total_speed_label = customtkinter.CTkLabel(self.stats_frame, text=self.selected_pokemon.speed_stat, font=("Arial", 15))
-        self.total_speed_label.place(x=585, y=222)
+        self.total_speed_label.place(x=625, y=252)
 
     def hp_slider_change(self, value):
         # Convert the value to an integer
@@ -479,6 +477,7 @@ class PokemonTab:
 
     def defense_slider_change(self, value):
         value = int(value)
+        print(self.remaining_ev)
         if self.remaining_ev <= 0 and value > int(self.defense_ev_var.get()):
             self.defense_slider.set(int(self.defense_ev_var.get()))
             return
@@ -533,7 +532,7 @@ class PokemonTab:
                 self.spe_attack_ev_var.set('')
 
         self.spe_attack_slider_change(int(value))
-        self.total_spe_attack_label.configure(text=self.selected_pokemon.spe_attack + int(value) // 4)
+        self.total_spe_attack_label.configure(text=self.selected_pokemon.special_attack_stat + int(value) // 4)
 
     def config_spe_attack_progress_bar_color(self):
         if self.selected_pokemon_spe_attack < 100:
@@ -568,7 +567,7 @@ class PokemonTab:
                 self.spe_defense_ev_var.set('')
 
         self.spe_defense_slider_change(int(value))
-        self.total_spe_defense_label.configure(text=self.selected_pokemon.spe_defense + int(value) // 4)
+        self.total_spe_defense_label.configure(text=self.selected_pokemon.special_defense_stat + int(value) // 4)
 
     def config_spe_defense_progress_bar_color(self):
         if self.selected_pokemon_spe_defense < 100:
@@ -619,14 +618,18 @@ class PokemonTab:
 
     def check_remaining_ev(self):
         if self.remaining_ev < 0:
-            self.evs_max_reached_label.lower()
+            self.remaining_ev_counter_label.lower()
             self.evs_max_exceeded_label.lift()  # Show the label
+            self.stats_frame.configure(border_color="red", border_width=2)
         elif self.remaining_ev == 0:
-            self.evs_max_exceeded_label.lower()
-            self.evs_max_reached_label.lift()
+            self.remaining_ev_counter_label.configure(text="EVs maximum reached!", text_color="green")
+            self.remaining_ev_counter_label.lift()
+            self.stats_frame.configure(border_color="green", border_width=1)
         else:
-            self.evs_max_reached_label.lower()
+            self.remaining_ev_counter_label.configure(text_color="white")
+            self.remaining_ev_counter_label.lift()
             self.evs_max_exceeded_label.lower()  # Hide the label
+            self.stats_frame.configure(border_width=0)
 
 
 def main():

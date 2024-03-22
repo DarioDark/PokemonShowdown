@@ -17,13 +17,11 @@ class Server:
         self.socket .bind((self.host, self.port))
         self.socket .listen()
 
-    def start(self, master=None):
-        if master:
-            master.on_close()
-
+    def start(self, event):
+        print("Starting server...")
+        event.wait()
         print("Server started !!!!")
-        self.listening = True
-        while self.listening:
+        while True:
             client, addr = self.socket .accept()
             print(f"Connection from {addr} has been established !")
 
@@ -67,7 +65,6 @@ class Server:
                 print("Sent data to", name)
 
     def stop(self):
-        self.listening = False
         for client in self.clients:
             client.close()
         self.clients = {}
