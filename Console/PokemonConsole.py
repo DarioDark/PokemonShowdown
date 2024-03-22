@@ -1,11 +1,11 @@
 from math import floor
 from copy import deepcopy
-from Console.Moves.MoveConsole import *
-from Console.Moves.ZMoveConsole import ZMove
-from Console.Pokemon.StatusConsole import PrimeStatus, SubStatus
-from Console.Pokemon.EnvironmentConsole import EnvironmentElements, EnvironmentClass
-from Console.Pokemon.AbilityConsole import Ability
-from Console.Pokemon.ItemConsole import Item
+from MoveConsole import *
+from ZMoveConsole import ZMove
+from StatusConsole import PrimeStatus, SubStatus
+from EnvironmentConsole import EnvironmentElements, EnvironmentClass
+from AbilityConsole import Ability
+from ItemConsole import Item
 
 
 class Pokemon:
@@ -715,7 +715,7 @@ class Pokemon:
                     print(f"Protean from {self.name} : He changed its type to {move.type.name}!")
 
             if move.category != MoveCategory.STATUS:
-                attack_successful = target.receive_damage(damage)
+                attack_successful = target.receive_damage(damage, nbr_hit)
 
                 # If the attack was successful, apply the secondary effect of abilities
                 if attack_successful:
@@ -735,24 +735,26 @@ class Pokemon:
                                     print(f"{target.ability.name} from {target.name}")
                                     print(f"{self.name} is burned!")
                                     self.status = PrimeStatus.BURN
+            else:
+                attack_successful = True
 
-                    # If the target is a Pokemon, apply the secondary effect of the move
-                    if isinstance(target, Pokemon):
-                        if not target.is_dead():
-                            if is_secondary_effect_applied:
-                                move.apply_secondary_effect(target, self)
-                    else:
-                        # If the target is a player, apply the secondary effect of the move
+            if attack_successful:
+                # If the target is a Pokemon, apply the secondary effect of the move
+                if isinstance(target, Pokemon):
+                    if not target.is_dead():
                         if is_secondary_effect_applied:
                             move.apply_secondary_effect(target, self)
-                    return True
-
+                else:
+                    # If the target is a player, apply the secondary effect of the move
+                    if is_secondary_effect_applied:
+                        move.apply_secondary_effect(target, self)
+                return True
             self.types = base_types
         else:
             print(f"{self.name} has no PP left!")
             return False
 
-    def receive_damage(self, damage: int, nbr_hit: int) -> bool:
+    def receive_damage(self, damage: int, nbr_hit: int = 1) -> bool:
         """The pokemon receives damage.
 
         :param damage: The amount of damage to receive
@@ -797,17 +799,15 @@ class Pokemon:
         return False
 
     @staticmethod
-    def get_critical_multiplier(move: Move) -> bool:
+    def get_critical_multiplier() -> bool:
         """Returns whether the move has a critical hit or not.
 
-        :param move: The move used
         :return: Whether the move has a critical hit or not
         """
-        if move.category != MoveCategory.STATUS:
-            critical_hit_chance = 4.17
-            if randint(1, 100) <= critical_hit_chance:
-                print("Critical hit!")
-                return True
+        critical_hit_chance = 4.17
+        if randint(1, 100) <= critical_hit_chance:
+            print("Critical hit!")
+            return True
         return False
 
     def get_types_multiplier(self, attack_type: Type, attacker: 'Pokemon') -> float:
@@ -852,7 +852,7 @@ class Pokemon:
         # STAB
         stab_multiplier: bool = self.get_stab_multiplier(attacker, move_type)
         # Critical hit
-        crit_multiplier: bool = self.get_critical_multiplier(move)
+        crit_multiplier: bool = self.get_critical_multiplier()
         # Type effectiveness
         type_multiplier: float = self.get_types_multiplier(move.type, attacker)
 

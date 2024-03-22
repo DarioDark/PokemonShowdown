@@ -1,9 +1,9 @@
 from enum import Enum
 
-from Console.Pokemon.AbilityConsole import Ability
-from Console.Pokemon.StatusConsole import PrimeStatus, SubStatus
-from Console.Pokemon.EnvironmentConsole import EnvironmentElements
-from Console.Pokemon.TypesConsole import Type
+from AbilityConsole import Ability
+from StatusConsole import PrimeStatus, SubStatus
+from EnvironmentConsole import EnvironmentElements
+from TypesConsole import Type
 
 
 class SecondaryEffectClass:

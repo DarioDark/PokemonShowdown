@@ -1,5 +1,5 @@
-from Console.Moves.MoveConsole import *
-from Console.Moves.MoveSideEffectsConsole import SecondaryEffects
+from Console.MoveConsole import *
+from Console.MoveSideEffectsConsole import SecondaryEffects
 
 
 class OffensiveMove(Move):

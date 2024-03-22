@@ -1,5 +1,5 @@
 from os import system
-from Console.Pokemon.PokemonConsole import *
+from PokemonConsole import *
 
 
 class Player:

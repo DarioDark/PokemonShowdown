@@ -2,9 +2,9 @@ from enum import Enum
 from random import randint
 from termcolor import colored
 
-from Console.Pokemon.AbilityConsole import Ability
-from Console.Pokemon.TypesConsole import Type
-from Console.Moves.MoveSideEffectsConsole import SecondaryEffects, SecondaryEffectClass
+from AbilityConsole import Ability
+from TypesConsole import Type
+from MoveSideEffectsConsole import SecondaryEffects, SecondaryEffectClass
 
 
 class MoveCategory(Enum):
@@ -41,7 +41,7 @@ class Move:
         self.accuracy: float = base_accuracy
         self.max_pp: int = max_pp
         self.current_pp: int = max_pp
-        self.secondary_effect: SecondaryEffectClass = secondary_effect
+        self.secondary_effect: SecondaryEffects = secondary_effect
         self.target = target  # The target of the move, can be "pokemon", "player"
         self.priority: int = priority
         self.attributes: dict[str: bool] = {'contact': contact_move, 'bullet': bullet_move, 'sound': sound_move, 'nbr_hit': nbr_hit}
@@ -73,7 +73,8 @@ class Move:
             'priority': self.priority,
             'contact_move': self.attributes['contact'],
             'bullet_move': self.attributes['bullet'],
-            'sound_move': self.attributes['sound']
+            'sound_move': self.attributes['sound'],
+            'nbr_hit': self.attributes['nbr_hit']
         }
 
     def __setstate__(self, state):
@@ -88,7 +89,7 @@ class Move:
         self.secondary_effect = SecondaryEffects[state['secondary_effect']].value
         self.target = state['target']
         self.priority = state['priority']
-        self.attributes = {'contact': state['contact_move'], 'bullet': state['bullet_move'], 'sound': state['sound_move']}
+        self.attributes = {'contact': state['contact_move'], 'bullet': state['bullet_move'], 'sound': state['sound_move'], 'nbr_hit': state['nbr_hit']}
 
     def get_current_pp_percentage(self) -> float:
         percentage = (self.current_pp / self.max_pp) * 100
@@ -141,13 +142,13 @@ Psychic = Move("Psychic", Type.PSYCHIC, MoveCategory.SPECIAL, 90, 100, 15, Secon
 SkullBash = Move("Skull Bash", Type.NORMAL, MoveCategory.PHYSICAL, 130, 100, 5, SecondaryEffects.NONE.value, "enemy_pokemon")
 AquaTail = Move("Aqua Tail", Type.WATER, MoveCategory.PHYSICAL, 90, 90, 10, SecondaryEffects.NONE.value, "enemy_pokemon")
 QuickAttack = Move("Quick Attack", Type.NORMAL, MoveCategory.PHYSICAL, 40, 100, 30, SecondaryEffects.NONE.value, "enemy_pokemon")
-CloseCombat = Move("Close Combat", Type.FIGHT, MoveCategory.PHYSICAL, 60, 100, 5, SecondaryEffects.NONE.value, "enemy_pokemon")
+CloseCombat = Move("Close Combat", Type.FIGHT, MoveCategory.PHYSICAL, 60, 100, 5, SecondaryEffects.NONE.value, "pokemon")
 
 LeechSeed = Move("Leech Seed", Type.GRASS, MoveCategory.STATUS, 0, 90, 10, SecondaryEffects.LEECH_SEED.value, "enemy_pokemon")
-StealthRock = Move("Stealth Rock", Type.ROCK, MoveCategory.STATUS, 0, 100, 10, SecondaryEffects.STEALTH_ROCK.value, "enemy_player")
-LightScreen = Move("Light Screen", Type.PSYCHIC, MoveCategory.STATUS, 0, 100, 30, SecondaryEffects.LIGHT_SCREEN.value, "self_player")
+StealthRock = Move("Stealth Rock", Type.ROCK, MoveCategory.STATUS, 0, 100, 10, SecondaryEffects.STEALTH_ROCK.value, "player")
+LightScreen = Move("Light Screen", Type.PSYCHIC, MoveCategory.STATUS, 0, 100, 30, SecondaryEffects.LIGHT_SCREEN.value, "player")
 Reflect = Move("Reflect", Type.PSYCHIC, MoveCategory.STATUS, 0, 100, 30, SecondaryEffects.REFLECT.value, "self_player")
-Spikes = Move("Spikes", Type.GROUND, MoveCategory.STATUS, 0, 100, 20, SecondaryEffects.SPIKES.value, "enemy_player")
-ToxicSpikes = Move("Toxic Spikes", Type.POISON, MoveCategory.STATUS, 0, 100, 20, SecondaryEffects.TOXIC_SPIKES.value, "enemy_player")
+Spikes = Move("Spikes", Type.GROUND, MoveCategory.STATUS, 0, 100, 20, SecondaryEffects.SPIKES.value, "player")
+ToxicSpikes = Move("Toxic Spikes", Type.POISON, MoveCategory.STATUS, 0, 100, 20, SecondaryEffects.TOXIC_SPIKES.value, "player")
 
 CONFUSION_ATTACK = Move("Confusion Attack", Type.NONE, MoveCategory.PHYSICAL, 40, 100, 100, SecondaryEffects.NONE.value, "self_pokemon")

@@ -7,21 +7,24 @@ from random import randint
 
 
 class Server:
-    def __init__(self):
+    def __init__(self, host: str = '0.0.0.0', port: int = 12345):
         # Server settings
-        self.host, self.port = ('0.0.0.0', 12345)
+        self.host, self.port = (host, port)
         self.clients: dict = {}
         self.players: list = []
         self.speed_tie_resolved: bool = False
-        self.start()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket .bind((self.host, self.port))
+        self.socket .listen()
 
-    def start(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((self.host, self.port))
-        s.listen()
-        print("Server started !")
-        while True:
-            client, addr = s.accept()
+    def start(self, master=None):
+        if master:
+            master.on_close()
+
+        print("Server started !!!!")
+        self.listening = True
+        while self.listening:
+            client, addr = self.socket .accept()
             print(f"Connection from {addr} has been established !")
 
             name = client.recv(4096)
@@ -63,4 +66,14 @@ class Server:
                 self.clients[name].send(data)
                 print("Sent data to", name)
 
-S = Server()
+    def stop(self):
+        self.listening = False
+        for client in self.clients:
+            client.close()
+        self.clients = {}
+        self.players = []
+        print("Server stopped !")
+
+
+if __name__ == '__main__':
+    Server()

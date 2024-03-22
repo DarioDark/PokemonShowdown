@@ -1,15 +1,13 @@
 from PIL import Image
 import customtkinter
 
-from Console.Pokemon.PokemonListConsole import AVAILABLE_POKEMONS, POKEMONS
-
-customtkinter.set_appearance_mode("dark")
-customtkinter.set_default_color_theme("dark-blue")
-
+from PokemonListConsole import AVAILABLE_POKEMONS, POKEMONS
 
 class TeambuilderInterface(customtkinter.CTk):
     def __init__(self):
         super().__init__()
+        customtkinter.set_appearance_mode("dark")
+        customtkinter.set_default_color_theme("dark-blue")
         self.title("Teambuilder")
         self.resizable(False, False)
         self.update_idletasks()  # Update window geometry
@@ -20,8 +18,8 @@ class TeambuilderInterface(customtkinter.CTk):
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
 
-        x = (screen_width / 2) - (width / 2)
-        y = (screen_height / 2) - (height / 2)
+        x = (screen_width - width) // 2
+        y = (screen_height- height) // 2
 
         self.geometry(f"{width}x{height}+{x}+{y}")
 

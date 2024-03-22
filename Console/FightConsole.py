@@ -1,8 +1,9 @@
 import time
-from Console.Pokemon.PokemonListConsole import *
-from Console.Game.ClientConsole import Client
-from Console.Game.PlayerConsole import *
-from Console.Pokemon.StatusConsole import SubStatus
+
+from PokemonListConsole import *
+from ClientConsole import Client
+from PlayerConsole import *
+from StatusConsole import SubStatus
 
 
 class Fight:
@@ -129,12 +130,10 @@ class Fight:
             player2.current_pokemon.heal(hp_drained)
             if player1.current_pokemon.is_dead(True):
                 if player1 == self.player1:
-                    switch = player1.select_switch()
-                    final_switch = self.player_switch_in(player1, switch)
+                    final_switch = self.local_player_switch_in()
                     self.client.send_info(final_switch)
                 else:
-                    switch = self.client.get_last_info()
-                    self.player_switch_in(player1, switch)
+                    self.local_player_switch_in()
 
     @staticmethod
     def get_bonus_info(player: Player, action: tuple[int, int, bool], move_index: int) -> Move:
@@ -242,7 +241,7 @@ class Fight:
             if multipliers[1]:
                 print("Critical Hit!")
             if multipliers[2] == 0:
-                print("This has no effect")
+                print("This has no effect ?????????")
             elif multipliers[2] < 1:
                 print("This is not very effective...")
             elif multipliers[2] > 1:
@@ -315,13 +314,15 @@ class Fight:
                 nbr_hit: int = temp_move.get_hit_number()
 
                 # Sending the results to the server
-                result: dict = {multipliers: multipliers,
-                                secondary_effect_applied: secondary_effect_applied,
-                                damage: damage,
-                                status: status,
-                                nbr_hit: nbr_hit}
+                result: dict = {'multipliers': multipliers,
+                                'secondary_effect_applied': secondary_effect_applied,
+                                'damage': damage,
+                                'status': status,
+                                'nbr_hit': nbr_hit}
 
+                print("Sending the results to the server...")
                 self.client.send_info(result)
+                print("Results sent !")
 
                 # Applying the local results to the imported target
                 attack_successful: bool = player.use_move(move_index, secondary_effect_applied, target, damage)
@@ -330,7 +331,6 @@ class Fight:
 
         # If the player is the imported player
         elif player == self.player2:
-
             # If the player selected a switch
             if action[0] == 1:
                 pokemon: int = action[1]
@@ -350,6 +350,7 @@ class Fight:
 
                 print(f"{player.current_pokemon.name} used {move.name}!")
                 result: dict = self.client.get_last_info()
+                print("Results received !")
                 # If the move missed
                 if len(result) == 1:
                     print(f"{player.current_pokemon.name} missed!")
@@ -361,18 +362,18 @@ class Fight:
                     if move.category != MoveCategory.STATUS:
                         multipliers: tuple[bool, bool, int] = result["multipliers"]
 
-                        # Critical hit
-                        if multipliers[1]:
-                            print("Critical Hit!")
-
                         # Type effectiveness multiplier
                         type_multiplier = multipliers[2]
                         if type_multiplier == 0:
-                            print("This has no effect")
+                            print(f"This does not affect {target.current_pokemon.name}...")
                         elif type_multiplier < 1:
                             print("This is not very effective...")
                         elif type_multiplier > 1:
                             print("This is very effective!")
+
+                        # Critical hit
+                        if multipliers[1] and type_multiplier != 0:
+                            print("Critical Hit!")
 
                     # Applying the imported results to the local target
                     secondary_effect_applied: bool = result["secondary_effect_applied"]
@@ -383,44 +384,50 @@ class Fight:
                     if attack_successful and isinstance(move, ZMove):
                         player.current_pokemon.z_move_used = True
 
-                    self.player_switch_in()
+                    # TODO u-turn self.player_switch_in()
 
-    def player_switch_in(self, player: Player, pokemon_index: int) -> int:
+    def local_player_switch_in(self) -> int:
         """Tries to switch in a pokemon for the player until it succeeds.
 
-        :param player: A player item, the one that switches his pokemon.
-        :param pokemon_index: An integer, the index of the pokemon to switch in.
         :return: The index of the pokemon that has been switched in.
         """
-        switch_index: int = pokemon_index
-        if player == self.player1:
-            target = self.player2
-        else:
-            target = self.player1
+        switch_index: int = self.player1.select_switch()
+        self.client.send_info(switch_index)
         while True:
-            if player.switch_pokemon(switch_index, target):
+            if self.player1.switch_pokemon(switch_index, self.player2):
                 return switch_index
             self.end_game()
-            if player.current_pokemon.is_dead():
-                switch_index = player.select_switch()
+            if self.player1.current_pokemon.is_dead():
+                switch_index = self.player1.select_switch()
+                self.client.send_info(switch_index)
+
+    def distant_player_switch_in(self) -> int:
+        """Handles the switch in of the distant player.
+
+        :return: The index of the pokemon that has been switched in.
+        """
+        switch_index: int = self.client.get_last_info()
+        while True:
+            if self.player2.switch_pokemon(switch_index, self.player1):
+                return switch_index
+            self.end_game()
+            if self.player2.current_pokemon.is_dead():
+                switch_index = self.client.get_last_info()
 
     def play_turn(self) -> None:
         """Handles the whole process of each player using their selected action and checking if one of the pokemon dies."""
         first_player, second_player, first_player_action, second_player_action = self.get_player_order()
         self.player_use_action(first_player, second_player, first_player_action)
-        print("test 2")
+
         if self.end_game():
             return
         elif self.player1.current_pokemon.is_dead():
             self.player2.current_pokemon.opponent_died()
-            switch: int = self.player1.select_switch()
-            final_switch = self.player_switch_in(self.player1, switch)
-            self.client.send_info(final_switch)
+            self.local_player_switch_in()
         elif self.player2.current_pokemon.is_dead():
             self.player1.current_pokemon.opponent_died()
             print("Waiting for the second player to select their next pokemon...")
-            switch: int = self.client.get_last_info()
-            self.player_switch_in(self.player2, switch)
+            self.distant_player_switch_in()
         else:
             self.player_use_action(second_player, first_player, second_player_action)
 
@@ -428,14 +435,11 @@ class Fight:
             return
         elif self.player1.current_pokemon.is_dead():
             self.player2.current_pokemon.opponent_died()
-            switch: int = self.player1.select_switch()
-            final_switch = self.player_switch_in(self.player1, switch)
-            self.client.send_info(final_switch)
+            self.local_player_switch_in()
         elif self.player2.current_pokemon.is_dead():
             self.player1.current_pokemon.opponent_died()
             print("Waiting for the second player to select their next pokemon...")
-            switch: int = self.client.get_last_info()
-            self.player_switch_in(self.player2, switch)
+            self.distant_player_switch_in()
 
         # Apply end turn status
         self.apply_end_turn_primary_status()
@@ -444,7 +448,6 @@ class Fight:
         self.apply_end_turn_secondary_status()
         if self.end_game():
             return
-
         self.turn += 1
 
     def check_looser(self) -> Player:
@@ -472,7 +475,6 @@ class Fight:
         """Runs the game until it ends.
         """
         while True:
-            print("test 0")
             self.play_turn()
             if self.end_game():
                 break
