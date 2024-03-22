@@ -1,6 +1,7 @@
 import customtkinter
 
 from CTkMessagebox import CTkMessagebox
+from PIL import Image
 from ServerConsole import Server
 
 class ServerSetupInterface(customtkinter.CTk):
@@ -9,6 +10,7 @@ class ServerSetupInterface(customtkinter.CTk):
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("blue")
         self.title("Server Setup")
+        self.server_status: bool = False
 
         # Center the window
         width = 350
@@ -27,10 +29,18 @@ class ServerSetupInterface(customtkinter.CTk):
         self.main_frame = customtkinter.CTkFrame(self, corner_radius=10)
         self.main_frame.pack(expand=True, fill=customtkinter.BOTH, padx=50, pady=50)
 
+        self.fill_status_interface()
+
+
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def fill_config_interface(self):
         self.title_label = customtkinter.CTkLabel(self.main_frame, text="Server Setup", font=("Arial", 20, "bold"), corner_radius=10, text_color="white")
         self.host_entry = customtkinter.CTkEntry(self.main_frame, 50, placeholder_text="IP Address")
         self.port_entry = customtkinter.CTkEntry(self.main_frame, 50, placeholder_text="Port")
-        self.start_button = customtkinter.CTkButton(self.main_frame, text="Check config", font=("Arial", 15, "bold"), corner_radius=10, command=self.start_server, state=customtkinter.DISABLED)
+        settings_image = customtkinter.CTkImage(Image.open("../Images/settings-icon-disabled.png"), size=(20, 20))
+        self.start_button = customtkinter.CTkButton(self.main_frame, text="Check config", font=("Arial", 15, "bold"), corner_radius=10,
+                                                    command=self.start_server, state=customtkinter.DISABLED, image=settings_image, compound="left", text_color=("white", "white"))
 
         self.host_entry.bind("<KeyRelease>", self.check_entries)
         self.port_entry.bind("<KeyRelease>", self.check_entries)
@@ -40,13 +50,29 @@ class ServerSetupInterface(customtkinter.CTk):
         self.port_entry .pack(pady=3, fill=customtkinter.X, expand=True, padx=50)
         self.start_button.pack(pady=3, fill=customtkinter.X, expand=True, padx=50)
 
-        self.protocol("WM_DELETE_WINDOW", self.on_close)
+    def fill_status_interface(self):
+        self.server_info_label = customtkinter.CTkLabel(self.main_frame, text="Server Info", font=("Arial", 20, "bold"), corner_radius=10, text_color="white")
+        self.server_info_label.pack(pady=3, fill=customtkinter.X, expand=True)
+
+        self.server_status_label = customtkinter.CTkLabel(self.main_frame, text="Server status: Not running", font=("Arial", 15, "bold"), corner_radius=10, text_color="white")
+        self.server_status_label.pack(pady=3, fill=customtkinter.X, expand=True)
+        if self.server_status:
+            self.server_status_label.configure(text="Server status: Running", text_color="green")
 
 
+        self.running_server_progress_bar = customtkinter.CTkProgressBar(self.main_frame, 100, corner_radius=10, mode="indeterminate")
+        self.running_server_progress_bar.pack(pady=3, padx=10, fill=customtkinter.X, expand=True)
+        self.running_server_progress_bar.start()
+
+
+
+    def self_hide_config_interface(self):
+        self.title_label.pack_forget()
+        self.host_entry.pack_forget()
+        self.port_entry.pack_forget()
+        self.start_button.pack_forget()
 
     def entry_filled(self) -> bool:
-        print(self.host_entry.get(), self.port_entry.get())
-        print(self.host_entry.get() != '' and self.port_entry.get() != '')
         return self.host_entry.get() != '' and self.port_entry.get() != ''
 
     def check_entries(self, event):

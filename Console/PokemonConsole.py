@@ -781,7 +781,8 @@ class Pokemon:
 
             self.is_dead(True)
 
-        print(f"Hit {nbr_hit} times!")
+        if nbr_hit > 1:
+            print(f"Hit {nbr_hit} times!")
         print(f"{self.name} lost {min(self.convert_hp_to_percentage(damage * nbr_hit), 100)}% HP!")
 
         return True
