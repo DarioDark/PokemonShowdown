@@ -1,13 +1,2 @@
-import customtkinter
-
-
-
-# Usage
-root = customtkinter.CTk()
-label = MultiColorLabel(root)
-label.pack()
-
-label.add("Hello ", "red")
-label.add("world!", "blue")
-
-root.mainloop()
+for i in range(tant de fois les millisecondes):
+    self.after(10, self.increase_conncetion_progress_bar)

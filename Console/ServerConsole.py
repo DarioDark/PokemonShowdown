@@ -65,8 +65,8 @@ class Server:
                 print("Sent data to", name)
 
     def stop(self):
-        for client in self.clients:
-            client.close()
+        for name in self.clients:
+            self.clients[name].close()
         self.clients = {}
         self.players = []
         print("Server stopped !")

@@ -2,7 +2,6 @@ import customtkinter
 
 
 class MultiColorLabel(customtkinter.CTkTextbox):
-    tag_number: int = 0
     def __init__(self, *args, **kwargs):
         customtkinter.CTkTextbox.__init__(self, *args, **kwargs)
 

@@ -51,7 +51,6 @@ class Pokemon:
 
         # Ability and item
         self.ability: Ability = ability
-        self.item_start_turn = item
         self.item: Item = item
 
         # Types
@@ -88,6 +87,12 @@ class Pokemon:
             'defense_stat': self.defense_stat,
             'special_defense_stat': self.special_defense_stat,
             'speed_stat': self.speed_stat,
+            'hp_evs': self.hp_evs,
+            'attack_evs': self.attack_evs,
+            'defense_evs': self.defense_evs,
+            'special_attack_evs': self.special_attack_evs,
+            'special_defense_evs': self.special_defense_evs,
+            'speed_evs': self.speed_evs,
             'attack_boosts': self.attack_boosts,
             'defense_boosts': self.defense_boosts,
             'special_attack_boosts': self.special_attack_boosts,
@@ -95,7 +100,6 @@ class Pokemon:
             'speed_boosts': self.speed_boosts,
             'ability': self.ability.name,
             'item': self.item.name,
-            'item_start_turn': self.item_start_turn.name,
             'types': [pokemon_type.name for pokemon_type in self.types],
             'immunities': [pokemon_type.name for pokemon_type in self.immunities],
             'weaknesses': [pokemon_type.name for pokemon_type in self.weaknesses],
@@ -120,6 +124,12 @@ class Pokemon:
         self.defense_stat = state['defense_stat']
         self.special_defense_stat = state['special_defense_stat']
         self.speed_stat = state['speed_stat']
+        self.hp_evs = state['hp_evs']
+        self.attack_evs = state['attack_evs']
+        self.defense_evs = state['defense_evs']
+        self.special_attack_evs = state['special_attack_evs']
+        self.special_defense_evs = state['special_defense_evs']
+        self.speed_evs = state['speed_evs']
         self.attack_boosts = state['attack_boosts']
         self.defense_boosts = state['defense_boosts']
         self.special_attack_boosts = state['special_attack_boosts']
@@ -127,7 +137,6 @@ class Pokemon:
         self.speed_boosts = state['speed_boosts']
         self.ability = Ability[state['ability'].upper()]
         self.item = Item[state['item'].upper()]
-        self.item_start_turn = Item[state['item'].upper()]
         self.types = [Type[type_name.upper()] for type_name in state['types']]
         self.immunities = [Type[type_name.upper()] for type_name in state['immunities']]
         self.weaknesses = [Type[type_name.upper()] for type_name in state['weaknesses']]
@@ -1103,8 +1112,6 @@ class Pokemon:
             print(f"{self.name} healed its status!")
         elif self.ability == Ability.REGENERATOR:
             self.heal(floor(self.max_hp / 3))
-        elif self.ability == Ability.UNBURDEN and self.item_start_turn != Item.NONE and self.item == Item.NONE:
-            self.speed_stat //= 2
         
     def switch_in(self, enemy_player: 'Player') -> bool:
         """Applies the effects of the environment when the pokemon switches in."""
