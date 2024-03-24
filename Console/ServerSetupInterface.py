@@ -3,7 +3,7 @@ import threading
 
 from CTkMessagebox import CTkMessagebox
 from PIL import Image
-from ColoredTextbox import ColoredTextbox
+from CTkColoredTextbox import CTkColoredTextbox
 from ServerConsole import Server
 
 
@@ -11,7 +11,7 @@ class ServerSetupInterface(customtkinter.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         customtkinter.set_appearance_mode("dark")
-        customtkinter.set_default_color_theme("blue")
+        customtkinter.set_default_color_theme("dark-blue")
         self.title("Server Setup")
         self.server: Server | None = None
         self.server_status: bool = False
@@ -42,9 +42,8 @@ class ServerSetupInterface(customtkinter.CTk):
         self.title_label = customtkinter.CTkLabel(self.main_frame, text="Server Setup", font=("Arial", 20, "bold"), corner_radius=10, text_color="white")
         self.host_entry = customtkinter.CTkEntry(self.main_frame, 50, placeholder_text="IP Address")
         self.port_entry = customtkinter.CTkEntry(self.main_frame, 50, placeholder_text="Port")
-        settings_image = customtkinter.CTkImage(Image.open("../Images/settings-icon-disabled.png"), size=(20, 20))
         self.start_button = customtkinter.CTkButton(self.main_frame, text="Check config", font=("Arial", 15, "bold"), corner_radius=10,
-                                                    command=self.start_server, state=customtkinter.DISABLED, image=settings_image, compound="left", text_color=("white", "white"))
+                                                    command=self.start_server, state=customtkinter.DISABLED, text_color=("white", "white"))
 
         self.host_entry.bind("<KeyRelease>", self.check_entries)
         self.port_entry.bind("<KeyRelease>", self.check_entries)
@@ -52,14 +51,15 @@ class ServerSetupInterface(customtkinter.CTk):
         self.title_label.pack(pady=3, fill=customtkinter.X, expand=True)
         self.host_entry .pack(pady=3, fill=customtkinter.X, expand=True, padx=50)
         self.port_entry .pack(pady=3, fill=customtkinter.X, expand=True, padx=50)
-        self.start_button.pack(pady=3, fill=customtkinter.X, expand=True, padx=50)
+        self.start_button.pack(pady=3, fill=customtkinter.X, expand=True, padx=54)
 
     def fill_status_interface(self):
         self.server_info_label = customtkinter.CTkLabel(self.main_frame, text="Server Info", font=("Arial", 20, "bold"), corner_radius=10, text_color="white")
         self.server_info_label.pack(pady=40, fill=customtkinter.X, expand=True)
 
-        self.server_status_label = ColoredTextbox(self.main_frame, fg_color="transparent", font=("Arial", 15, "bold"), corner_radius=10, height=70, width=50)
+        self.server_status_label = CTkColoredTextbox(self.main_frame, fg_color="transparent", font=("Arial", 15, "bold"), corner_radius=10, height=70, width=50)
         self.server_status_label.add("Server status:", "white", line_break=True)
+        self.server_status_label.add("    Running", "green")
         self.server_status_label.pack(pady=0, padx=60, fill=customtkinter.X, expand=True)
 
         self.running_server_progress_bar = customtkinter.CTkProgressBar(self.main_frame, 100, corner_radius=10, mode="determinate", progress_color="green")
@@ -108,7 +108,7 @@ class ServerSetupInterface(customtkinter.CTk):
         self.restart_server_button.pack(pady=30, fill=customtkinter.BOTH, expand=True, padx=50)
         self.restart_server_button.configure(state=customtkinter.DISABLED)
 
-        self.after(1450, lambda: self.restart_server_button.configure(state=customtkinter.NORMAL))
+        self.after(500, lambda: self.restart_server_button.configure(state=customtkinter.NORMAL))
 
     def restart_server(self):
         self.server_event.set()
@@ -121,9 +121,7 @@ class ServerSetupInterface(customtkinter.CTk):
         self.stop_server_button.pack(pady=30, fill=customtkinter.BOTH, expand=True, padx=50)
         self.stop_server_button.configure(state=customtkinter.DISABLED)
 
-        self.after(1450, lambda: self.stop_server_button.configure(state=customtkinter.NORMAL))
-
-
+        self.after(500, lambda: self.stop_server_button.configure(state=customtkinter.NORMAL))
 
     def self_hide_config_interface(self):
         self.title_label.pack_forget()

@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 
-class ColoredTextbox(ctk.CTkTextbox):
+class CTkColoredTextbox(ctk.CTkTextbox):
     def __init__(self, *args, **kwargs):
         ctk.CTkTextbox.__init__(self, *args, **kwargs)
 
