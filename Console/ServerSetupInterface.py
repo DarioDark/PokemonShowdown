@@ -3,7 +3,7 @@ import threading
 
 from CTkMessagebox import CTkMessagebox
 from PIL import Image
-from CTkMulticolorLabel import MultiColorLabel
+from ColoredTextbox import ColoredTextbox
 from ServerConsole import Server
 
 
@@ -58,8 +58,8 @@ class ServerSetupInterface(customtkinter.CTk):
         self.server_info_label = customtkinter.CTkLabel(self.main_frame, text="Server Info", font=("Arial", 20, "bold"), corner_radius=10, text_color="white")
         self.server_info_label.pack(pady=40, fill=customtkinter.X, expand=True)
 
-        self.server_status_label = MultiColorLabel(self.main_frame, fg_color="transparent", font=("Arial", 15, "bold"), corner_radius=10, height=70, width=50)
-        self.server_status_label.add("Server status:\n", "white")
+        self.server_status_label = ColoredTextbox(self.main_frame, fg_color="transparent", font=("Arial", 15, "bold"), corner_radius=10, height=70, width=50)
+        self.server_status_label.add("Server status:", "white", line_break=True)
         self.server_status_label.pack(pady=0, padx=60, fill=customtkinter.X, expand=True)
 
         self.running_server_progress_bar = customtkinter.CTkProgressBar(self.main_frame, 100, corner_radius=10, mode="determinate", progress_color="green")
@@ -100,7 +100,7 @@ class ServerSetupInterface(customtkinter.CTk):
         self.server_event.clear()
         self.server.stop()
         self.server_status = False
-        self.server_status_label.remove("    Running")
+        self.server_status_label.remove_last_tag()
         self.server_status_label.add("    Stopped", "red")
         self.running_server_progress_bar.configure(progress_color="red")
 
@@ -113,7 +113,7 @@ class ServerSetupInterface(customtkinter.CTk):
     def restart_server(self):
         self.server_event.set()
         self.server_status = True
-        self.server_status_label.remove("    Stopped")
+        self.server_status_label.remove_last_tag()
         self.server_status_label.add("    Running", "green")
         self.running_server_progress_bar.configure(progress_color="green")
 
