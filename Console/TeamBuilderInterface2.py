@@ -270,10 +270,11 @@ class StatLine:
         if self.pokemon_tab.remaining_ev <= 0 and value > int(self.ev_var.get()):
             self.slider.set(int(self.ev_var.get()))
             return
+
         self.ev_var.set(str(value))
         self.slider.set(value)
 
-        self.progress_bar.set(self.total_stat / 500)
+        self.progress_bar.set(self.pokemon_tab.selected_pokemon_stat / 500)
         self.pokemon_tab.check_remaining_ev()
 
     def entry_change(self, *args):
@@ -286,7 +287,7 @@ class StatLine:
                 self.ev_var.set('')
 
         self.slider_change(int(value))
-        self.total_label.configure(text=self.total_stat)
+        self.total_label.configure(text=self.pokemon_tab.selected_pokemon_stat)
 
     def config_progress_bar_color(self):
         if self.selected_pokemon_stat < 100:
