@@ -20,12 +20,13 @@ class Item(Enum):
     SMOOTH_ROCK = "Smooth Rock"
     TERRAIN_EXTENDER = "Terrain Extender"
     TOXIC_ORB = "Toxic Orb"
+    # LIFE_ORB = "Life Orb"
 
     # Mega Stones
     ALAKAZAMITE = "Alakazamite"
     BEEDRILLITE = "Beedrillite"
     BLAZIKENITE = "Blazikenite"
-    CHARIZARDITE_X = " Charizardite X"
+    CHARIZARDITE_X = "Charizardite X"
     CHARIZARDITE_Y = "Chrizardite Y"
     CHARMINITE = "Charminite"
     DIANCITE = "Diancite"
@@ -54,7 +55,7 @@ class Item(Enum):
     GHOSTIUM_Z = "Ghostium Z"
     GRASSIUM_Z = "Grassium Z"
     GROUNDIUM_Z = "Groundium Z"
-    ICINIUM_Z = "Icium Z"
+    ICIUM_Z = "Icium Z"
     NORMALIUM_Z = "Normalium Z"
     POISONIUM_Z = "Poisonium Z"
     PSYCHIUM_Z = "Psychium Z"
@@ -66,4 +67,8 @@ class Item(Enum):
 
     NONE = "None"
 
-ITEM_LIST = [item.value for item in Item]
+ITEM_LIST = ["Black Sludge", "Choice Band", "Choice Scarf", "Choice Specs", "Damp Rock", "Electric Seed", "Flame Orb",
+             "Focus Sash", "Grassy Seed", "Hot Rock", "Icy Rock", "Leftovers", "Misty Seed", "Psychic Seed",
+             "Smooth Rock", "Terrain Extender", "Toxic Orb", "Buginium Z", "Darkinium Z", "Dragonium Z", "Electrium Z", "Fairium Z",
+             "Fightinium Z", "Firium Z", "Flyinium Z", "Ghostium Z", "Grassium Z", "Groundium Z", "Icium Z",
+             "Normalium Z", "Poisonium Z", "Psychium Z", "Rockium Z", "Steelium Z", "Waterium Z"]

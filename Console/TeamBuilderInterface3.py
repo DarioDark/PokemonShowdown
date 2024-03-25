@@ -155,7 +155,15 @@ class MovesFrame(customtkinter.CTkFrame):
         self.item_image_label.image = self.item_image
 
         self.item_label = customtkinter.CTkLabel(self, text="Select an item :", font=("Arial", 12, "italic"))
-        self.item_selector = customtkinter.CTkComboBox(self, values=ITEM_LIST, corner_radius=10, state="readonly", command=self.on_item_change)
+        mega_stone = self.get_mega_stone(self.pokemon_tab.selected_pokemon.name)
+        if mega_stone:
+            print(mega_stone.value)
+            full_item_list = ITEM_LIST + [mega_stone.value]
+        else:
+            print("No mega stone", self.pokemon_tab.selected_pokemon.name, self.get_mega_stone(self.pokemon_tab.selected_pokemon.name))
+            full_item_list = ITEM_LIST
+
+        self.item_selector = customtkinter.CTkComboBox(self, values=full_item_list, corner_radius=10, state="readonly", command=self.on_item_change)
 
         self.ability_label = customtkinter.CTkLabel(self, text="Select an ability :", font=("Arial", 12, "italic"))
         self.ability_selector = customtkinter.CTkComboBox(self, values=[ability.name.capitalize().replace('_', ' ') for ability in self.pokemon_tab.selected_pokemon.ability_pool],
@@ -182,12 +190,21 @@ class MovesFrame(customtkinter.CTkFrame):
         self.pokemon_tab.selected_pokemon.item = Item[choice.upper().replace(' ', '_')]
         self.update_utilities()
 
+    def get_mega_stone(self, pokemon_name: str):
+        mega_stone_name = pokemon_name.upper() + "ITE"
+        if mega_stone_name in Item.__members__:
+            return Item[mega_stone_name]
+        elif mega_stone_name + "_X" in Item.__members__:
+            return Item[mega_stone_name + "_X"]
+        elif mega_stone_name + "_Y" in Item.__members__:
+            return Item[mega_stone_name + "_Y"]
+        else:
+            return None
+
     def update_utilities(self):
         self.item_image = customtkinter.CTkImage(Image.open(f"../Images/Item_sprites/{self.pokemon_tab.selected_pokemon.item.name.lower().replace(' ', '-')}.png"), size=(50, 50))
         self.item_image_label.configure(image=self.item_image)
         self.item_image_label.image = self.item_image
-
-        self.item_selector.configure(values=[item.value for item in Item if item != Item.NONE and item != self.pokemon_tab.selected_pokemon.item])
 
     def destroy_widgets(self):
         for widget in self.winfo_children():
