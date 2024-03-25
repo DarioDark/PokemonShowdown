@@ -194,12 +194,12 @@ class PokemonTab:
         self.total_label = customtkinter.CTkLabel(self.stats_frame, text="Total", font=("Arial", 13, "italic"))
         self.total_label.place(x=622, y=64)
 
-        StatLine(self, self.stats_frame, "HP", self.selected_pokemon.max_hp, self.selected_pokemon_hp, self.hp_ev_var, self.selected_pokemon_hp, 90)
-        StatLine(self, self.stats_frame, "Attack", self.selected_pokemon.attack_stat, self.selected_pokemon_attack, self.attack_ev_var, self.selected_pokemon_attack, 120)
-        StatLine(self, self.stats_frame, "Defense", self.selected_pokemon.defense_stat, self.selected_pokemon_defense, self.defense_ev_var, self.selected_pokemon_defense, 150)
-        StatLine(self, self.stats_frame, "Sp. Atk.", self.selected_pokemon.special_attack_stat, self.selected_pokemon_spe_attack, self.spe_attack_ev_var, self.selected_pokemon_spe_attack, 180)
-        StatLine(self, self.stats_frame, "Sp. Def.", self.selected_pokemon.special_defense_stat, self.selected_pokemon_spe_defense, self.spe_defense_ev_var, self.selected_pokemon_spe_defense, 210)
-        StatLine(self, self.stats_frame, "Speed", self.selected_pokemon.speed_stat, self.selected_pokemon_speed, self.speed_ev_var, self.selected_pokemon_speed, 240)
+        StatLine(self, self.stats_frame, "HP", self.selected_pokemon.max_hp, self.hp_ev_var, 90)
+        StatLine(self, self.stats_frame, "Attack", self.selected_pokemon.attack_stat, self.attack_ev_var, 120)
+        StatLine(self, self.stats_frame, "Defense", self.selected_pokemon.defense_stat, self.defense_ev_var, 150)
+        StatLine(self, self.stats_frame, "Sp. Atk.", self.selected_pokemon.special_attack_stat, self.spe_attack_ev_var, 180)
+        StatLine(self, self.stats_frame, "Sp. Def.", self.selected_pokemon.special_defense_stat, self.spe_defense_ev_var, 210)
+        StatLine(self, self.stats_frame, "Speed", self.selected_pokemon.speed_stat, self.speed_ev_var, 240)
 
         self.remaining_ev_counter_label.lift()
 
@@ -219,19 +219,32 @@ class PokemonTab:
             self.stats_frame.configure(border_width=0)
 
 
+
+
+
 class StatLine:
-    def __init__(self, pokemon_tab: PokemonTab, master, stat_name: str, base_stat: int, selected_pokemon_stat,
-                 ev_var: customtkinter.StringVar, total_stat: int, y_position: int):
+    stat_to_method = {
+        "HP": "selected_pokemon_hp",
+        "Attack": "selected_pokemon_attack",
+        "Defense": "selected_pokemon_defense",
+        "Sp. Atk.": "selected_pokemon_spe_attack",
+        "Sp. Def.": "selected_pokemon_spe_defense",
+        "Speed": "selected_pokemon_speed"
+    }
+
+    def __init__(self, pokemon_tab: PokemonTab, master, stat_name: str, base_stat: int, ev_var: customtkinter.StringVar, y_position: int):
         self.master = master
         self.pokemon_tab = pokemon_tab
         self.stat_name = stat_name
         self.base_stat = base_stat
-        self.selected_pokemon_stat = selected_pokemon_stat
         self.ev_var = ev_var
-        self.total_stat = total_stat
         self.y_position = y_position
 
         self.create_stat_line()
+
+    @property
+    def selected_pokemon_stat(self):
+        return getattr(self.pokemon_tab, self.stat_to_method[self.stat_name])
 
     def create_stat_line(self):
         self.stat_name_label = customtkinter.CTkLabel(self.master, text=self.stat_name, font=("Arial", 15), anchor="e", width=80)
@@ -245,7 +258,7 @@ class StatLine:
                                                          determinate_speed=1,
                                                          progress_color="green")
         self.progress_bar.place(x=155, y=self.y_position + 10)
-        self.progress_bar.set(self.total_stat / 500)
+        self.progress_bar.set(self.base_stat / 500)
         self.config_progress_bar_color()
 
         self.ev_var.trace_add("write", self.entry_change)
@@ -274,7 +287,7 @@ class StatLine:
         self.ev_var.set(str(value))
         self.slider.set(value)
 
-        self.progress_bar.set(self.pokemon_tab.selected_pokemon_stat / 500)
+        self.progress_bar.set(self.selected_pokemon_stat / 500)
         self.pokemon_tab.check_remaining_ev()
 
     def entry_change(self, *args):
@@ -287,14 +300,14 @@ class StatLine:
                 self.ev_var.set('')
 
         self.slider_change(int(value))
-        self.total_label.configure(text=self.pokemon_tab.selected_pokemon_stat)
+        self.total_label.configure(text=self.selected_pokemon_stat)
 
     def config_progress_bar_color(self):
         if self.selected_pokemon_stat < 100:
             self.progress_bar.configure(progress_color="red")
         elif self.selected_pokemon_stat < 150:
             self.progress_bar.configure(progress_color="orange")
-        elif self.selected_pokemon_stat < 200:
+        elif self.selected_pokemon_stat < 225:
             self.progress_bar.configure(progress_color="yellow")
         elif self.selected_pokemon_stat < 300:
             self.progress_bar.configure(progress_color="green")
