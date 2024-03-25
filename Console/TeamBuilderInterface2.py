@@ -219,9 +219,6 @@ class PokemonTab:
             self.stats_frame.configure(border_width=0)
 
 
-
-
-
 class StatLine:
     stat_to_method = {
         "HP": "selected_pokemon_hp",
