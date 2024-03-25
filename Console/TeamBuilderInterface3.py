@@ -170,7 +170,7 @@ class StatsFrame(customtkinter.CTkFrame):
             self.spe_defense_ev_var.set('0')
         remaining_ev = 508 - int(self.hp_ev_var.get()) - int(self.attack_ev_var.get()) - int(self.defense_ev_var.get()) - int(self.spe_attack_ev_var.get()) - int(self.spe_defense_ev_var.get()) - int(self.speed_ev_var.get())
         if remaining_ev > 0:
-            self.remaining_ev_counter_label.configure(text=f"Remaining EVs: {remaining_ev}")
+            self.remaining_ev_counter_label.configure(text=f"Remaining EVs: {remaining_ev}", text_color="white")
         return remaining_ev
 
     @property
@@ -225,7 +225,6 @@ class StatsFrame(customtkinter.CTkFrame):
             self.configure(border_color="green", border_width=1)
             self.remaining_ev_counter_label.lift()
         else:
-            self.remaining_ev_counter_label.configure(text_color="white")
             self.remaining_ev_counter_label.lift()
             self.evs_max_exceeded_label.lower()  # Hide the label
             self.configure(border_width=0)
@@ -271,6 +270,7 @@ class StatsFrame(customtkinter.CTkFrame):
         self.evs_max_exceeded_label.place(x=420, y=285)
 
         self.evs_max_exceeded_label.lower()
+        self.remaining_ev_counter_label.lower()
 
     def update_ev_vars(self):
         self.hp_ev_var = customtkinter.StringVar(value="0")
@@ -284,6 +284,7 @@ class StatsFrame(customtkinter.CTkFrame):
         self.update_ev_vars()
         self.create_widgets()
         self.place_widgets()
+        self.check_remaining_ev()
 
 
 class StatLine:
