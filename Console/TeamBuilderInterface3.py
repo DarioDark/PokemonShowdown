@@ -2,7 +2,8 @@ from PIL import Image
 import customtkinter
 
 from PokemonListConsole import AVAILABLE_POKEMONS, POKEMONS
-
+from ItemConsole import Item, ITEM_LIST
+from CTkSeparator import CTkSeparator
 
 class TeambuilderInterface(customtkinter.CTk):
     def __init__(self):
@@ -78,7 +79,7 @@ class PokemonTab:
 
 class PokemonFrame(customtkinter.CTkFrame):
     def __init__(self, master, pokemon_tab: PokemonTab):
-        super().__init__(master, corner_radius=20, width=20, height=30, border_width=1, border_color="red")
+        super().__init__(master, corner_radius=20, width=20, height=30)
         self.master = master
         self.pokemonTab: PokemonTab = pokemon_tab
 
@@ -97,6 +98,7 @@ class PokemonFrame(customtkinter.CTkFrame):
         self.pokemon_selector = customtkinter.CTkComboBox(self,
                                                           values=[pokemon.name for pokemon in AVAILABLE_POKEMONS],
                                                           corner_radius=10,
+                                                          state="readonly",
                                                           variable=self.pokemon_var,
                                                           command=self.on_pokemon_change)
 
@@ -106,7 +108,7 @@ class PokemonFrame(customtkinter.CTkFrame):
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
 
-        self.pokemon_frame_title.place(x=40, y=10)
+        self.pokemon_frame_title.place(x=37, y=10)
         self.label.place(x=33, y=70)
         self.pokemon_selector.place(x=22, y=200)
 
@@ -114,7 +116,6 @@ class PokemonFrame(customtkinter.CTkFrame):
         self.selected_pokemon = POKEMONS[choice]
         self.update_pokemon_frame()
         self.pokemonTab.update_frames()
-        self.configure(border_color="green")
 
         # Reset the EVs
         self.hp_ev_var = customtkinter.StringVar(value="0")
@@ -137,15 +138,99 @@ class MovesFrame(customtkinter.CTkFrame):
         self.master = master
         self.pokemon_tab: PokemonTab = pokemon_tab
 
-    def create_widgets(self):
-        self.moves_frame_title = customtkinter.CTkLabel(self, text="Moves", font=("Arial", 20, "bold"), corner_radius=35)
+    def create_moves_widgets(self):
+        self.moves_title = customtkinter.CTkLabel(self, text="Moves", font=("Arial", 20, "bold"), corner_radius=35)
+        self.move_category_text_label = customtkinter.CTkLabel(self, text="Class", font=("Arial", 12, "italic"))
+        self.move_type_text_label = customtkinter.CTkLabel(self, text="Type", font=("Arial", 12, "italic"))
+        self.move_lines = [MoveLine(self, self.pokemon_tab, 80 + i * 40, i + 1) for i in range(4)]
+
+    def create_utilities_widgets(self):
+        self.utilities_title = customtkinter.CTkLabel(self, text="Utilities", font=("Arial", 20, "bold"), corner_radius=35)
+
+        self.vertical_separator = CTkSeparator(self, orient="vertical")
+        self.horizontal_separator = CTkSeparator(self, orient="horizontal")
+
+        self.item_image = customtkinter.CTkImage(Image.open("../Images/Item_sprites/poke-ball.png"), size=(50, 50))
+        self.item_image_label = customtkinter.CTkLabel(self, text="", image=self.item_image)
+        self.item_image_label.image = self.item_image
+
+        self.item_label = customtkinter.CTkLabel(self, text="Select an item :", font=("Arial", 12, "italic"))
+        self.item_selector = customtkinter.CTkComboBox(self, values=ITEM_LIST, corner_radius=10, state="readonly", command=self.on_item_change)
+
+        self.ability_label = customtkinter.CTkLabel(self, text="Select an ability :", font=("Arial", 12, "italic"))
+        self.ability_selector = customtkinter.CTkComboBox(self, values=[ability.name.capitalize().replace('_', ' ') for ability in self.pokemon_tab.selected_pokemon.ability_pool],
+                                                          corner_radius=10, state="readonly")
 
     def place_widgets(self):
-        self.moves_frame_title.place(x=222, y=10)
+        self.moves_title.place(x=120, y=10)
+        self.utilities_title.place(x=380, y=10)
 
+        self.move_category_text_label.place(x=235, y=50)
+        self.move_type_text_label.place(x=290, y=50)
+
+        self.vertical_separator.place(x=340, y=30, relheight=0.8)
+        self.horizontal_separator.place(x=355, y=175, relwidth=0.3)
+
+        self.item_image_label.place(x=405, y=50)
+        self.item_label.place(x=390, y=105)
+        self.item_selector.place(x=365, y=130)
+
+        self.ability_label.place(x=380, y=185)
+        self.ability_selector.place(x=365, y=210)
+
+    def on_item_change(self, choice: str):
+        self.pokemon_tab.selected_pokemon.item = Item[choice.upper().replace(' ', '_')]
+        self.update_utilities()
+
+    def update_utilities(self):
+        self.item_image = customtkinter.CTkImage(Image.open(f"../Images/Item_sprites/{self.pokemon_tab.selected_pokemon.item.name.lower().replace(' ', '-')}.png"), size=(50, 50))
+        self.item_image_label.configure(image=self.item_image)
+        self.item_image_label.image = self.item_image
+
+        self.item_selector.configure(values=[item.value for item in Item if item != Item.NONE and item != self.pokemon_tab.selected_pokemon.item])
+
+    def destroy_widgets(self):
+        for widget in self.winfo_children():
+            widget.destroy()
     def update_moves_frame(self):
-        self.create_widgets()
+        self.destroy_widgets()
+        self.create_moves_widgets()
+        self.create_utilities_widgets()
         self.place_widgets()
+
+
+class MoveLine:
+    def __init__(self, master, pokemon_tab: PokemonTab, y_position: int, index: int):
+        self.master = master
+        self.pokemon_tab = pokemon_tab
+        self.y_position = y_position
+        self.index = index
+
+        self.create_move_line()
+        self.place_widgets()
+
+    def create_move_line(self):
+        self.move_name_label = customtkinter.CTkLabel(self.master, text=f"Move {self.index} : ", font=("Arial", 15), anchor="e", width=80)
+
+        self.move_selector = customtkinter.CTkComboBox(self.master, values=[move.name for move in self.pokemon_tab.selected_pokemon.move_pool],
+                                                       corner_radius=10, state="readonly", command=self.on_move_change)
+
+        self.category_image = customtkinter.CTkImage(Image.open("../Images/Misc/none.png"), size=(30, 15))
+        self.move_category_label = customtkinter.CTkLabel(self.master, text="", image=self.category_image)
+
+        self.type_image = customtkinter.CTkImage(Image.open("../Images/Misc/none.png"), size=(40, 15))
+        self.move_type_image_label = customtkinter.CTkLabel(self.master, text="", image=self.type_image)
+
+    def place_widgets(self):
+        self.move_name_label.place(x=0, y=self.y_position)
+        self.move_selector.place(x=80, y=self.y_position)
+        self.move_category_label.place(x=232, y=self.y_position)
+        self.move_type_image_label.place(x=280, y=self.y_position)
+
+    def on_move_change(self, choice: str):
+        move = [move for move in self.pokemon_tab.selected_pokemon.move_pool if move.name == choice][0]
+        self.move_category_label.configure(image=customtkinter.CTkImage(Image.open(f"../Images/Misc/move-{move.category.name.lower()}.png"), size=(35, 17)))
+        self.move_type_image_label.configure(image=customtkinter.CTkImage(Image.open(f"../Images/Types/{move.type.name.lower()}.png"), size=(46, 17)))
 
 
 class StatsFrame(customtkinter.CTkFrame):
@@ -222,7 +307,7 @@ class StatsFrame(customtkinter.CTkFrame):
             self.configure(border_color="red", border_width=2)
         elif self.remaining_ev == 0:
             self.remaining_ev_counter_label.configure(text="EVs maximum reached!", text_color="green")
-            self.configure(border_color="green", border_width=1)
+            self.configure(border_width=0)
             self.remaining_ev_counter_label.lift()
         else:
             self.remaining_ev_counter_label.lift()
@@ -272,6 +357,10 @@ class StatsFrame(customtkinter.CTkFrame):
         self.evs_max_exceeded_label.lower()
         self.remaining_ev_counter_label.lower()
 
+    def destroy_widgets(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+
     def update_ev_vars(self):
         self.hp_ev_var = customtkinter.StringVar(value="0")
         self.attack_ev_var = customtkinter.StringVar(value="0")
@@ -281,6 +370,7 @@ class StatsFrame(customtkinter.CTkFrame):
         self.speed_ev_var = customtkinter.StringVar(value="0")
 
     def update_stats_frame(self):
+        self.destroy_widgets()
         self.update_ev_vars()
         self.create_widgets()
         self.place_widgets()
@@ -288,6 +378,7 @@ class StatsFrame(customtkinter.CTkFrame):
 
 
 class StatLine:
+
     stat_to_method = {
         "HP": "selected_pokemon_hp",
         "Attack": "selected_pokemon_attack",

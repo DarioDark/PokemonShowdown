@@ -77,6 +77,8 @@ class SecondaryEffectClass:
 
     @staticmethod
     def flinch(target: 'Pokemon', attacker: 'Pokemon') -> None:
+        if target.ability == Ability.INNER_FOCUS:
+            return
         target.sub_status.append(SubStatus.FLINCH)
         print(f"{target.name} flinched !")
 
@@ -173,8 +175,9 @@ class SecondaryEffectClass:
     def rare_def_drop(target, attacker) -> None:
         target.lower_defense(1)
 
+
 # Side effects declarations
-none_effect = SecondaryEffectClass("None", 0, "No secondary effect.", None)
+none_effect = SecondaryEffectClass("None", 0,"No secondary effect.", None)
 common_burn = SecondaryEffectClass("Common_burn", 30, "Burn the opposing Pokemon", SecondaryEffectClass.burn)
 rare_burn = SecondaryEffectClass("Rare_burn", 10, "Burn the opposing Pokemon", SecondaryEffectClass.burn)
 common_poison = SecondaryEffectClass("Common_poison", 30, "Poison the opposing Pokemon", SecondaryEffectClass.poison)

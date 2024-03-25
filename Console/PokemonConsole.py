@@ -17,10 +17,9 @@ class Pokemon:
                  special_defense_stat: int,
                  speed_stat: int,
                  types: 'list[Type]',
-                 moves: 'list',
-                 ability: Ability,
-                 item: Item,
-                 mega_evolution_stats: list[tuple[int, int, int, int, int, Ability, list[Type]]] = None) -> None:
+                 move_pool: list[Move],
+                 ability_pool: list[Ability],
+                 mega_evolution_stats: list[tuple[int, int, int, int, int, Ability, list[Type]]] | None = None) -> None:
 
         self.name = name
         self.lvl = 100
@@ -50,8 +49,9 @@ class Pokemon:
         self.speed_boosts: int = 0
 
         # Ability and item
-        self.ability: Ability = ability
-        self.item: Item = item
+        self.ability_pool: list[Ability] = ability_pool
+        self.ability: Ability = Ability.NONE
+        self.item: Item = Item.NONE
 
         # Types
         self.types: list[Type] = types
@@ -65,7 +65,8 @@ class Pokemon:
         self.nbr_turn_severe_poison: int = 0
         self.sleep_turns: int = 0
 
-        self.moves: list[Move] = moves
+        self.move_pool = move_pool
+        self.moves: list[Move] = []
         if self.ability == Ability.NO_GUARD:
             for move in self.moves:
                 move.accuracy = 100
@@ -73,14 +74,12 @@ class Pokemon:
             for move in self.moves:
                 move.accuracy = move.base_accuracy * 1.1
         self.last_used_move = None
-        self.environment: EnvironmentClass = None
+        self.environment: EnvironmentClass | None = None
         self.mega_evolution_stats: list[tuple[int, int, int, int, int, Ability, list[Type]]] = mega_evolution_stats
 
     def __getstate__(self):
         return {
             'name': self.name,
-            'lvl': self.lvl,
-            'current_hp': self.current_hp,
             'max_hp': self.max_hp,
             'attack_stat': self.attack_stat,
             'special_attack_stat': self.special_attack_stat,
@@ -93,31 +92,18 @@ class Pokemon:
             'special_attack_evs': self.special_attack_evs,
             'special_defense_evs': self.special_defense_evs,
             'speed_evs': self.speed_evs,
-            'attack_boosts': self.attack_boosts,
-            'defense_boosts': self.defense_boosts,
-            'special_attack_boosts': self.special_attack_boosts,
-            'special_defense_boosts': self.special_defense_boosts,
-            'speed_boosts': self.speed_boosts,
             'ability': self.ability.name,
             'item': self.item.name,
             'types': [pokemon_type.name for pokemon_type in self.types],
-            'immunities': [pokemon_type.name for pokemon_type in self.immunities],
-            'weaknesses': [pokemon_type.name for pokemon_type in self.weaknesses],
-            'resistances': [pokemon_type.name for pokemon_type in self.resistances],
-            'status': self.status,
-            'sub_status': [status.name for status in self.sub_status],
-            'nbr_turn_severe_poison': self.nbr_turn_severe_poison,
-            'sleep_turns': self.sleep_turns,
-            'moves': [attack.__getstate__() for attack in self.moves],
-            'last_used_move': self.last_used_move,
+            'moves': [move.__getstate__() for move in self.moves],
             'environment': self.environment,
             'mega_evolution_stats': None if self.mega_evolution_stats is None else [[stat if isinstance(stat, int) else stat.name if not isinstance(stat, list) else [item.name for item in stat] for stat in stats] for stats in self.mega_evolution_stats]
         }
         
     def __setstate__(self, state):
         self.name = state['name']
-        self.lvl = state['lvl']
-        self.current_hp = state['current_hp']
+        self.lvl = 100
+        self.current_hp = state['max_hp']
         self.max_hp = state['max_hp']
         self.attack_stat = state['attack_stat']
         self.special_attack_stat = state['special_attack_stat']
@@ -130,21 +116,23 @@ class Pokemon:
         self.special_attack_evs = state['special_attack_evs']
         self.special_defense_evs = state['special_defense_evs']
         self.speed_evs = state['speed_evs']
-        self.attack_boosts = state['attack_boosts']
-        self.defense_boosts = state['defense_boosts']
-        self.special_attack_boosts = state['special_attack_boosts']
-        self.special_defense_boosts = state['special_defense_boosts']
-        self.speed_boosts = state['speed_boosts']
+        self.attack_boosts = 0
+        self.defense_boosts = 0
+        self.special_attack_boosts = 0
+        self.special_defense_boosts = 0
+        self.speed_boosts = 0
+        self.ability_pool = []
         self.ability = Ability[state['ability'].upper()]
         self.item = Item[state['item'].upper()]
         self.types = [Type[type_name.upper()] for type_name in state['types']]
-        self.immunities = [Type[type_name.upper()] for type_name in state['immunities']]
-        self.weaknesses = [Type[type_name.upper()] for type_name in state['weaknesses']]
-        self.resistances = [Type[type_name.upper()] for type_name in state['resistances']]
-        self.status = state['status']
-        self.sub_status = [SubStatus[status_name.upper()] for status_name in state['sub_status']]
-        self.nbr_turn_severe_poison = state['nbr_turn_severe_poison']
-        self.sleep_turns = state['sleep_turns']
+        self.immunities = self.get_types_immunities()
+        self.weaknesses = self.calculate_weaknesses()
+        self.resistances = self.calculate_resistances()
+        self.status = PrimeStatus.NORMAL
+        self.sub_status = []
+        self.nbr_turn_severe_poison = 0
+        self.sleep_turns = 0
+        self.move_pool = []
         self.moves = []
         for attack_state in state['moves']:
             attack = Move(
@@ -162,7 +150,7 @@ class Pokemon:
                 sound_move=attack_state['sound_move']
             )
             self.moves.append(attack)
-        self.last_used_move = state['last_used_move']
+        self.last_used_move = None
         self.environment = state['environment']
         if state['mega_evolution_stats'] is None:
             self.mega_evolution_stats = None
@@ -178,7 +166,6 @@ class Pokemon:
                         stat = [Type[stat_name.upper()] for stat_name in stat]
                     temp_stat_list.append(stat)
                 mega_evolution_stats.append(tuple(temp_stat_list))
-            print(mega_evolution_stats)
             self.mega_evolution_stats = mega_evolution_stats
 
     def __repr__(self) -> str:

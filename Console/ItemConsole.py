@@ -65,3 +65,5 @@ class Item(Enum):
     # TODO
 
     NONE = "None"
+
+ITEM_LIST = [item.value for item in Item]

@@ -2,7 +2,7 @@ from Console.MoveConsole import *
 
 FLAMETHROWER = Move("Flamethrower", Type.FIRE, MoveCategory.SPECIAL, 90, 100, 15, SecondaryEffects.COMMON_BURN.value, "pokemon")
 EARTHQUAKE = Move("Earthquake", Type.GROUND, MoveCategory.PHYSICAL, 100, 100, 10, SecondaryEffects.NONE, "pokemon")
-ICEBEAM = Move("Ice Beam", Type.ICE, MoveCategory.SPECIAL, 90, 100, 10, SecondaryEffects.RARE_FREEZE.value, "pokemon")
+ICE_BEAM = Move("Ice Beam", Type.ICE, MoveCategory.SPECIAL, 90, 100, 10, SecondaryEffects.RARE_FREEZE.value, "pokemon")
 WATER_SHURIKEN = Move("Water Shuriken", Type.WATER, MoveCategory.SPECIAL, 15, 100, 20, SecondaryEffects.NONE, "pokemon", priority=1)
 HYDRO_PUMP = Move("Hydro Pump", Type.WATER, MoveCategory.SPECIAL, 110, 80, 5, SecondaryEffects.NONE, "pokemon")
 THUNDERBOLT = Move("Thunderbolt", Type.ELECTRIC, MoveCategory.SPECIAL, 90, 100, 15, SecondaryEffects.RARE_PARALYSIS.value, "pokemon")
@@ -47,3 +47,4 @@ DRAGON_PULSE = Move("Dragon Pulse", Type.DRAGON, MoveCategory.SPECIAL, 85, 100, 
 ACROBATICS = Move("Acrobatics", Type.FLYING, MoveCategory.PHYSICAL, 55, 100, 15, SecondaryEffects.NONE, "pokemon")
 SACRED_SWORD = Move("Sacred Sword", Type.FIGHT, MoveCategory.PHYSICAL, 90, 100, 15, SecondaryEffects.NONE, "pokemon")
 AURA_SPHERE = Move("Aura Sphere", Type.FIGHT, MoveCategory.SPECIAL, 80, 100, 20, SecondaryEffects.NONE, "pokemon")
+SCALD = Move("Scald", Type.WATER, MoveCategory.SPECIAL, 80, 100, 15, SecondaryEffects.COMMON_BURN.value, "pokemon")
