@@ -5,6 +5,7 @@ from PokemonListConsole import AVAILABLE_POKEMONS, POKEMONS
 from ItemConsole import Item, ITEM_LIST
 from CTkSeparator import CTkSeparator
 
+
 class TeambuilderInterface(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -155,15 +156,10 @@ class MovesFrame(customtkinter.CTkFrame):
         self.item_image_label.image = self.item_image
 
         self.item_label = customtkinter.CTkLabel(self, text="Select an item :", font=("Arial", 12, "italic"))
-        mega_stone = self.get_mega_stone(self.pokemon_tab.selected_pokemon.name)
-        if mega_stone:
-            print(mega_stone.value)
-            full_item_list = ITEM_LIST + [mega_stone.value]
-        else:
-            print("No mega stone", self.pokemon_tab.selected_pokemon.name, self.get_mega_stone(self.pokemon_tab.selected_pokemon.name))
-            full_item_list = ITEM_LIST
+        mega_stones: list[Item] = self.get_mega_stone(self.pokemon_tab.selected_pokemon.name)
+        ITEM_LIST.extend(mega_stones)
 
-        self.item_selector = customtkinter.CTkComboBox(self, values=full_item_list, corner_radius=10, state="readonly", command=self.on_item_change)
+        self.item_selector = customtkinter.CTkComboBox(self, values=ITEM_LIST, corner_radius=10, state="readonly", command=self.on_item_change)
 
         self.ability_label = customtkinter.CTkLabel(self, text="Select an ability :", font=("Arial", 12, "italic"))
         self.ability_selector = customtkinter.CTkComboBox(self, values=[ability.name.capitalize().replace('_', ' ') for ability in self.pokemon_tab.selected_pokemon.ability_pool],
@@ -190,16 +186,17 @@ class MovesFrame(customtkinter.CTkFrame):
         self.pokemon_tab.selected_pokemon.item = Item[choice.upper().replace(' ', '_')]
         self.update_utilities()
 
-    def get_mega_stone(self, pokemon_name: str):
+    def get_mega_stone(self, pokemon_name: str) -> list[Item]:
         mega_stone_name = pokemon_name.upper() + "ITE"
+        mega_stones: list[Item] = []
         if mega_stone_name in Item.__members__:
-            return Item[mega_stone_name]
-        elif mega_stone_name + "_X" in Item.__members__:
-            return Item[mega_stone_name + "_X"]
-        elif mega_stone_name + "_Y" in Item.__members__:
-            return Item[mega_stone_name + "_Y"]
-        else:
-            return None
+            mega_stones.append(Item[mega_stone_name].value)
+        if mega_stone_name + "_X" in Item.__members__:
+            mega_stones.append(Item[mega_stone_name + "_X"].value)
+        if mega_stone_name + "_Y" in Item.__members__:
+            mega_stones.append(Item[mega_stone_name + "_Y"].value)
+        print(mega_stones)
+        return mega_stones
 
     def update_utilities(self):
         self.item_image = customtkinter.CTkImage(Image.open(f"../Images/Item_sprites/{self.pokemon_tab.selected_pokemon.item.name.lower().replace(' ', '-')}.png"), size=(50, 50))

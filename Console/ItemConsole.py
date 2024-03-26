@@ -27,7 +27,7 @@ class Item(Enum):
     BEEDRILLITE = "Beedrillite"
     BLAZIKENITE = "Blazikenite"
     CHARIZARDITE_X = "Charizardite X"
-    CHARIZARDITE_Y = "Chrizardite Y"
+    CHARIZARDITE_Y = "Charizardite Y"
     CHARMINITE = "Charminite"
     DIANCITE = "Diancite"
     GARCHOMPITE = "Garchompite"
