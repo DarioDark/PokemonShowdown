@@ -128,8 +128,8 @@ class PokemonFrame(ctk.CTkFrame):
     def create_widgets(self) -> None:
         self.pokemon_frame_title = ctk.CTkLabel(self, text="Pokemon", font=("Arial", 20, "bold"), corner_radius=35)
         self.image = ctk.CTkImage(dark_image=Image.open("../Images/Static_sprites/empty-sprite.png"), size=(124, 124))
-        self.label = ctk.CTkLabel(self, text="", image=self.image)
-        self.label.image = self.image
+        self.pokemon_label = ctk.CTkLabel(self, text="", image=self.image)
+        self.pokemon_label.image = self.image
 
         self.pokemon_var = ctk.StringVar(value="None")
         self.pokemon_selector = ctk.CTkComboBox(self,
@@ -146,13 +146,11 @@ class PokemonFrame(ctk.CTkFrame):
         self.columnconfigure(2, weight=1)
 
         self.pokemon_frame_title.place(x=37, y=10)
-        self.label.place(x=33, y=70)
-        self.pokemon_selector.place(x=22, y=200)
+        self.pokemon_label.place(x=33, y=50)
+        self.pokemon_selector.place(x=22, y=210)
 
     def on_pokemon_change(self, choice: str) -> None:
-        print("Selected pokemon:", choice)
         self.selected_pokemon = BasePokemonList[choice.upper()].value
-        print(self.selected_pokemon)
         self.update_pokemon_frame()
         self.pokemonTab.update_frames()
         self.pokemonTab.app.team_recap_tab.update_pokemon_frame(choice, self.pokemonTab.index)
@@ -236,14 +234,34 @@ class MovesFrame(ctk.CTkFrame):
         self.selected_item = Item[choice.upper().replace(' ', '_')]
 
     def get_mega_stone(self, pokemon_name: str) -> list[Item]:
-        mega_stone_name = pokemon_name.upper() + "ITE"
-        mega_stones: list[Item] = []
-        if mega_stone_name in Item.__members__:
-            mega_stones.append(Item[mega_stone_name].value)
-        if mega_stone_name + "_X" in Item.__members__:
-            mega_stones.append(Item[mega_stone_name + "_X"].value)
-        if mega_stone_name + "_Y" in Item.__members__:
-            mega_stones.append(Item[mega_stone_name + "_Y"].value)
+        if pokemon_name == "Gengar":
+            mega_stones = [Item.GENGARITE.value]
+        elif pokemon_name == "Alakazam":
+            mega_stones = [Item.ALAKAZITE.value]
+        elif pokemon_name == "Charizard":
+            mega_stones = [Item.CHARIZARDITE_X.value, Item.CHARIZARDITE_Y.value]
+        elif pokemon_name == "Swampert":
+            mega_stones = [Item.SWAMPERTITE.value]
+        elif pokemon_name == "Salamence":
+            mega_stones = [Item.SALAMENCITE.value]
+        elif pokemon_name == "Garchomp":
+            mega_stones = [Item.GARCHOMPITE.value]
+        elif pokemon_name == "Mawile":
+            mega_stones = [Item.MAWILITE.value]
+        elif pokemon_name == "Lopunny":
+            mega_stones = [Item.LOPUNNITE.value]
+        elif pokemon_name == "Blaziken":
+            mega_stones = [Item.BLAZIKENITE.value]
+        elif pokemon_name == "Diancie":
+            mega_stones = [Item.DIANCITE.value]
+        elif pokemon_name == "Pinsir":
+            mega_stones = [Item.PINSIRITE.value]
+        elif pokemon_name == "Scizor":
+            mega_stones = [Item.SCIZORITE.value]
+        elif pokemon_name == "Tyranitar":
+            mega_stones = [Item.TYRANITARITE.value]
+        else:
+            mega_stones = []
         return mega_stones
 
     def on_ability_change(self, choice: str) -> None:

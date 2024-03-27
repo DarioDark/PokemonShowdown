@@ -1277,7 +1277,7 @@ class Pokemon:
     def can_mega_evolve(self) -> bool:
         if not self.mega_evolution_stats:
             return False
-        if self.item == Item.ALAKAZAMITE and self.name == "Alakazam":
+        if self.item == Item.ALAKAZITE and self.name == "Alakazam":
             return True
         elif self.item == Item.BLAZIKENITE and self.name == "Blaziken":
             return True

@@ -23,8 +23,7 @@ class Item(Enum):
     # LIFE_ORB = "Life Orb"
 
     # Mega Stones
-    ALAKAZAMITE = "Alakazamite"
-    BEEDRILLITE = "Beedrillite"
+    ALAKAZITE = "Alakazite"
     BLAZIKENITE = "Blazikenite"
     CHARIZARDITE_X = "Charizardite X"
     CHARIZARDITE_Y = "Charizardite Y"
@@ -32,16 +31,13 @@ class Item(Enum):
     DIANCITE = "Diancite"
     GARCHOMPITE = "Garchompite"
     LOPUNNITE = "Lopunnite"
-    MANECTITE = "Manectite"
     MAWILITE = "Mawilite"
-    METAGROSSITE = "Metagrossite"
-    PIDGEOTITE = "Pidgeotite"
     PINSIRITE = "Pinsirite"
     SALAMENCITE = "Salamencite"
     SCIZORITE = "Scizorite"
     SWAMPERTITE = "Swampertite"
     TYRANITARITE = "Tyranitarite"
-    VENUSAURITE = "Venusaurite"
+    GENGARITE = "Gengarite"
 
     # Z-Crystals
     BUGINIUM_Z = "Buginium Z"
