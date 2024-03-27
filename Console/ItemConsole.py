@@ -12,7 +12,7 @@ class Item(Enum):
     FLAME_ORB = "Flame Orb"
     FOCUS_SASH = "Focus Sash"
     GRASSY_SEED = "Grassy Seed"
-    HOT_ROCK = "Hot Rock"
+    HEAT_ROCK = "Hot Rock"
     ICY_ROCK = "Icy Rock"
     LEFTOVERS = "Leftovers"
     MISTY_SEED = "Misty Seed"
@@ -68,7 +68,7 @@ class Item(Enum):
     NONE = "None"
 
 ITEM_LIST = ["Black Sludge", "Choice Band", "Choice Scarf", "Choice Specs", "Damp Rock", "Electric Seed", "Flame Orb",
-             "Focus Sash", "Grassy Seed", "Hot Rock", "Icy Rock", "Leftovers", "Misty Seed", "Psychic Seed",
+             "Focus Sash", "Grassy Seed", "Heat Rock", "Icy Rock", "Leftovers", "Misty Seed", "Psychic Seed",
              "Smooth Rock", "Terrain Extender", "Toxic Orb", "Buginium Z", "Darkinium Z", "Dragonium Z", "Electrium Z", "Fairium Z",
              "Fightinium Z", "Firium Z", "Flyinium Z", "Ghostium Z", "Grassium Z", "Groundium Z", "Icium Z",
              "Normalium Z", "Poisonium Z", "Psychium Z", "Rockium Z", "Steelium Z", "Waterium Z"]

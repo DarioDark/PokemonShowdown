@@ -14,12 +14,13 @@ class Server:
         self.players: list = []
         self.speed_tie_resolved: bool = False
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket .bind((self.host, self.port))
-        self.socket .listen()
+        self.socket.bind((self.host, self.port))
+        self.socket.listen()
 
-    def start(self, event):
+    def start(self, event=None):
         print("Starting server...")
-        event.wait()
+        if event:
+            event.wait()
         print("Server started !!!!")
         while True:
             client, addr = self.socket .accept()
@@ -73,4 +74,5 @@ class Server:
 
 
 if __name__ == '__main__':
-    Server()
+    s = Server()
+    s.start()

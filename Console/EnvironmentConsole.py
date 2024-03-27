@@ -6,15 +6,14 @@ class EnvironmentClass:
         self.elements: list[EnvironmentElements] = []
         self.temporary_elements_turns: dict[EnvironmentElements: int] = {}
 
-    def __getstate__(self) -> dict:
-        return {
-            'elements': [element for element in self.elements if element],
-            'temporary_elements_turns': self.temporary_elements_turns
-        }
-        
+    def __getstate__(self):
+        state = self.__dict__.copy()  # start with the object's dictionary
+        state['elements'] = [element.name for element in self.elements if element]
+        return state
+
     def __setstate__(self, state):
-        self.elements = [EnvironmentElements[element.name] for element in state['elements']]
-        self.temporary_elements_turns = state['temporary_elements_turns']
+        self.__dict__.update(state)  # update the object's state from the dictionary
+        self.elements = [EnvironmentElements[element_name] for element_name in state['elements']]
 
     def pass_turn(self) -> None:
         """Pass a turn in the environment, removing temporary elements if their duration is over."""

@@ -78,6 +78,7 @@ class Pokemon:
         self.mega_evolution_stats: list[tuple[int, int, int, int, int, Ability, list[Type]]] = mega_evolution_stats
 
     def __getstate__(self):
+        print("moves get state", [move.__getstate__() for move in self.moves])
         return {
             'name': self.name,
             'max_hp': self.max_hp,
@@ -145,9 +146,9 @@ class Pokemon:
                 secondary_effect=SecondaryEffects[attack_state['secondary_effect']].value,
                 target=attack_state['target'],
                 priority=attack_state['priority'],
-                contact_move=attack_state['contact_move'],
-                bullet_move=attack_state['bullet_move'],
-                sound_move=attack_state['sound_move']
+                contact_move=attack_state['attributes']['contact'],
+                bullet_move=attack_state['attributes']['bullet'],
+                sound_move=attack_state['attributes']['sound']
             )
             self.moves.append(attack)
         self.last_used_move = None
@@ -612,7 +613,7 @@ class Pokemon:
                          Item.GRASSIUM_Z,
                          Item.ELECTRIUM_Z,
                          Item.PSYCHIUM_Z,
-                         Item.ICINIUM_Z,
+                         Item.ICIUM_Z,
                          Item.DRAGONIUM_Z,
                          Item.DARKINIUM_Z):
             return True
@@ -649,7 +650,7 @@ class Pokemon:
             z_type = Type.ELECTRIC
         elif self.item == Item.PSYCHIUM_Z:
             z_type = Type.PSYCHIC
-        elif self.item == Item.ICINIUM_Z:
+        elif self.item == Item.ICIUM_Z:
             z_type = Type.ICE
         elif self.item == Item.DRAGONIUM_Z:
             z_type = Type.DRAGON
@@ -1118,7 +1119,7 @@ class Pokemon:
         enemy_environment = enemy_player.environment
         # Weather
         weather_turns = 5
-        if self.item == Item.HOT_ROCK:
+        if self.item == Item.HEAT_ROCK:
             weather_turns = 8
         elif self.item == Item.DAMP_ROCK:
             weather_turns = 8

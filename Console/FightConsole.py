@@ -1,6 +1,5 @@
 import time
 
-from PokemonListConsole import *
 from ClientConsole import Client
 from PlayerConsole import *
 from StatusConsole import SubStatus
@@ -483,7 +482,8 @@ class Fight:
 
 def main():
     rand = randint(0, 1000)
-    p = Player(team=[CHARIZARD, Blastoise, Mew], name=f"Player {rand}")
+    p = Player(name=f"Player {rand}")
+    p.load_team()
     Fight(p)
     print("Game over !")
 

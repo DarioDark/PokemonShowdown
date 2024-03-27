@@ -1,10 +1,11 @@
 from os import system
 from PokemonConsole import *
+from JsonHandler import JsonDeserializer
 
 
 class Player:
-    def __init__(self, team: 'list[Pokemon]', name: str) -> None:
-        self.team: list[Pokemon] = team
+    def __init__(self, name: str) -> None:
+        self.team: list[Pokemon] = []
         self.name: str = name
         self.current_pokemon: Pokemon = None
         self.z_crystal_used: bool = False
@@ -32,7 +33,14 @@ class Player:
         self.current_pokemon = state['current_pokemon']
         self.z_crystal_used = state['z_crystal_used']
         self.mega_evolution_used = state['mega_evolution_used']
-        self.environment = state['environment'] 
+        self.environment = state['environment']
+
+    def load_team(self):
+        j = JsonDeserializer('team.json')
+        j.deserialize()
+        self.team = j.get_pokemons()
+        for pokemon in self.team:
+            pokemon.environment = self.environment
     
     def select_lead(self, enemy_team: list[Pokemon]) -> int:
         enemy_team_string = '- ' + '\n- '.join(str(pokemon) for pokemon in enemy_team)

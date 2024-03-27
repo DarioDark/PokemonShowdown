@@ -20,14 +20,14 @@ class Move:
                  20: "light_red",
                  0: "red"}
 
-    def __init__(self, name: str,
-                 move_type: Type,
-                 category: MoveCategory,
-                 power,
-                 base_accuracy: int,
-                 max_pp: int,
-                 secondary_effect: SecondaryEffects,
-                 target: str,
+    def __init__(self, name: str = "",
+                 move_type: Type = Type.NONE,
+                 category: MoveCategory = MoveCategory.PHYSICAL,
+                 power: int = 0,
+                 base_accuracy: int = 0,
+                 max_pp: int = 0,
+                 secondary_effect: SecondaryEffects = SecondaryEffects.NONE,
+                 target: str = "",
                  priority: int = 0,
                  contact_move: bool = False,
                  bullet_move: bool = False,
@@ -58,38 +58,19 @@ class Move:
         return (f"{colored(self.name, self.type.value.color)} ({self.type.value}) " + "PP: " + self.print_colored_pp() + " ~ "
                 f"{colored(self.category.value, category_color)} / {self.power} power ~ {self.accuracy}% accuracy / {self.secondary_effect}")
 
-    def __getstate__(self) -> dict:
-        return {
-            'name': self.name,
-            'type': self.type.name,
-            'category': self.category.name,
-            'power': self.power,
-            'base_accuracy': self.base_accuracy,
-            'accuracy': self.accuracy,
-            'current_pp': self.current_pp,
-            'max_pp': self.max_pp,
-            'secondary_effect': self.secondary_effect.name.upper(),
-            'target': self.target,
-            'priority': self.priority,
-            'contact_move': self.attributes['contact'],
-            'bullet_move': self.attributes['bullet'],
-            'sound_move': self.attributes['sound'],
-            'nbr_hit': self.attributes['nbr_hit']
-        }
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state['type'] = self.type.name
+        state['category'] = self.category.name
+        state['secondary_effect'] = self.secondary_effect.name.upper()
+        return state
 
     def __setstate__(self, state):
-        self.name = state['name']
+        self.__dict__.update(state)
+
         self.type = Type[state['type']]
         self.category = MoveCategory[state['category']]
-        self.power = state['power']
-        self.base_accuracy = state['base_accuracy']
-        self.accuracy = state['accuracy']
-        self.current_pp = state['current_pp']
-        self.max_pp = state['max_pp']
         self.secondary_effect = SecondaryEffects[state['secondary_effect']].value
-        self.target = state['target']
-        self.priority = state['priority']
-        self.attributes = {'contact': state['contact_move'], 'bullet': state['bullet_move'], 'sound': state['sound_move'], 'nbr_hit': state['nbr_hit']}
 
     def get_current_pp_percentage(self) -> float:
         percentage = (self.current_pp / self.max_pp) * 100
@@ -128,27 +109,5 @@ class Move:
         if isinstance(self.secondary_effect, SecondaryEffectClass):
             self.secondary_effect.apply(target, attacker)
 
-
-# Move declarations
-FlameThrower = Move("Flamethrower", Type.FIRE, MoveCategory.SPECIAL, 90, 100, 15, SecondaryEffects.COMMON_BURN.value, "enemy_pokemon")
-Thunderbolt = Move("Thunderbolt", Type.ELECTRIC, MoveCategory.SPECIAL, 90, 100, 15, SecondaryEffects.RARE_PARALYSIS.value, "enemy_pokemon")
-Thunder = Move("Thunder", Type.ELECTRIC, MoveCategory.SPECIAL, 110, 70, 10, SecondaryEffects.COMMON_PARALYSIS.value, "enemy_pokemon")
-Surf = Move("Surf", Type.WATER, MoveCategory.SPECIAL, 90, 100, 15, SecondaryEffects.NONE.value, "enemy_pokemon")
-HydroPump = Move("Hydro Pump", Type.WATER, MoveCategory.SPECIAL, 110, 80, 5, SecondaryEffects.NONE.value, "enemy_pokemon")
-IceBeam = Move("Ice Beam", Type.ICE, MoveCategory.SPECIAL, 90, 100, 10, SecondaryEffects.RARE_FREEZE.value, "enemy_pokemon")
-Earthquake = Move("Earthquake", Type.GROUND, MoveCategory.PHYSICAL, 100, 100, 10, SecondaryEffects.NONE.value, "enemy_pokemon")
-RockSlide = Move("Rock Slide", Type.ROCK, MoveCategory.PHYSICAL, 75, 90, 10, SecondaryEffects.NONE.value, "enemy_pokemon")
-Psychic = Move("Psychic", Type.PSYCHIC, MoveCategory.SPECIAL, 90, 100, 15, SecondaryEffects.CONFUSION.value, "enemy_pokemon")
-SkullBash = Move("Skull Bash", Type.NORMAL, MoveCategory.PHYSICAL, 130, 100, 5, SecondaryEffects.NONE.value, "enemy_pokemon")
-AquaTail = Move("Aqua Tail", Type.WATER, MoveCategory.PHYSICAL, 90, 90, 10, SecondaryEffects.NONE.value, "enemy_pokemon")
-QuickAttack = Move("Quick Attack", Type.NORMAL, MoveCategory.PHYSICAL, 40, 100, 30, SecondaryEffects.NONE.value, "enemy_pokemon")
-CloseCombat = Move("Close Combat", Type.FIGHT, MoveCategory.PHYSICAL, 60, 100, 5, SecondaryEffects.NONE.value, "pokemon")
-
-LeechSeed = Move("Leech Seed", Type.GRASS, MoveCategory.STATUS, 0, 90, 10, SecondaryEffects.LEECH_SEED.value, "enemy_pokemon")
-StealthRock = Move("Stealth Rock", Type.ROCK, MoveCategory.STATUS, 0, 100, 10, SecondaryEffects.STEALTH_ROCK.value, "player")
-LightScreen = Move("Light Screen", Type.PSYCHIC, MoveCategory.STATUS, 0, 100, 30, SecondaryEffects.LIGHT_SCREEN.value, "player")
-Reflect = Move("Reflect", Type.PSYCHIC, MoveCategory.STATUS, 0, 100, 30, SecondaryEffects.REFLECT.value, "self_player")
-Spikes = Move("Spikes", Type.GROUND, MoveCategory.STATUS, 0, 100, 20, SecondaryEffects.SPIKES.value, "player")
-ToxicSpikes = Move("Toxic Spikes", Type.POISON, MoveCategory.STATUS, 0, 100, 20, SecondaryEffects.TOXIC_SPIKES.value, "player")
 
 CONFUSION_ATTACK = Move("Confusion Attack", Type.NONE, MoveCategory.PHYSICAL, 40, 100, 100, SecondaryEffects.NONE.value, "self_pokemon")
