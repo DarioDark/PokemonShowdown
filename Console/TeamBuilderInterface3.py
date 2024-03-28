@@ -166,8 +166,8 @@ class PokemonFrame(ctk.CTkFrame):
     def update_pokemon_frame(self) -> None:
         image_path = f"../Images/Static_Sprites/{self.selected_pokemon.name.lower()}.png"
         self.image = ctk.CTkImage(Image.open(image_path), size=(124, 124))
-        self.label.configure(image=self.image)
-        self.label.image = self.image
+        self.pokemon_label.configure(image=self.image)
+        self.pokemon_label.image = self.image
 
 
 class MovesFrame(ctk.CTkFrame):
@@ -194,8 +194,8 @@ class MovesFrame(ctk.CTkFrame):
     def create_utilities_widgets(self) -> None:
         self.utilities_title = ctk.CTkLabel(self, text="Utilities", font=("Arial", 20, "bold"), corner_radius=35)
 
-        self.vertical_separator = CTkSeparator(self, orient="vertical")
-        self.horizontal_separator = CTkSeparator(self, orient="horizontal")
+        self.vertical_separator = CTkSeparator(self, orient="vertical", fg_color="#1A1A1A", length=3)
+        self.horizontal_separator = CTkSeparator(self, orient="horizontal", fg_color="#1A1A1A", length=3)
 
         self.item_image = ctk.CTkImage(Image.open("../Images/Item_sprites/poke-ball.png"), size=(50, 50))
         self.item_image_label = ctk.CTkLabel(self, text="", image=self.item_image)

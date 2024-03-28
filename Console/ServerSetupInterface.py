@@ -1,8 +1,8 @@
 import customtkinter
 import threading
+import tkinter
 
 from CTkMessagebox import CTkMessagebox
-from PIL import Image
 from CTkColoredTextbox import CTkColoredTextbox
 from ServerConsole import Server
 
