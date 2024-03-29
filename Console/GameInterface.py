@@ -28,8 +28,6 @@ class MainInterface(ctk.CTk):
         self.main_frame = MainFrame(self)
         self.main_frame.pack(expand=True, fill=ctk.BOTH, padx=50, pady=50)
 
-        self.create_widgets()
-        self.place_widgets()
 
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 

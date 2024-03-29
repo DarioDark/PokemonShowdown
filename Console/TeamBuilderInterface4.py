@@ -45,7 +45,6 @@ class TeambuilderInterface:
         self.tabs = ctk.CTkTabview(self.mainframe, height=700, width=800, corner_radius=20)
         self.tabs.pack(pady=10)
         self.tabs_objects = [PokemonTab(self.tabs, self, i) for i in range(6)]
-        self.team_recap_tab = TeamRecapTab(self.tabs, self)
 
 
 class PokemonTab:
@@ -75,7 +74,7 @@ class PokemonTab:
         return self.moves_frame.selected_ability
 
     def create_frames(self) -> None:
-        # TODO self.pokemon_frame = PokemonFrame(self.tab, self)
+        self.pokemon_frame = PokemonFrame(self.tab, self)
         self.moves_frame = MovesFrame(self.tab, self)
         self.stats_frame = StatsFrame(self.tab, self)
 
@@ -86,7 +85,7 @@ class PokemonTab:
         self.tab.grid_columnconfigure(0, weight=1)
         self.tab.grid_columnconfigure(1, weight=2)
 
-        #self.pokemon_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        self.pokemon_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         self.moves_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
         self.stats_frame.grid(row=1, column=0, columnspan=3, sticky="nsew", padx=10, pady=10)
 
@@ -117,6 +116,61 @@ class PokemonTab:
             return False
         return True
 
+
+class PokemonFrame(ctk.CTkFrame):
+    def __init__(self, master, pokemon_tab: PokemonTab):
+        super().__init__(master, corner_radius=20, width=20, height=30)
+        self.master = master
+        self.pokemonTab: PokemonTab = pokemon_tab
+
+        self.selected_pokemon = None
+
+        self.create_widgets()
+        self.place_widgets()
+
+    def create_widgets(self) -> None:
+        self.pokemon_frame_title = ctk.CTkLabel(self, text="Pokemon", font=("Arial", 20, "bold"), corner_radius=35)
+        self.image = ctk.CTkImage(dark_image=Image.open("../Images/Static_sprites/empty-sprite.png"), size=(124, 124))
+        self.pokemon_label = ctk.CTkLabel(self, text="", image=self.image)
+        self.pokemon_label.image = self.image
+
+        self.pokemon_var = ctk.StringVar(value="None")
+        self.pokemon_selector = ctk.CTkComboBox(self,
+                                                values=AVAILABLE_POKEMONS,
+                                                corner_radius=10,
+                                                state="readonly",
+                                                variable=self.pokemon_var,
+                                                command=self.on_pokemon_change)
+
+    def place_widgets(self) -> None:
+        # Layout
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+
+        self.pokemon_frame_title.place(x=37, y=10)
+        self.pokemon_label.place(x=33, y=50)
+        self.pokemon_selector.place(x=22, y=210)
+
+    def on_pokemon_change(self, choice: str) -> None:
+        self.selected_pokemon = BasePokemonList[choice.upper()].value
+        self.update_pokemon_frame()
+        self.pokemonTab.update_frames()
+        #self.pokemonTab.app.team_recap_tab.update_pokemon_frame(choice, self.pokemonTab.index)
+
+        # Reset the EVs
+        self.hp_ev_var = ctk.StringVar(value="0")
+        self.attack_ev_var = ctk.StringVar(value="0")
+        self.defense_ev_var = ctk.StringVar(value="0")
+        self.spe_attack_ev_var = ctk.StringVar(value="0")
+        self.spe_defense_ev_var = ctk.StringVar(value="0")
+        self.speed_ev_var = ctk.StringVar(value="0")
+
+    def update_pokemon_frame(self) -> None:
+        image_path = f"../Images/Static_Sprites/{self.selected_pokemon.name.lower()}.png"
+        self.image = ctk.CTkImage(Image.open(image_path), size=(124, 124))
+        self.pokemon_label.configure(image=self.image)
+        self.pokemon_label.image = self.image
 
 class TeamRecapLine:
     def __init__(self, master, pokemon_tab: PokemonTab, y_position: int):
@@ -633,6 +687,7 @@ class CurrentTeamRecapLine(ctk.CTkFrame):
 
 
 class PokemonRecapImage:
+    pass
     
 
 def main():
