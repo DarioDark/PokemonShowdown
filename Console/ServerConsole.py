@@ -23,7 +23,7 @@ class Server:
             event.wait()
         print("Server started !!!!")
         while True:
-            client, addr = self.socket .accept()
+            client, addr = self.socket.accept()
             print(f"Connection from {addr} has been established !")
 
             name = client.recv(4096)
