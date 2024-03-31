@@ -1,6 +1,13 @@
 from os import system
-from PokemonConsole import *
+from PokemonConsole import Pokemon
+from EnvironmentConsole import EnvironmentClass
 from JsonHandler import JsonDeserializer
+from termcolor import colored
+from AbilityConsole import Ability
+from ItemConsole import Item
+from MoveConsole import MoveCategory
+from StatusConsole import SubStatus
+from TypesConsole import Type
 
 
 class Player:

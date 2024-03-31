@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 from TeamBuilderInterface4 import TeambuilderInterface
-from ServerInterface2 import ServerInterface
+from ServerInterface2 import HostServerInterface
 
 
 class MainInterface(ctk.CTk):

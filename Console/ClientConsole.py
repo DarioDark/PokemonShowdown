@@ -7,7 +7,7 @@ from PlayerConsole import Player
 
 
 class Client:
-    def __init__(self, player: Player):
+    def __init__(self, player: Player, host: str, port: int):
         # Player settings
         self.player = player
         self.enemy_player = None
@@ -15,7 +15,7 @@ class Client:
         self.enemy_moves = []
 
         # Server settings
-        host, port = input("Enter the server IP address :\n>>"), 12345
+        host, port = (host, port)
         self.host, self.port = (host, port)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

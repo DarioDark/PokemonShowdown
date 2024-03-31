@@ -1287,8 +1287,6 @@ class Pokemon:
             return True
         elif self.item == Item.SCIZORITE and self.name == "Scizor":
             return True
-        elif self.item == Item.BEEDRILLITE and self.name == "Beedrill":
-            return True
         elif self.item == Item.DIANCITE and self.name == "Diancie":
             return True
         elif self.item == Item.CHARIZARDITE_X and self.name == "Charizard":
@@ -1297,23 +1295,15 @@ class Pokemon:
             return True
         elif self.item == Item.SALAMENCITE and self.name == "Salamence":
             return True
-        elif self.item == Item.MANECTITE and self.name == "Manectric":
-            return True
         elif self.item == Item.SWAMPERTITE and self.name == "Swampert":
             return True
         elif self.item == Item.LOPUNNITE and self.name == "Lopunny":
             return True
-        elif self.item == Item.METAGROSSITE and self.name == "Metagross":
-            return True
         elif self.item == Item.MAWILITE and self.name == "Mawile":
-            return True
-        elif self.item == Item.PIDGEOTITE and self.name == "Pidgeot":
             return True
         elif self.item == Item.PINSIRITE and self.name == "Pinsir":
             return True
         elif self.item == Item.TYRANITARITE and self.name == "Tyraniytar":
-            return True
-        elif self.item == Item.VENUSAURITE and self.name == "Venusaur":
             return True
         return False
 

@@ -1,15 +1,15 @@
 import time
 
-from ClientConsole import Client
 from PlayerConsole import *
 from StatusConsole import SubStatus
+from GameInterface import MainInterface
 
 
 class Fight:
     def __init__(self, player1: Player) -> None:
         self.players = [player1]
         self.turn: int = 1
-        self.client = Client(self.player1)
+        self.main_interface = MainInterface(self.player1)
 
         self.start()
         self.run()
