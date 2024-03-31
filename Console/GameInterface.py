@@ -41,7 +41,6 @@ class MainInterface(ctk.CTk):
         self.destroy()
 
 
-
 class MainFrame(ctk.CTkFrame):
     def __init__(self, master, corner_radius: int = 10):
         super().__init__(master, corner_radius=corner_radius)

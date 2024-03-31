@@ -45,6 +45,7 @@ class TeambuilderInterface:
         self.tabs = ctk.CTkTabview(self.mainframe, height=700, width=800, corner_radius=20)
         self.tabs.pack(pady=10)
         self.tabs_objects = [PokemonTab(self.tabs, self, i) for i in range(6)]
+        self.team_recap_tab = TeamRecapTab(self.tabs, self)
 
 
 class PokemonTab:
@@ -156,7 +157,7 @@ class PokemonFrame(ctk.CTkFrame):
         self.selected_pokemon = BasePokemonList[choice.upper()].value
         self.update_pokemon_frame()
         self.pokemonTab.update_frames()
-        #self.pokemonTab.app.team_recap_tab.update_pokemon_frame(choice, self.pokemonTab.index)
+        self.pokemonTab.app.team_recap_tab.update_pokemon_frame(choice, self.pokemonTab.index)
 
         # Reset the EVs
         self.hp_ev_var = ctk.StringVar(value="0")
@@ -171,27 +172,6 @@ class PokemonFrame(ctk.CTkFrame):
         self.image = ctk.CTkImage(Image.open(image_path), size=(124, 124))
         self.pokemon_label.configure(image=self.image)
         self.pokemon_label.image = self.image
-
-class TeamRecapLine:
-    def __init__(self, master, pokemon_tab: PokemonTab, y_position: int):
-        self.master = master
-        self.pokemon_tab = pokemon_tab
-        self.y_position = y_position
-
-        self.create_recap_line()
-        self.place_widgets()
-
-    def create_recap_line(self):
-        self.pokemon_name_label = ctk.CTkLabel(self.master, text=self.pokemon_tab.selected_pokemon.name, font=("Arial", 15), anchor="e", width=80)
-        self.pokemon_level_label = ctk.CTkLabel(self.master, text="Level 50", font=("Arial", 15))
-        self.pokemon_item_label = ctk.CTkLabel(self.master, text=self.pokemon_tab.selected_item.name, font=("Arial", 15))
-        self.pokemon_ability_label = ctk.CTkLabel(self.master, text=self.pokemon_tab.selected_ability.name, font=("Arial", 15))
-
-    def place_widgets(self):
-        self.pokemon_name_label.place(x=0, y=self.y_position)
-        self.pokemon_level_label.place(x=80, y=self.y_position)
-        self.pokemon_item_label.place(x=160, y=self.y_position)
-        self.pokemon_ability_label.place(x=240, y=self.y_position)
 
 
 class MovesFrame(ctk.CTkFrame):
@@ -597,28 +577,39 @@ class TeamRecapTab:
 
     def create_widgets(self) -> None:
         self.team_recap_title = ctk.CTkLabel(self.tab, text="Team Recap", font=("Arial", 20, "bold"), corner_radius=35)
-        self.pokemon_recap_frames: list[PokemonRecapFrame] = [PokemonRecapFrame(self.tab, self, 40 + i * 240, 80, 1 + i) for i in range(3)]
-        self.pokemon_recap_frames.extend([PokemonRecapFrame(self.tab, self, 40 + i * 240, 340, 4 + i) for i in range(3)])
+        self.current_team_recap_title = ctk.CTkLabel(self.tab, text=f"Current Team : ", font=("Arial", 15, "bold"), corner_radius=35)
+        self.current_team_recap_line = CurrentTeamRecapLine(self.tab, self)
         self.validate_team_button = ctk.CTkButton(self.tab, text="Validate Team", corner_radius=20, command=self.validate_team, font=("Arial", 15))
+        self.validate_team_label = ctk.CTkLabel(self.tab, text="You need to validate your team to use it or to save it !", font=("Arial", 15, "italic"), corner_radius=35)
+        self.saved_team_recap_title = ctk.CTkLabel(self.tab, text="Saved Team", font=("Arial", 15, "bold"), corner_radius=35)
+        self.saved_team_recap_line = SavedTeamRecapLine(self.tab)
+
 
     def place_widgets(self) -> None:
         self.team_recap_title.place(x=310, y=10)
-        self.validate_team_button.place(x=190, y=585)
+        self.current_team_recap_title.place(x=30, y=115)
+        self.current_team_recap_line.place(x=30, y=150)
+        self.validate_team_button.place(x=30, y=265)
+        self.validate_team_label.place(x=170, y=265)
+        self.saved_team_recap_title.place(x=30, y=350)
+        self.saved_team_recap_line.place(x=30, y=385)
 
     def update_pokemon_frame(self, choice: str, tab_index: int) -> None:
-        self.pokemon_recap_frames[tab_index].update_image(choice)
+        self.current_team_recap_line.update_image(choice, tab_index)
 
     def total_validity(self) -> bool:
         return sum([pokemon_tab.check_validity() for pokemon_tab in self.app.tabs_objects]) == 6
 
     def validate_team(self) -> None:
-        if self.total_validity():
+        if not self.total_validity():
             invalid_pokemons = ", ".join([f"Pokemon {pokemon_tab.index + 1}" for pokemon_tab in self.app.tabs_objects if not pokemon_tab.check_validity()])
-            self.validate_team_message_box = CTkMessagebox(self.tab, title="Team Validation", message=f"These Pokemons are not valid : {invalid_pokemons}", icon="cancel", corner_radius=20)
+            #self.validate_team_message_box = CTkMessagebox(self.tab, title="Team Validation", message=f"These Pokemons are not valid : {invalid_pokemons}", icon="cancel", corner_radius=20)
+            self.validate_team_label.configure(text="Your team is not valid!", text_color="red")
         else:
-            self.validate_team_message_box = CTkMessagebox(self.tab, title="Team Validation", message="Your team is valid!", icon="check", corner_radius=20, option_1="Ok", option_2="Save team")
-            if self.validate_team_message_box.get() == "Save team":
-                self.save_team()
+            #self.validate_team_message_box = CTkMessagebox(self.tab, title="Team Validation", message="Your team is valid!", icon="check", corner_radius=20, option_1="Ok", option_2="Save team")
+            self.validate_team_label.configure(text="Your team is valid!", text_color="green")
+            #if self.validate_team_message_box.get() == "Save team":
+            #    self.save_team()
 
     def save_team(self) -> None:
         self.erase_json_file()
@@ -649,31 +640,73 @@ class TeamRecapTab:
 
 
 class CurrentTeamRecapLine(ctk.CTkFrame):
-    def __init__(self, master: ctk.CTkFrame, recap_tab: TeamRecapTab, x_position: int, y_position: int, index: int):
-        super().__init__(master, corner_radius=20, width=200, height=220)
+    def __init__(self, master: ctk.CTkFrame, recap_tab: TeamRecapTab):
+        super().__init__(master, corner_radius=10, width=700, height=100)
         self.master: ctk.CTkFrame = master
         self.recap_tab: TeamRecapTab = recap_tab
-        self.x_position: int = x_position
-        self.y_position: int = y_position
-        self.index: int = index
 
-        self.place(x=x_position, y=y_position)
         self.create_widgets()
         self.place_widgets()
 
     def create_widgets(self) -> None:
-        self.pokemon_frame_title = ctk.CTkLabel(self, text=f"Pokemon {self.index}", font=("Arial", 20, "bold"), corner_radius=35)
-        self.pokemon_image = ctk.CTkImage(Image.open("../Images/Static_sprites/empty-sprite.png"), size=(124, 124))
-        self.pokemon_image_label = ctk.CTkLabel(self, text="", image=self.pokemon_image)
+        self.pokemon_recap_images = [CurrentPokemonRecapImage(self, 25 + i * 110, 5, i + 1) for i in range(6)]
 
     def place_widgets(self) -> None:
-        self.pokemon_frame_title.place(x=37, y=10)
-        self.pokemon_image_label.place(x=33, y=70)
+        pass
 
-    def update_image(self, choice: str) -> None:
-        self.pokemon_image = ctk.CTkImage(Image.open(f"../Images/Static_sprites/{choice.lower()}.png"), size=(124, 124))
+    def destroy_widgets(self) -> None:
+        for widget in self.winfo_children():
+            widget.destroy()
+
+    def update_image(self, choice: str, index: int) -> None:
+        self.pokemon_recap_images[index].pokemon_image = ctk.CTkImage(Image.open(f"../Images/Static_sprites/{choice.lower()}.png"), size=(93, 93))
+        self.pokemon_recap_images[index].update_image()
+
+    def update_pokemon_frame(self, choice: str) -> None:
+        self.destroy_widgets()
+        self.create_widgets()
+        self.place_widgets()
+
+
+class CurrentPokemonRecapImage:
+    def __init__(self, master: ctk.CTkFrame, x_position: int, y_position: int, index: int):
+        self.master: ctk.CTkFrame = master
+        self.x_position: int = x_position
+        self.y_position: int = y_position
+        self.index: int = index
+
+        self.create_widgets()
+        self.place_widgets()
+
+    def create_widgets(self) -> None:
+        self.pokemon_image = ctk.CTkImage(Image.open("../Images/Static_sprites/alakazam.png"), size=(93, 93))
+        self.pokemon_image_label = ctk.CTkLabel(self.master, text="", image=self.pokemon_image)
+
+    def place_widgets(self) -> None:
+        self.pokemon_image_label.place(x=self.x_position, y=self.y_position)
+
+    def update_image(self) -> None:
         self.pokemon_image_label.configure(image=self.pokemon_image)
         self.pokemon_image_label.image = self.pokemon_image
+
+
+class SavedTeamRecapLine(ctk.CTkFrame):
+    def __init__(self, master: ctk.CTkFrame):
+        super().__init__(master, corner_radius=10, width=700, height=100)
+        self.master: ctk.CTkFrame = master
+        with open("team.json", "r") as f:
+            team = json.load(f)
+            self.pokemon_names: list[str] = [pokemon_package["pokemon"].lower() for pokemon_package in team]
+
+
+        self.create_widgets()
+        self.place_widgets()
+
+    def create_widgets(self) -> None:
+        self.pokemon_recap_images = [SavedPokemonRecapImage(self, 25 + i * 110, 5, i + 1, self.pokemon_names[i]) for i in range(6)]
+
+    def place_widgets(self) -> None:
+        pass
 
     def destroy_widgets(self) -> None:
         for widget in self.winfo_children():
@@ -682,13 +715,31 @@ class CurrentTeamRecapLine(ctk.CTkFrame):
     def update_pokemon_frame(self, choice: str) -> None:
         self.destroy_widgets()
         self.create_widgets()
-        self.update_image(choice)
         self.place_widgets()
 
 
-class PokemonRecapImage:
-    pass
-    
+class SavedPokemonRecapImage:
+    def __init__(self, master: ctk.CTkFrame, x_position: int, y_position: int, index: int, pokemon_name: str):
+        self.master: ctk.CTkFrame = master
+        self.x_position: int = x_position
+        self.y_position: int = y_position
+        self.index: int = index
+        self.pokemon_name: str = pokemon_name
+
+        self.create_widgets()
+        self.place_widgets()
+
+    def create_widgets(self) -> None:
+        self.pokemon_image = ctk.CTkImage(Image.open(f"../Images/Static_sprites/{self.pokemon_name}.png"), size=(93, 93))
+        self.pokemon_image_label = ctk.CTkLabel(self.master, text="", image=self.pokemon_image)
+
+    def place_widgets(self) -> None:
+        self.pokemon_image_label.place(x=self.x_position, y=self.y_position)
+
+    def update_image(self) -> None:
+        self.pokemon_image_label.configure(image=self.pokemon_image)
+        self.pokemon_image_label.image = self.pokemon_image
+
 
 def main():
     app = ctk.CTk()

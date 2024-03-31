@@ -49,7 +49,12 @@ Acrobatics = Move("Acrobatics", Type.FLYING, MoveCategory.PHYSICAL, 55, 100, 15,
 Sacred_Sword = Move("Sacred Sword", Type.FIGHT, MoveCategory.PHYSICAL, 90, 100, 15, SecondaryEffects.NONE, "pokemon")
 Aura_Sphere = Move("Aura Sphere", Type.FIGHT, MoveCategory.SPECIAL, 80, 100, 20, SecondaryEffects.NONE, "pokemon")
 Scald = Move("Scald", Type.WATER, MoveCategory.SPECIAL, 80, 100, 15, SecondaryEffects.COMMON_BURN.value, "pokemon")
-
+Stone_Edge = Move("Stone Edge", Type.ROCK, MoveCategory.PHYSICAL, 100, 80, 5, SecondaryEffects.NONE, "pokemon")
+#Thunder_Wave = Move("Thunder Wave", Type.ELECTRIC, MoveCategory.STATUS, 0, 90, 20, SecondaryEffects.PARALYSIS.value, "pokemon")
+Fire_Fang = Move("Fire Fang", Type.FIRE, MoveCategory.PHYSICAL, 65, 95, 15, SecondaryEffects.RARE_BURN.value, "pokemon")
+Focus_Blast = Move("Focus Blast", Type.FIGHT, MoveCategory.SPECIAL, 120, 70, 5, SecondaryEffects.RARE_SPECIAL_DEFENSE_DOWN.value, "pokemon")
+Waterfall = Move("Waterfall", Type.WATER, MoveCategory.PHYSICAL, 80, 100, 15, SecondaryEffects.RARE_FLINCH.value, "pokemon")
+Ice_Fang = Move("Ice Fang", Type.ICE, MoveCategory.PHYSICAL, 65, 95, 15, SecondaryEffects.RARE_FREEZE.value, "pokemon")
 class BaseMoveList(Enum):
     FLAMETHROWER = FlameThrower
     EARTHQUAKE = Earthquake
@@ -99,3 +104,8 @@ class BaseMoveList(Enum):
     SACRED_SWORD = Sacred_Sword
     AURA_SPHERE = Aura_Sphere
     SCALD = Scald
+    STONE_EDGE = Stone_Edge
+    FIRE_FANG = Fire_Fang
+    FOCUS_BLAST = Focus_Blast
+    WATERFALL = Waterfall
+    ICE_FANG = Ice_Fang

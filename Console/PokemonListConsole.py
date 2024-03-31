@@ -18,7 +18,7 @@ Pinsir = Pokemon("Pinsir", 271, 286, 236, 146, 176, 206, [Type.BUG], [], [Abilit
 Tyranitar = Pokemon("Tyranitar", 341, 304, 256, 226, 236, 158, [Type.ROCK, Type.DARK], [], [Ability.SAND_STREAM], [(364, 336, 226, 276, 178, Ability.SAND_STREAM, [Type.ROCK, Type.DARK])])
 Azumarill = Pokemon("Azumarill", 341, 136, 196, 156, 196, 136, [Type.WATER, Type.FAIRY], [], [Ability.HUGE_POWER, Ability.THICK_FAT, Ability.SAP_SIPPER])
 Greninja = Pokemon("Greninja", 285, 226, 170, 242, 178, 280, [Type.WATER, Type.DARK], [Water_Shuriken, Hydro_Pump, Surf, Dark_Pulse, Spikes], [Ability.PROTEAN, Ability.TORRENT, Ability.BATTLE_BOND], [(236, 186, 306, 216, 186, Ability.BATTLE_BOND, [Type.WATER, Type.DARK])])
-
+Gengar = Pokemon("Gengar", 261, 166, 156, 296, 186, 256, [Type.GHOST, Type.POISON], [], [Ability.LEVITATE], [(156, 166, 306, 246, 336, Ability.LEVITATE, [Type.GHOST, Type.POISON])])
 
 class BasePokemonList(Enum):
     CHARIZARD = Charizard
@@ -36,7 +36,8 @@ class BasePokemonList(Enum):
     TYRANITAR = Tyranitar
     AZUMARILL = Azumarill
     GRENINJA = Greninja
+    GENGAR = Gengar
 
 
-POKEMONS = [Charizard, Alakazam, Blaziken, Garchomp, Medicham, Scizor, Diancie, Salamence, Swampert, Lopunny, Mawile, Pinsir, Tyranitar, Azumarill, Greninja]
+POKEMONS = [Charizard, Alakazam, Blaziken, Garchomp, Medicham, Scizor, Diancie, Salamence, Swampert, Lopunny, Mawile, Pinsir, Tyranitar, Azumarill, Greninja, Gengar]
 AVAILABLE_POKEMONS = {pokemon.name: pokemon for pokemon in POKEMONS}
