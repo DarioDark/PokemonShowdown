@@ -2,6 +2,7 @@ import customtkinter as ctk
 
 from TeamBuilderInterface4 import TeambuilderInterface
 from ServerInterface2 import HostServerInterface
+from PlayerConsole import Player
 
 
 class MainInterface(ctk.CTk):
@@ -28,7 +29,6 @@ class MainInterface(ctk.CTk):
         self.main_frame = MainFrame(self)
         self.main_frame.pack(expand=True, fill=ctk.BOTH, padx=50, pady=50)
 
-
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def create_widgets(self):
@@ -53,7 +53,7 @@ class MainFrame(ctk.CTkFrame):
         self.teambuilder_button = ctk.CTkButton(self, text="Teambuilder", font=("Arial", 15, "bold"), corner_radius=10, command=self.open_teambuilder,
                                                 fg_color="#3C3C3C", hover_color="#2B2B2B")
         self.server_button = ctk.CTkButton(self, text="Server setup", font=("Arial", 15, "bold"), corner_radius=10, command=self.open_server,
-                                           fg_color="#3C3C3C", hover_color="#2B2B2B", state=ctk.DISABLED)
+                                           fg_color="#3C3C3C", hover_color="#2B2B2B", state=ctk.NORMAL)
         self.play_button = ctk.CTkButton(self, text="Play", font=("Arial", 15, "bold"), corner_radius=10,
                                                 fg_color="#3C3C3C", hover_color="#2B2B2B", state=ctk.DISABLED)
 
@@ -69,7 +69,8 @@ class MainFrame(ctk.CTkFrame):
 
     def open_server(self):
         self.server_top_level = ctk.CTkToplevel(self)
-        self.server = ServerInterface(self.server_top_level)
+        player = Player("Player 1")
+        self.server = HostServerInterface(self.server_top_level, player)
         self.server.master.mainloop()
 
 

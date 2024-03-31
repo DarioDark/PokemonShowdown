@@ -1,5 +1,6 @@
 from math import floor
 from copy import deepcopy
+
 from MoveConsole import *
 from ZMoveConsole import ZMove
 from StatusConsole import PrimeStatus, SubStatus

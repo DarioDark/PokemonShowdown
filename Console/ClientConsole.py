@@ -19,7 +19,7 @@ class Client:
         self.host, self.port = (host, port)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    def start(self):
+    def start(self) -> bool:
         self.client.connect((self.host, self.port))
         self.send_info(self.player.name)
         time.sleep(0.5)
@@ -29,8 +29,7 @@ class Client:
         thread = threading.Thread(target=self.handle)
         thread.start()
 
-    def set_name(self, name: str) -> None:
-        self.client.send(name.encode('utf-8'))    
+        return True
 
     def handle(self) -> None:
         while True:
@@ -64,5 +63,3 @@ class Client:
             time.sleep(0.5)
         self.enemy_moves.pop(0)
 
-    def stop(self) -> None:
-        self.client.close()
