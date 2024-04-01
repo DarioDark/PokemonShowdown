@@ -1,8 +1,8 @@
 import customtkinter as ctk
 import threading
+import socket
 
 from CTkMessagebox import CTkMessagebox
-from termcolor import colored
 
 from ServerConsole import Server
 from ClientConsole import Client
@@ -166,7 +166,6 @@ class ClientServerInterface(BaseServerInterface):
         self.port_entry.pack(pady=3, fill=ctk.X, expand=True, padx=50)
         self.connect_button.pack(pady=3, fill=ctk.X, expand=True, padx=54)
 
-
     # TODO fix this function
     def connect_to_server(self) -> None:
         host = self.host_entry.get()
@@ -174,20 +173,34 @@ class ClientServerInterface(BaseServerInterface):
 
         self.client = Client(self.player, host, port)
         try:
-            self.client_status = self.client.start()
+            self.client_status = bool(self.client.start())
+            print(self.client_status)
             if self.client_status:
                 self.show_server_status()
                 return
+        except socket.gaierror as e:
+            if e.errno == 11001:
+                self.client_status = False
+                self.connection_error = "The IP adress is invalid !"
         except WindowsError as e:
             self.client_status = False
-            self.connection_error = e
+            if e.winerror == 10061:
+                self.connection_error = "The server is not accepting connections with the provided settings."
+            else:
+                self.connection_error = f"An unknown error occurred ! : {e.winerror}"
         except ConnectionRefusedError:
             self.client_status = False
             self.connection_error = "The server is not accepting connections with the provided settings."
         except OverflowError:
             self.client_status = False
             self.connection_error = "The port must be between 0-65535!"
-        self.show_server_status()
+        except Exception as e:
+            self.client_status = False
+            self.connection_error = f"An unknown error occurred ! : {e}"
+        else:
+            self.client_status = True
+        finally:
+            self.show_server_status()
 
     def check_entries(self, event):
         if self.host_entry.get() and self.port_entry.get():
