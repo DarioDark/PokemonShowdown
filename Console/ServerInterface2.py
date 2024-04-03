@@ -47,6 +47,33 @@ class BaseServerInterface:
             pass
         self.master.destroy()
 
+class ChoiceInterface(BaseServerInterface):
+    def __init__(self, master: ctk.CTk | ctk.CTkToplevel, player: Player):
+        super().__init__(master, player, "Connection Choice")
+
+        self.create_widgets()
+        self.place_widgets()
+
+    def create_widgets(self):
+        self.title_label = ctk.CTkLabel(self.main_frame, text="Connection Choice", font=("Arial", 20, "bold"), corner_radius=10, text_color="white")
+        self.host_button = ctk.CTkButton(self.main_frame, text="Host a server", font=("Arial", 15, "bold"), corner_radius=10, command=self.open_host_interface,
+                                         fg_color="#3C3C3C", hover_color="#2B2B2B")
+        self.client_button = ctk.CTkButton(self.main_frame, text="Connect to a server", font=("Arial", 15, "bold"), corner_radius=10, command=self.open_client_interface,
+                                           fg_color="#3C3C3C", hover_color="#2B2B2B")
+
+    def place_widgets(self):
+        self.title_label.pack(pady=20, fill=ctk.X, expand=True)
+        self.host_button.pack(pady=15, fill=ctk.BOTH, expand=True, padx=20)
+        self.client_button.pack(pady=20, fill=ctk.BOTH, expand=True, padx=20)
+
+    def open_host_interface(self):
+        host_interface = HostServerInterface(ctk.CTkToplevel(self.master), self.player)
+        self.master.withdraw()
+
+    def open_client_interface(self):
+        client_interface = ClientServerInterface(ctk.CTkToplevel(self.master), self.player)
+        self.master.withdraw()
+
 
 class HostServerInterface(BaseServerInterface):
     def __init__(self, master: ctk.CTk | ctk.CTkToplevel, player: Player):
@@ -64,7 +91,7 @@ class HostServerInterface(BaseServerInterface):
         self.place_widgets()
 
     def create_widgets(self):
-        self.title_label = ctk.CTkLabel(self.main_frame, text="Server Setup", font=("Arial", 20, "bold"), corner_radius=10, text_color="white")
+        self.title_label = ctk.CTkLabel(self.main_frame, text="Host a Server", font=("Arial", 20, "bold"), corner_radius=10, text_color="white")
         self.host_entry = ctk.CTkEntry(self.main_frame, 50, placeholder_text="IP Address")
         self.port_entry = ctk.CTkEntry(self.main_frame, 50, placeholder_text="Port")
         self.check_config_button = ctk.CTkButton(self.main_frame, text="Check config", font=("Arial", 15, "bold"), corner_radius=10,
@@ -139,7 +166,7 @@ class HostServerInterface(BaseServerInterface):
 class ClientServerInterface(BaseServerInterface):
     def __init__(self, master: ctk.CTk | ctk.CTkToplevel, player: Player):
         super().__init__(master, player, "Client Connection")
-        self.title: str = "Client Connection"
+        self.title: str = "Connect to a Server"
         self.client: Client | None = None
         self.client_status: bool = False
         self.player: Player = player
@@ -223,5 +250,5 @@ class ClientServerInterface(BaseServerInterface):
 if __name__ == '__main__':
     player = Player("Player 1")
     app = ctk.CTk()
-    server_interface = ClientServerInterface(app, player)
+    server_interface = ChoiceInterface(app, player)
     server_interface.master.mainloop()
