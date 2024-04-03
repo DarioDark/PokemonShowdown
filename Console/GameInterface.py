@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 from TeamBuilderInterface4 import TeambuilderInterface
-from ServerInterface2 import HostServerInterface
+from ServerInterface2 import HostServerInterface, ChoiceInterface, ClientServerInterface
 from PlayerConsole import Player
 
 
@@ -70,7 +70,7 @@ class MainFrame(ctk.CTkFrame):
     def open_server(self):
         self.server_top_level = ctk.CTkToplevel(self)
         player = Player("Player 1")
-        self.server = HostServerInterface(self.server_top_level, player)
+        self.server = ChoiceInterface(self.server_top_level, player)
         self.server.master.mainloop()
 
 
