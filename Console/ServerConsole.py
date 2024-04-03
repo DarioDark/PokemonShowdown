@@ -72,9 +72,6 @@ class Server:
         self.players = []
         print("Server stopped !")
 
-    def func(self):
-        ...
-
 
 if __name__ == '__main__':
     s = Server()

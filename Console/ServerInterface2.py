@@ -166,7 +166,6 @@ class ClientServerInterface(BaseServerInterface):
         self.port_entry.pack(pady=3, fill=ctk.X, expand=True, padx=50)
         self.connect_button.pack(pady=3, fill=ctk.X, expand=True, padx=54)
 
-    # TODO fix this function
     def connect_to_server(self) -> None:
         host = self.host_entry.get()
         port = int(self.port_entry.get())
@@ -174,7 +173,6 @@ class ClientServerInterface(BaseServerInterface):
         self.client = Client(self.player, host, port)
         try:
             self.client_status = bool(self.client.start())
-            print(self.client_status)
             if self.client_status:
                 self.show_server_status()
                 return
@@ -197,9 +195,7 @@ class ClientServerInterface(BaseServerInterface):
         except Exception as e:
             self.client_status = False
             self.connection_error = f"An unknown error occurred ! : {e}"
-        else:
-            self.client_status = True
-        finally:
+        if not self.client_status:
             self.show_server_status()
 
     def check_entries(self, event):
@@ -210,15 +206,14 @@ class ClientServerInterface(BaseServerInterface):
 
     def show_server_status(self):
         self.connect_button.configure(state=ctk.DISABLED)
-        if self.server_status:
-            self.server_response_window = CTkMessagebox(self.master, title="Server status", message=f"The server is ready to accept your device with the provided settings.",
-                                                        corner_radius=10, icon="check", option_1="Connect", option_3="Change settings", button_width=10, text_color="green")
+        if self.client_status:
+            self.server_response_window = CTkMessagebox(self.master, title="Server status", message=f"You are successfully connected to the server !",
+                                                        corner_radius=10, icon="check", option_1="Ok", button_width=10, text_color="green")
         else:
             self.server_response_window = CTkMessagebox(self.master, title="Server status", message=f"The server cannot accept your device with the provided settings :\n{self.connection_error}",
                                                         corner_radius=10, icon="cancel", option_1="Change settings", button_width=10, text_color="#C83E00")
 
-        if self.server_response_window.get() == "Start":
-            self.client.start()
+        if self.server_response_window.get() == "Ok":
             self.master.destroy()
         else:
             self.client = None
